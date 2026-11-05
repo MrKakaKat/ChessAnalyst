@@ -187,8 +187,8 @@ began and ends with the move that wins material or mates.
 - **Play** runs the idea in order: the game up to the error, then how it
   was punished, then the line the player missed before it. Each line goes
   on (with the engine on the device past the analysis) until the side to
-  move has three acceptable moves among its best — where the calculation
-  ends. The card says which part is shown. Pause keeps the position; next
+  move has three positive moves (neutral ones count), or two positive moves
+  and two inaccuracies close to neutral — where the calculation ends. The card says which part is shown. Pause keeps the position; next
   and back move inside the idea; play goes on from where you are; the
   arrow button returns to the idea's start; a move of your own leaves the
   idea. The speed is in Settings. An idea also shows the earlier inaccuracy

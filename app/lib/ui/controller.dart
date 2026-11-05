@@ -1243,33 +1243,45 @@ class AnalysisController extends ChangeNotifier {
   }
 
   /// [авторское] The line of an idea stops where the side to move is calm:
-  /// its three best moves all keep the category of the position and lose at
-  /// most half a pawn (neutral and positive moves alike). Two good moves and
-  /// two inaccuracies are not calm yet — the line goes on.
-  Future<bool> _calm(Pos pos) async => await _positiveCount(pos) >= 3;
+  /// three positive moves (neutral ones included: the category kept, at most
+  /// 0.3 pawns lost to the best), or two positive moves and two inaccuracies
+  /// close to neutral (the category kept, at most 0.5 pawns lost) — two such
+  /// inaccuracies stand in for one positive move.
+  Future<bool> _calm(Pos pos) async {
+    final (positive, nearNeutral) = await _choices(pos);
+    return positive >= 3 || (positive >= 2 && nearNeutral >= 2);
+  }
 
-  final _positiveCache = <String, int>{};
+  final _choicesCache = <String, (int, int)>{};
 
-  /// How many of the three best moves of the side to move in [pos] are
-  /// acceptable (category kept, at most 0.5 pawns lost to the best), by the
-  /// device engine: depth 12, three lines.
-  Future<int> _positiveCount(Pos pos) async {
+  /// The positive moves of the side to move in [pos] and its inaccuracies
+  /// close to neutral (see [_calm]), by the device engine: depth 12, five
+  /// lines.
+  Future<(int, int)> _choices(Pos pos) async {
     final key = pos.fen;
-    if (_positiveCache[key] case final n?) return n;
+    if (_choicesCache[key] case final c?) return c;
     try {
       final bot = await EngineBot.shared();
-      final lines = await bot.analyse(pos.fen, depth: 12, multipv: 3);
-      if (lines.isEmpty) return 3;
+      final lines = await bot.analyse(pos.fen, depth: 12, multipv: 5);
+      if (lines.isEmpty) return (3, 0);
       const s = Settings();
       final best = lines.first.eval.pawns(s);
-      final n = lines.where((l) {
+      var positive = 0, near = 0;
+      for (final l in lines) {
         final v = l.eval.pawns(s);
-        return category(v, s.pawns) >= category(best, s.pawns) && best - v <= 0.5;
-      }).length;
-      // меньше трёх легальных ходов — считать по ним
-      return _positiveCache[key] = lines.length < 3 && n == lines.length ? 3 : n;
+        if (category(v, s.pawns) < category(best, s.pawns)) continue;
+        final loss = best - v;
+        if (loss <= positiveLoss) {
+          positive++;
+        } else if (loss <= 0.5) {
+          near++;
+        }
+      }
+      // все ходы позиции позитивны, но их меньше трёх — тоже спокойно
+      if (lines.length < 3 && positive == lines.length) positive = 3;
+      return _choicesCache[key] = (positive, near);
     } catch (_) {
-      return 3;
+      return (3, 0);
     }
   }
 
