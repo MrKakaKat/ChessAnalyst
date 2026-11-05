@@ -342,12 +342,58 @@ class AnalysisController extends ChangeNotifier {
       return;
     }
     if (v == null) return select(_ply + 1);
+    // среди своих (фиолетовых) ходов «далее» показывает не следующий свой ход,
+    // а лучший ход движка — новым ответвлением
+    if (_varIndex < v.moves.length - 1 && v.moves[_varIndex + 1].manual && v.moves[_varIndex].manual) {
+      _liveFork(v, _varIndex + 1);
+      return;
+    }
     if (_varIndex < v.moves.length - 1) return selectVar(v, _varIndex + 1);
     // в конце ветки, идущей по линии движка, «далее» продолжает эту линию
     final m = _lineContinuation();
     if (m != null) return _enter(v.anchor, [for (final x in v.moves) x.move, m], auto: true);
     // за линиями анализа — лучший ход движка на устройстве (серый)
     _liveContinuation(v);
+  }
+
+  /// A fork of [v] at [at] with the device engine's best move there (grey);
+  /// an existing fork with that move is reused.
+  Future<void> _liveFork(Variation v, int at) async {
+    if (_liveBusy) return;
+    final pos = at == 0 ? _base(v.anchor) : v.moves[at - 1].after;
+    _liveBusy = true;
+    notifyListeners();
+    try {
+      final line = await _bestLine(pos);
+      if (line == null || !identical(_var, v)) return;
+      final m = Pos.move(line.move);
+      if (!pos.isLegal(m)) return;
+      for (final x in variations) {
+        if (identical(x.parent, v) && x.forkAt == at && x.moves.length > at && x.moves[at].move == m) {
+          return selectVar(x, at);
+        }
+      }
+      // лучший ход и есть следующий свой — просто шаг
+      if (v.moves[at].move == m) return selectVar(v, at);
+      final root = _base(v.anchor).turn;
+      final f = Variation(v.anchor, parent: v, forkAt: at);
+      f.moves.addAll(v.moves.take(at));
+      f.moves.add(VarMove(
+        move: m,
+        san: pos.san(m),
+        before: pos,
+        after: pos.push(m),
+        eval: pos.turn == root ? line.eval : line.eval.negate(),
+        root: root,
+        auto: true,
+        live: true,
+      ));
+      variations.insert(variations.indexOf(v) + 1, f);
+      selectVar(f, at);
+    } finally {
+      _liveBusy = false;
+      notifyListeners();
+    }
   }
 
   /// Engine continuations computed on the device, by position.
@@ -529,7 +575,43 @@ class AnalysisController extends ChangeNotifier {
   void removeVariation(Variation v) {
     if (identical(v, _var)) exitVariation();
     variations.remove(v);
+    // ответвления от неё уходят вместе с ней
+    for (final f in [for (final x in variations) if (identical(x.parent, v)) x]) {
+      removeVariation(f);
+    }
     notifyListeners();
+  }
+
+  /// Deletes move [i] of branch [v] and everything after it: the following
+  /// moves and the forks that go through them. Deleting the first own move
+  /// deletes the whole branch.
+  void removeFrom(Variation v, int i) {
+    if (i <= v.forkAt) return removeVariation(v);
+    for (final f in [for (final x in variations) if (identical(x.parent, v) && x.forkAt > i) x]) {
+      removeVariation(f);
+    }
+    if (identical(_var, v) && _varIndex >= i) {
+      selectVar(v, i - 1);
+    }
+    v.moves.removeRange(i, v.moves.length);
+    notifyListeners();
+  }
+
+  /// Branch [v] up to move [i] with move numbers, from its first own move
+  /// (the moves it shares with its parent included).
+  String branchText(Variation v, int i) {
+    final words = <String>[];
+    for (var j = 0; j <= i && j < v.moves.length; j++) {
+      final ply = v.anchor + 1 + j;
+      final n = ply ~/ 2 + 1;
+      if (ply.isEven) {
+        words.add('$n.');
+      } else if (j == 0) {
+        words.add('$n...');
+      }
+      words.add(v.moves[j].san);
+    }
+    return words.join(' ');
   }
 
   /// A move made on the board from the shown position.
@@ -1057,13 +1139,18 @@ class AnalysisController extends ChangeNotifier {
   List<IdeaFrame> get ideaFrames => _frames;
   bool get ideaFramesDone => _framesDone;
 
-  /// The frame shown now, or −1 when the board is elsewhere.
+  /// The frame shown last by the playback or the arrows.
+  int _frameCursor = -1;
+
+  bool _isShown(IdeaFrame f) =>
+      f.variation == null ? (_var == null && _ply == f.ply) : (identical(_var, f.variation) && _varIndex == f.index);
+
+  /// The frame shown now, or −1 when the board is elsewhere. A position met
+  /// twice (on the way and on the rewind) is the one last shown.
   int get ideaFrameAt {
+    if (_frameCursor >= 0 && _frameCursor < _frames.length && _isShown(_frames[_frameCursor])) return _frameCursor;
     for (var i = 0; i < _frames.length; i++) {
-      final f = _frames[i];
-      if (f.variation == null ? (_var == null && _ply == f.ply) : (identical(_var, f.variation) && _varIndex == f.index)) {
-        return i;
-      }
+      if (_isShown(_frames[i])) return i;
     }
     return -1;
   }
@@ -1097,8 +1184,13 @@ class AnalysisController extends ChangeNotifier {
         for (var i = 0; i < v.moves.length; i++) {
           _frames.add(IdeaFrame(variation: v, index: i, phase: 'punishment'));
         }
+        // назад к ошибке — ход за ходом и быстро, без скачка
+        _rewind(v, k, k - 1);
         notifyListeners();
       }
+    } else if (!brilliant) {
+      // наказания нет — от ошибки на ход назад, к позиции перед ней
+      _frames.add(IdeaFrame(ply: k - 1, phase: 'rewind', fast: true));
     }
     // лучшее продолжение (у brilliant — его линия), с позиции перед ошибкой
     final p = game.plies[k];
@@ -1110,9 +1202,10 @@ class AnalysisController extends ChangeNotifier {
         for (var i = 0; i < v.moves.length; i++) {
           _frames.add(IdeaFrame(variation: v, index: i, phase: brilliant ? 'brilliant' : 'better'));
         }
+        // у brilliant после его линии — назад к нему и дальше партия
+        if (brilliant) _rewind(v, k - 1, k - 1);
       }
     }
-    // у brilliant после его линии — партия: как он сработал
     if (brilliant) {
       for (var q = k; q <= math.min(k + 4, length - 1); q++) {
         _frames.add(IdeaFrame(ply: q, phase: 'game'));
@@ -1120,6 +1213,17 @@ class AnalysisController extends ChangeNotifier {
     }
     _framesDone = true;
     notifyListeners();
+  }
+
+  /// Fast frames back through branch [v] to its anchor, then along the game
+  /// down to ply [to]: the playback never jumps.
+  void _rewind(Variation v, int anchor, int to) {
+    for (var i = v.moves.length - 2; i >= 0; i--) {
+      _frames.add(IdeaFrame(variation: v, index: i, phase: 'rewind', fast: true));
+    }
+    for (var p = anchor; p >= to; p--) {
+      _frames.add(IdeaFrame(ply: p, phase: 'rewind', fast: true));
+    }
   }
 
   /// The branch of a line of the idea after main-line ply [anchor]: [pv]
@@ -1175,6 +1279,7 @@ class AnalysisController extends ChangeNotifier {
   void _showFrame(int i) {
     if (i < 0 || i >= _frames.length) return;
     final f = _frames[i];
+    _frameCursor = i;
     _ideaNav = true;
     try {
       if (f.variation == null) {
@@ -1223,7 +1328,9 @@ class AnalysisController extends ChangeNotifier {
         _showFrame(0);
       }
       while (true) {
-        await Future<void>.delayed(Duration(milliseconds: prefs.ideaStepMs));
+        // перемотка назад — быстро
+        final fast = at + 1 < _frames.length && _frames[at + 1].fast;
+        await Future<void>.delayed(Duration(milliseconds: fast ? math.max(90, prefs.ideaStepMs ~/ 6) : prefs.ideaStepMs));
         if (token != _playToken || _disposed) return;
         // кадры линий ещё считаются — подождать их
         while (at + 1 >= _frames.length && !_framesDone) {
@@ -1392,12 +1499,15 @@ class AnalysisController extends ChangeNotifier {
 /// One frame of an idea's playback: a game position (after [ply]) or a move
 /// of a branch, with the part of the idea it belongs to.
 class IdeaFrame {
-  const IdeaFrame({this.ply, this.variation, this.index = 0, required this.phase});
+  const IdeaFrame({this.ply, this.variation, this.index = 0, required this.phase, this.fast = false});
+
+  /// A step of the quick rewind between two parts of the idea.
+  final bool fast;
 
   final int? ply;
   final Variation? variation;
   final int index;
 
-  /// 'game', 'punishment', 'better' or 'brilliant'.
+  /// 'game', 'punishment', 'rewind', 'better' or 'brilliant'.
   final String phase;
 }

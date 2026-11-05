@@ -115,4 +115,29 @@ void main() {
     c.next();
     expect(c.varMove!.move, parent.moves[1].move);
   });
+
+  test('deleting a branch move removes it, the moves after it and the forks through them', () {
+    final c = AnalysisController(game);
+    final ply = c.analysis.records.indexWhere((r) => r.bestMoves.isNotEmpty && r.bestMoves.first.uci != r.uci);
+    final line = c.game.plies[ply].lines.first;
+    c.select(ply);
+    c.playAlternative(ply, line.move);
+    c.next();
+    c.next();
+    c.next();
+    final v = c.variation!;
+    expect(v.moves.length, 4);
+    // ответвление с третьего хода
+    c.prev();
+    final other = c.position.legalMoves.firstWhere((m) => m.uci != v.moves[3].move.uci);
+    c.playMove(other);
+    final fork = c.variation!;
+    expect(fork.parent, same(v));
+    c.removeFrom(v, 2);
+    expect(v.moves.length, 2);
+    expect(c.variations.contains(fork), isFalse);
+    // первый ход — вся ветка
+    c.removeFrom(v, 0);
+    expect(c.variations.contains(v), isFalse);
+  });
 }

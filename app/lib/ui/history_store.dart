@@ -38,6 +38,22 @@ class HistoryStore extends ChangeNotifier {
   final _jobs = <String, AnalysisJob>{};
   List<HistoryEntry> entries = [];
 
+  /// Games marked as favourites, by analysis id. Kept apart from the
+  /// analyses (key outside "history."), so analysing again keeps the mark.
+  static const _favKey = 'favorites.history';
+  final favorites = <String>{};
+
+  bool isFavorite(String id) => favorites.contains(id);
+
+  Future<void> toggleFavorite(String id) async {
+    favorites.contains(id) ? favorites.remove(id) : favorites.add(id);
+    notifyListeners();
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setStringList(_favKey, favorites.toList());
+    } catch (_) {}
+  }
+
   /// Writes go one after another: a save never overtakes a load.
   Future<void> _queue = Future.value();
 
@@ -56,6 +72,9 @@ class HistoryStore extends ChangeNotifier {
   Future<void> load() => _serial(() async {
         try {
           final p = await SharedPreferences.getInstance();
+          favorites
+            ..clear()
+            ..addAll(p.getStringList(_favKey) ?? const []);
           final indexed = p.getStringList(_index) ?? [];
           final stored = [
             for (final k in p.getKeys())
@@ -142,6 +161,7 @@ class HistoryStore extends ChangeNotifier {
         try {
           final p = await SharedPreferences.getInstance();
           await p.remove('$_prefix$id');
+          if (favorites.remove(id)) await p.setStringList(_favKey, favorites.toList());
           await p.setStringList(_index, [
             for (final x in p.getStringList(_index) ?? <String>[])
               if (x != id) x,

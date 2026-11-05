@@ -36,6 +36,9 @@ String _when(DateTime t) {
 class _HistoryScreenState extends State<HistoryScreen> {
   final _selected = <String>{};
 
+  /// Only the favourite games.
+  bool _favOnly = false;
+
   bool get _selecting => _selected.isNotEmpty;
 
   @override
@@ -59,11 +62,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
     // недоделанный разбор (прерван закрытием приложения или ошибкой движка)
     // продолжается сам; поставленный пользователем на паузу — нет
     if (job.stalled) analysisQueue.add(job);
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => job.ready
-          ? GameScreen(controller: AnalysisController(job.snapshot(), book: widget.book), job: job)
-          : JobScreen(job: job, book: widget.book),
-    ));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => job.ready
+            ? GameScreen(
+                controller: AnalysisController(job.snapshot(), book: widget.book),
+                job: job,
+              )
+            : JobScreen(job: job, book: widget.book),
+      ),
+    );
   }
 
   void _toggle(String id) => setState(() => _selected.contains(id) ? _selected.remove(id) : _selected.add(id));
@@ -76,8 +84,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(n == 1 ? 'Delete this analysis?' : 'Delete $n analyses?'),
-        content: const Text('The puzzles made from these games go too, with their ratings and recorded attempts. '
-            'This cannot be undone.'),
+        content: const Text(
+          'The puzzles made from these games go too, with their ratings and recorded attempts. '
+          'This cannot be undone.',
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
@@ -102,27 +112,34 @@ class _HistoryScreenState extends State<HistoryScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, set) => AlertDialog(
           title: Text(ids.length == 1 ? 'Analyze again' : 'Analyze ${ids.length} games again'),
-          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Depth $depth'),
-            Slider(
-              value: depth.toDouble(),
-              min: 1,
-              max: maxDepth.toDouble(),
-              divisions: maxDepth - 1,
-              label: '$depth',
-              onChanged: (v) => set(() => depth = v.round()),
-            ),
-            Text('Lines per move: $lines'),
-            Slider(
-              value: lines.toDouble(),
-              min: 5,
-              max: 25,
-              divisions: 20,
-              label: '$lines',
-              onChanged: (v) => set(() => lines = v.round()),
-            ),
-            const Text('The old analysis is replaced; the puzzles follow the new one.', style: TextStyle(fontSize: 12)),
-          ]),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Depth $depth'),
+              Slider(
+                value: depth.toDouble(),
+                min: 1,
+                max: maxDepth.toDouble(),
+                divisions: maxDepth - 1,
+                label: '$depth',
+                onChanged: (v) => set(() => depth = v.round()),
+              ),
+              Text('Lines per move: $lines'),
+              Slider(
+                value: lines.toDouble(),
+                min: 5,
+                max: 25,
+                divisions: 20,
+                label: '$lines',
+                onChanged: (v) => set(() => lines = v.round()),
+              ),
+              const Text(
+                'The old analysis is replaced; the puzzles follow the new one.',
+                style: TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
             FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Analyze')),
@@ -149,7 +166,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final entries = history.entries;
+    final entries = [
+      for (final e in history.entries)
+        if (!_favOnly || history.isFavorite(e.id)) e,
+    ];
     return PopScope(
       canPop: !_selecting,
       onPopInvokedWithResult: (didPop, _) {
@@ -178,83 +198,135 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ],
               )
-            : AppBar(title: const Text('Analysis history'), actions: [
-                if (entries.isNotEmpty)
-                  IconButton(
-                    tooltip: 'Select',
-                    onPressed: () => setState(() => _selected.add(entries.first.id)),
-                    icon: const Icon(Icons.checklist_rounded),
-                  ),
-              ]),
+            : AppBar(
+                title: const Text('Analysis history'),
+                actions: [
+                  if (entries.isNotEmpty)
+                    IconButton(
+                      tooltip: 'Select',
+                      onPressed: () => setState(() => _selected.add(entries.first.id)),
+                      icon: const Icon(Icons.checklist_rounded),
+                    ),
+                ],
+              ),
         floatingActionButton: _selecting
             ? null
             : FloatingActionButton.extended(
-                onPressed: () => Navigator.of(context)
-                    .push(MaterialPageRoute<void>(builder: (_) => ImportScreen(book: widget.book))),
+                onPressed: () =>
+                    Navigator.of(context)
+                        .push(MaterialPageRoute<void>(builder: (_) => ImportScreen(book: widget.book))),
                 icon: const Icon(Icons.add_rounded),
                 label: const Text('New analysis'),
               ),
-        body: entries.isEmpty
-            ? Center(child: Text('No analyses yet.', style: TextStyle(color: scheme.outline)))
-            : ListView(padding: const EdgeInsets.only(bottom: 88), children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  child: Text('Long press to select several: analyze them again or delete them.',
-                      style: TextStyle(fontSize: 12, color: scheme.outline)),
-                ),
-                for (final e in entries)
-                  ListTile(
-                    selected: _selected.contains(e.id),
-                    leading: _selecting
-                        ? Checkbox(value: _selected.contains(e.id), onChanged: (_) => _toggle(e.id))
-                        : null,
-                    // идущий анализ затемнён — кроме его кружка
-                    title: Opacity(
-                      opacity: e.progress < 1 ? 0.45 : 1,
-                      child: Row(children: [
-                        Flexible(child: Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
-                        // сделан по старым правилам анализа — пометка «переанализировать»
-                        if (e.outdated && e.progress >= 1)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: ActionChip(
-                              visualDensity: VisualDensity.compact,
-                              avatar: const Icon(Icons.update_rounded, size: 16),
-                              label: const Text('Re-analyse', style: TextStyle(fontSize: 11)),
-                              tooltip: 'Analysed with older rules: analyse again for the new kinds of moves',
-                              onPressed: () => _reanalyze({e.id}),
-                            ),
+        body: history.entries.isEmpty
+            ? Center(
+                child: Text('No analyses yet.', style: TextStyle(color: scheme.outline)),
+              )
+            : ListView(
+                padding: const EdgeInsets.only(bottom: 88),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Long press to select several: analyze them again or delete them.',
+                            style: TextStyle(fontSize: 12, color: scheme.outline),
                           ),
-                      ]),
+                        ),
+                        FilterChip(
+                          avatar: Icon(_favOnly ? Icons.star_rounded : Icons.star_border_rounded, size: 18),
+                          label: const Text('Favourites'),
+                          showCheckmark: false,
+                          selected: _favOnly,
+                          onSelected: (v) => setState(() => _favOnly = v),
+                        ),
+                      ],
                     ),
-                    subtitle: Opacity(
-                      opacity: e.progress < 1 ? 0.45 : 1,
-                      child: Text(
-                          '${e.date.replaceAll('.??', '')} · depth ${e.depth}${e.progress < 1 ? ' of ${e.target}, ${(e.progress * 100).round()}%' : ''}'
-                          '${e.finished != null ? ' · analysed ${_when(e.finished!)}' : ''}'),
-                    ),
-                    trailing: _selecting
-                        ? null
-                        : (e.progress < 1
-                            ? SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: switch (analysisQueue.jobs.where((j) => j.id == e.id).firstOrNull) {
-                                  final job? => ListenableBuilder(
-                                      listenable: job, builder: (_, _) => JobRing(job: job, stroke: 3)),
-                                  null => CircularProgressIndicator(value: e.progress, strokeWidth: 3),
-                                })
-                            : PopupMenuButton<String>(
-                                onSelected: (a) => a == 'again' ? _reanalyze({e.id}) : _delete({e.id}),
-                                itemBuilder: (_) => const [
-                                  PopupMenuItem(value: 'again', child: Text('Analyze again')),
-                                  PopupMenuItem(value: 'delete', child: Text('Delete')),
-                                ],
-                              )),
-                    onTap: () => _selecting ? _toggle(e.id) : _open(e.id),
-                    onLongPress: () => _toggle(e.id),
                   ),
-              ]),
+                  if (entries.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text('No favourite games yet: tap the star of a finished analysis.',
+                          textAlign: TextAlign.center, style: TextStyle(color: scheme.outline)),
+                    ),
+                  for (final e in entries)
+                    ListTile(
+                      selected: _selected.contains(e.id),
+                      leading: _selecting
+                          ? Checkbox(value: _selected.contains(e.id), onChanged: (_) => _toggle(e.id))
+                          : null,
+                      // идущий анализ затемнён — кроме его кружка
+                      title: Opacity(
+                        opacity: e.progress < 1 ? 0.45 : 1,
+                        child: Row(
+                          children: [
+                            Flexible(child: Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                            // сделан по старым правилам анализа — пометка «переанализировать»
+                            if (e.outdated && e.progress >= 1)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 6),
+                                child: ActionChip(
+                                  visualDensity: VisualDensity.compact,
+                                  avatar: const Icon(Icons.update_rounded, size: 16),
+                                  label: const Text('Re-analyse', style: TextStyle(fontSize: 11)),
+                                  tooltip: 'Analysed with older rules: analyse again for the new kinds of moves',
+                                  onPressed: () => _reanalyze({e.id}),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      subtitle: Opacity(
+                        opacity: e.progress < 1 ? 0.45 : 1,
+                        child: Text(
+                          '${e.date.replaceAll('.??', '')} · depth ${e.depth}${e.progress < 1 ? ' of ${e.target}, ${(e.progress * 100).round()}%' : ''}'
+                          '${e.finished != null ? ' · analysed ${_when(e.finished!)}' : ''}',
+                        ),
+                      ),
+                      trailing: _selecting
+                          ? null
+                          : (e.progress < 1
+                                ? SizedBox(
+                                    width: 28,
+                                    height: 28,
+                                    child: switch (analysisQueue.jobs.where((j) => j.id == e.id).firstOrNull) {
+                                      final job? => ListenableBuilder(
+                                        listenable: job,
+                                        builder: (_, _) => JobRing(job: job, stroke: 3),
+                                      ),
+                                      null => CircularProgressIndicator(value: e.progress, strokeWidth: 3),
+                                    },
+                                  )
+                                : Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // избранное — только у законченного разбора
+                                      IconButton(
+                                        tooltip: history.isFavorite(e.id)
+                                            ? 'Remove from favourites'
+                                            : 'Add to favourites',
+                                        onPressed: () => history.toggleFavorite(e.id),
+                                        icon: Icon(
+                                          history.isFavorite(e.id) ? Icons.star_rounded : Icons.star_border_rounded,
+                                          color: history.isFavorite(e.id) ? const Color(0xFFF2B01E) : scheme.outline,
+                                        ),
+                                      ),
+                                      PopupMenuButton<String>(
+                                        onSelected: (a) => a == 'again' ? _reanalyze({e.id}) : _delete({e.id}),
+                                        itemBuilder: (_) => const [
+                                          PopupMenuItem(value: 'again', child: Text('Analyze again')),
+                                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                                        ],
+                                      ),
+                                    ],
+                                  )),
+                      onTap: () => _selecting ? _toggle(e.id) : _open(e.id),
+                      onLongPress: () => _toggle(e.id),
+                    ),
+                ],
+              ),
       ),
     );
   }

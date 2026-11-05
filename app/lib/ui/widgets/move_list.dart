@@ -44,12 +44,9 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
   int _lastPly = -1;
   final _folded = <int>{};
 
-  /// Selected range of game plies (long press and drag), and whether the
-  /// finger is still down; the copy bar goes to the top while it is down
-  /// or the finger was low, else to the bottom.
+  /// Selected range of game plies (long press and drag); the bar with the
+  /// copy button stays at the top.
   int? _selA, _selB;
-  bool _pressing = false;
-  bool _barTop = true;
 
   bool _selected(int ply) {
     final a = _selA, b = _selB;
@@ -69,8 +66,7 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
 
   void _startSelect(int ply) => setState(() {
     _selA = _selB = ply;
-    _pressing = true;
-    _barTop = true;
+    _varSel = null;
   });
 
   void _dragSelect(Offset global) {
@@ -78,48 +74,51 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
     if (p != null && p != _selB) setState(() => _selB = p);
   }
 
-  void _endSelect(Offset global) {
-    final box = context.findRenderObject() as RenderBox?;
-    final y = box == null ? 0.0 : box.globalToLocal(global).dy;
-    setState(() {
-      _pressing = false;
-      _barTop = box != null && y > box.size.height / 2;
-    });
-  }
+  void _endSelect(Offset global) {}
 
-  void _copySelection() {
-    final a = _selA, b = _selB;
-    if (a == null || b == null) return;
-    Clipboard.setData(ClipboardData(text: c.movesText(a, b)));
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(content: Text('Moves copied')));
-    setState(() => _selA = _selB = null);
-  }
+  /// A move of a branch held down: it can be copied (the branch up to it)
+  /// or deleted with everything after it.
+  (Variation, int)? _varSel;
 
+  void _clearSel() => setState(() {
+    _selA = _selB = null;
+    _varSel = null;
+  });
+
+  /// The bar over the list, always at the top: round icon buttons only —
+  /// copy, delete (branch moves), close.
   Widget _copyBar(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final a = _selA!, b = _selB!;
-    final n = (a - b).abs() + 1;
-    return Material(
-      elevation: 4,
-      color: scheme.inverseSurface,
-      borderRadius: BorderRadius.circular(22),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextButton.icon(
-            style: TextButton.styleFrom(foregroundColor: scheme.onInverseSurface),
-            onPressed: _copySelection,
-            icon: const Icon(Icons.content_copy_rounded, size: 18),
-            label: Text(n == 1 ? 'Copy this move' : 'Copy $n moves'),
-          ),
-          IconButton(
-            tooltip: 'Cancel',
-            color: scheme.onInverseSurface,
-            onPressed: () => setState(() => _selA = _selB = null),
-            icon: const Icon(Icons.close_rounded, size: 18),
-          ),
-        ],
+    Widget round(IconData icon, String tip, VoidCallback onTap, {Color? color}) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: IconButton.filled(
+        tooltip: tip,
+        style: IconButton.styleFrom(
+          backgroundColor: color ?? scheme.inverseSurface,
+          foregroundColor: scheme.onInverseSurface,
+          elevation: 4,
+        ),
+        onPressed: onTap,
+        icon: Icon(icon, size: 20),
       ),
+    );
+    final vs = _varSel;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        round(Icons.content_copy_rounded, 'Copy', () {
+          final text = vs != null ? c.branchText(vs.$1, vs.$2) : c.movesText(_selA!, _selB!);
+          Clipboard.setData(ClipboardData(text: text));
+          ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(content: Text('Moves copied')));
+          _clearSel();
+        }),
+        if (vs != null)
+          round(Icons.delete_outline_rounded, 'Delete this move and all after it', () {
+            c.removeFrom(vs.$1, vs.$2);
+            _clearSel();
+          }, color: scheme.error),
+        round(Icons.close_rounded, 'Cancel', _clearSel),
+      ],
     );
   }
 
@@ -207,18 +206,17 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
       },
     );
     // одна и та же структура с выделением и без: прокрутка не сбрасывается
-    return Stack(
-      children: [
-        list,
-        if (_selA != null)
-          Positioned(
-            left: 0,
-            right: 0,
-            top: _pressing || _barTop ? 6 : null,
-            bottom: _pressing || _barTop ? null : 6 + widget.bottomPadding,
-            child: Center(child: _copyBar(context)),
-          ),
-      ],
+    return LayoutBuilder(
+      builder: (context, box) {
+        _listWidth = box.maxWidth;
+        return Stack(
+          children: [
+            list,
+            if (_selA != null || _varSel != null)
+              Positioned(left: 0, right: 0, top: 6, child: Center(child: _copyBar(context))),
+          ],
+        );
+      },
     );
   }
 
@@ -289,7 +287,7 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
         child: InkWell(
           borderRadius: BorderRadius.circular(6),
           onTap: () {
-            if (_selA != null) return setState(() => _selA = _selB = null);
+            if (_selA != null || _varSel != null) return _clearSel();
             c.select(ply);
           },
           child: AnimatedContainer(
@@ -335,7 +333,8 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
                   ),
                 // ветки — числом на краю клетки, без отдельной строки
                 const Spacer(),
-                _branchCount(context, ply, current),
+                // нажимается треть клетки справа, не только сам значок
+                _branchCount(context, ply, current, hitWidth: (_listWidth - 34) / 2 / 3),
               ],
             ),
           ),
@@ -382,7 +381,7 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
   /// Branches starting after [anchor]: a fold button and the branch lines.
   /// The branch count at the edge of the move's cell: a small chip with the
   /// number only; a tap folds or unfolds the branches under the row.
-  Widget _branchCount(BuildContext context, int anchor, bool current) {
+  Widget _branchCount(BuildContext context, int anchor, bool current, {double hitWidth = 0}) {
     final n = c.variationsAt(anchor).length;
     if (n == 0) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
@@ -391,31 +390,38 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => open ? _folded.add(anchor) : _folded.remove(anchor)),
       child: Container(
-        margin: const EdgeInsets.only(left: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-        decoration: BoxDecoration(
-          color: current
-              ? scheme.onPrimary.withValues(alpha: 0.2)
-              : scheme.tertiary.withValues(alpha: open ? 0.18 : 0.08),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.call_split_rounded, size: 11, color: current ? scheme.onPrimary : scheme.tertiary),
-            Text(
-              '$n',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: current ? scheme.onPrimary : scheme.tertiary,
+        constraints: BoxConstraints(minWidth: hitWidth.clamp(0.0, 120.0), minHeight: 26),
+        alignment: Alignment.centerRight,
+        child: Container(
+          margin: const EdgeInsets.only(left: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+          decoration: BoxDecoration(
+            color: current
+                ? scheme.onPrimary.withValues(alpha: 0.2)
+                : scheme.tertiary.withValues(alpha: open ? 0.18 : 0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.call_split_rounded, size: 11, color: current ? scheme.onPrimary : scheme.tertiary),
+              Text(
+                '$n',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: current ? scheme.onPrimary : scheme.tertiary,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+
+  /// Width of the list, for the tap area of the branch counts.
+  double _listWidth = 360;
 
   /// Branches starting after [anchor], under the row (folded with the count
   /// chip of the move).
@@ -470,6 +476,11 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
                     InkWell(
                       borderRadius: BorderRadius.circular(6),
                       onTap: () => c.selectVar(v, i),
+                      // зажатие хода ветки — скопировать или удалить
+                      onLongPress: () => setState(() {
+                        _selA = _selB = null;
+                        _varSel = (v, i);
+                      }),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),

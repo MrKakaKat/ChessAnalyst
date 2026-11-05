@@ -61,19 +61,22 @@ jobs:
       - run: flutter pub get
       # Только arm64-v8a: все современные телефоны. Номер сборки выше, чем у
       # тестовых сборок старого репозитория (~150): APK встаёт обновлением.
+      # APP_VERSION: по нему приложение сверяет версию с последним релизом.
       - name: Build APK
         run: |
           flutter build apk --release --target-platform android-arm64 \
-            --build-name "${TAG#v}" --build-number $((1000 + GITHUB_RUN_NUMBER))
-          cp build/app/outputs/flutter-apk/app-release.apk /tmp/ChessAnalyst-arm64-v8a.apk
+            --build-name "${TAG#v}" --build-number $((1000 + GITHUB_RUN_NUMBER)) \
+            --dart-define=APP_VERSION="${TAG#v}"
+          cp build/app/outputs/flutter-apk/app-release.apk "/tmp/ChessAnalyst-${TAG#v}.apk"
       # WebAssembly: dartchess использует 64-битные целые, которых нет в dart2js.
       - name: Build web (wasm)
         run: |
-          flutter build web --wasm --release --no-web-resources-cdn --no-tree-shake-icons
-          (cd build/web && zip -qr /tmp/ChessAnalyst-web.zip .)
+          flutter build web --wasm --release --no-web-resources-cdn --no-tree-shake-icons \
+            --dart-define=APP_VERSION="${TAG#v}"
+          (cd build/web && zip -qr "/tmp/ChessAnalyst-${TAG#v}-web.zip" .)
       - name: Publish the release
         working-directory: .
         run: |
-          gh release create "$TAG" /tmp/ChessAnalyst-arm64-v8a.apk /tmp/ChessAnalyst-web.zip \
+          gh release create "$TAG" "/tmp/ChessAnalyst-${TAG#v}.apk" "/tmp/ChessAnalyst-${TAG#v}-web.zip" \
             --target "$GITHUB_SHA" --title "ChessAnalyst ${TAG#v}" \
-            --notes "ChessAnalyst-arm64-v8a.apk: Android (arm64-v8a). ChessAnalyst-web.zip: the web app (WebAssembly; serve the folder over HTTP)."
+            --notes "ChessAnalyst-${TAG#v}.apk: Android (arm64-v8a). ChessAnalyst-${TAG#v}-web.zip: the web app (WebAssembly; serve the folder over HTTP)."

@@ -1,7 +1,7 @@
 name: chessanalyst
 description: "ChessAnalyst: idea-first game analysis (analysis core ported from Python)."
 publish_to: 'none'
-version: 1.2.1+1000
+version: 1.2.2+1000
 
 environment:
   sdk: ^3.13.7
@@ -11,8 +11,10 @@ dependencies:
   dartchess: ^0.14.0
   flutter:
     sdk: flutter
+  http: ^1.6.0
   multistockfish: ^0.6.1
   shared_preferences: ^2.5.6
+  url_launcher: ^6.3.3
   web: ^1.1.1
 
 dev_dependencies:

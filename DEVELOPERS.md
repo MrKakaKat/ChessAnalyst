@@ -48,11 +48,17 @@ pip install -e ".[dev]" && pytest -q   # needs stockfish on PATH
 
 - **Push to `main`.** Only the tests run.
 - **Release.** Run the *Flutter* workflow by hand with a version number (Actions → Flutter → Run workflow → `1.3`), or push a tag `v1.3`. CI builds:
-  - `ChessAnalyst-arm64-v8a.apk` — arm64-v8a only;
-  - `ChessAnalyst-web.zip` — WebAssembly.
+  - `ChessAnalyst-<version>.apk` — arm64-v8a only;
+  - `ChessAnalyst-<version>-web.zip` — WebAssembly.
+
+  The download links in README name the version: update them with each release.
 
   It publishes both in a release with that tag.
 - **APK build number.** It is `1000 + run number`, so a new APK installs over an older one.
 - **Signing key.** Updates require the same key: `app/android/app/prototype.keystore`.
 
 The app's Android id stays `dev.chessideas.chess_ideas_app`.
+
+## Update notice
+
+The release build gets its version as `--dart-define=APP_VERSION=<version>`. Once a day at start the app asks `api.github.com/repos/MrKakaKat/ChessAnalyst/releases/latest` and offers a newer version (`app/lib/ui/update_check.dart`). Builds without `APP_VERSION` (tests, the test repository) never ask.

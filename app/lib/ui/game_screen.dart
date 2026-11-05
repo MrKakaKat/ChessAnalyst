@@ -458,6 +458,17 @@ class _GameScreenState extends State<GameScreen> {
       builder: (context) => ListenableBuilder(
         listenable: prefs,
         builder: (context, _) => ListView(shrinkWrap: true, padding: const EdgeInsets.only(bottom: 16), children: [
+          // копирование партии — первым
+          ListTile(
+            leading: const Icon(Icons.content_copy_rounded),
+            title: const Text('Copy PGN'),
+            subtitle: const Text('The game with its headers, to paste elsewhere'),
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: c.game.pgn));
+              Navigator.pop(context);
+              ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('PGN copied')));
+            },
+          ),
           SwitchListTile(
             title: const Text('Best move arrows'),
             value: prefs.showBestArrow,
@@ -477,16 +488,6 @@ class _GameScreenState extends State<GameScreen> {
             title: const Text('Idea threat arrows'),
             value: prefs.showIdeaArrows,
             onChanged: (v) => prefs.update(ideaArrows: v),
-          ),
-          ListTile(
-            leading: const Icon(Icons.content_copy_rounded),
-            title: const Text('Copy PGN'),
-            subtitle: const Text('The game with its headers, to paste elsewhere'),
-            onTap: () {
-              Clipboard.setData(ClipboardData(text: c.game.pgn));
-              Navigator.pop(context);
-              ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('PGN copied')));
-            },
           ),
           SwitchListTile(
             title: _withGuide(context, 'Trick sign',
@@ -666,7 +667,7 @@ class _NavBar extends StatelessWidget {
           // значок ветки: синий — линия анализа, серый — продолжение движка
           // телефона, фиолетовый — свой ход
           Icon(Icons.call_split_rounded, size: 16, color: branchColor(vm)),
-          const SizedBox(width: 4),
+          const SizedBox(width: 10),
           Text('${plyText(ply)} ${vm.san}', style: TextStyle(fontWeight: FontWeight.w700, color: color)),
           const SizedBox(width: 6),
           StepGlyph(kind: kind, color: color, size: 18),

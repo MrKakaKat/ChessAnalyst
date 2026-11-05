@@ -95,8 +95,6 @@ class IdeaPanel extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 6, bottom: 8),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       _ChainTimeline(controller: c, idea: idea),
-                      // под станциями — что показывается сейчас
-                      _PhaseLine(controller: c),
                       Text('Red arrow: the attacking piece and its target in each position of the idea.',
                           style: TextStyle(fontSize: 12, color: scheme.outline)),
                     ]),
@@ -245,6 +243,8 @@ class _IdeaTile extends StatelessWidget {
                   ),
                 ),
             ]),
+            // под заголовком с ошибкой — какая часть идеи показывается сейчас
+            if (selected) _PhaseLine(controller: c),
             const SizedBox(height: 4),
             ChunkView(idea: idea),
             const SizedBox(height: 4),
@@ -396,6 +396,7 @@ class _PhaseLine extends StatelessWidget {
       'game' => 'Now: the game',
       'punishment' => 'Now: the punishment — the opponent\'s best line after the error',
       'better' => 'Now: the better line — what was missed before the error',
+      'rewind' => 'Back to the position before the error…',
       'brilliant' => 'Now: the line of the brilliant move',
       _ => controller.ideaFramesDone ? '' : 'Preparing the lines of the idea…',
     };

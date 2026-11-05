@@ -32,6 +32,7 @@ import 'li_icons.dart';
 import 'play_screen.dart';
 import '../analysis/settings.dart' show analysisRules;
 import 'history_store.dart';
+import 'update_check.dart';
 import 'puzzle_screen.dart';
 import 'prefs.dart';
 import 'settings_screen.dart';
@@ -90,7 +91,11 @@ class HomeScreen extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_noticeChecked) {
         _noticeChecked = true;
-        showUpdateNotice(context, book);
+        showUpdateNotice(context, book).then((_) async {
+          // новая версия на GitHub — раз в день при запуске
+          final r = await checkForUpdate();
+          if (r != null && context.mounted) await showUpdate(context, r);
+        });
       }
     });
     return Scaffold(
