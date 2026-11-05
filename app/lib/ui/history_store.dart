@@ -34,24 +34,60 @@ class HistoryEntry {
 
 class HistoryStore extends ChangeNotifier {
   static const _index = 'history.index';
+  static const _prefix = 'history.';
   final _jobs = <String, AnalysisJob>{};
   List<HistoryEntry> entries = [];
 
-  Future<void> load() async {
-    try {
-      final p = await SharedPreferences.getInstance();
-      final ids = p.getStringList(_index) ?? [];
-      final out = <HistoryEntry>[];
-      for (final id in ids) {
-        final raw = p.getString('history.$id');
-        if (raw == null) continue;
-        final m = jsonDecode(raw) as Map<String, dynamic>;
-        out.add(_entry(AnalysisJob.fromJson(m)));
-      }
-      entries = out;
-      notifyListeners();
-    } catch (_) {}
+  /// Writes go one after another: a save never overtakes a load.
+  Future<void> _queue = Future.value();
+
+  Future<T> _serial<T>(Future<T> Function() f) {
+    final out = _queue.then((_) => f());
+    _queue = out.then((_) {}, onError: (_) {});
+    return out;
   }
+
+  bool _loaded = false;
+
+  /// Reads the history. [авторское] The list is rebuilt from every stored
+  /// analysis, not only from the index: an index written before the history
+  /// was loaded (a queued analysis saving itself at start) once held only
+  /// that game, and the other analyses seemed lost; they come back here.
+  Future<void> load() => _serial(() async {
+        try {
+          final p = await SharedPreferences.getInstance();
+          final indexed = p.getStringList(_index) ?? [];
+          final stored = [
+            for (final k in p.getKeys())
+              if (k.startsWith(_prefix) && k != _index) k.substring(_prefix.length),
+          ];
+          final ids = [...indexed, for (final id in stored) if (!indexed.contains(id)) id];
+          final out = <HistoryEntry>[];
+          for (final id in ids) {
+            final live = _jobs[id];
+            if (live != null) {
+              out.add(_entry(live));
+              continue;
+            }
+            final raw = p.getString('$_prefix$id');
+            if (raw == null) continue;
+            try {
+              out.add(_entry(AnalysisJob.fromJson(jsonDecode(raw) as Map<String, dynamic>)));
+            } catch (_) {
+              // повреждённая запись — пропускается, остальные читаются
+            }
+          }
+          // разборы в памяти, ещё не записанные на устройство
+          for (final j in _jobs.values) {
+            if (!out.any((e) => e.id == j.id)) out.add(_entry(j));
+          }
+          out.sort((a, b) => b.created.compareTo(a.created));
+          entries = out;
+          _loaded = true;
+          await p.setStringList(_index, [for (final e in entries) e.id]);
+          notifyListeners();
+        } catch (_) {}
+      });
 
   HistoryEntry _entry(AnalysisJob j) => HistoryEntry(
       j.id, j.title, j.source.headers['date'] ?? '', j.created, j.depth, j.targetDepth, j.progress,
@@ -65,15 +101,21 @@ class HistoryStore extends ChangeNotifier {
   }
 
   Future<void> save(AnalysisJob job) async {
-    entries = [_entry(job), ...entries.where((e) => e.id != job.id)];
-    notifyListeners();
-    try {
-      final p = await SharedPreferences.getInstance();
-      await p.setString('history.${job.id}', jsonEncode(job.toJson()));
-      await p.setStringList(_index, [for (final e in entries) e.id]);
-    } catch (_) {
-      // хранилище переполнено или недоступно — разбор остаётся в памяти
-    }
+    if (!_loaded) await load();
+    await _serial(() async {
+      entries = [_entry(job), ...entries.where((e) => e.id != job.id)];
+      notifyListeners();
+      try {
+        final p = await SharedPreferences.getInstance();
+        await p.setString('$_prefix${job.id}', jsonEncode(job.toJson()));
+        // индекс — объединение записанного и известного: ничего не теряется
+        final known = p.getStringList(_index) ?? [];
+        final ids = [for (final e in entries) e.id];
+        await p.setStringList(_index, [...ids, for (final id in known) if (!ids.contains(id)) id]);
+      } catch (_) {
+        // хранилище переполнено или недоступно — разбор остаётся в памяти
+      }
+    });
   }
 
   /// The job of [id]: the running one, or restored from the device.
@@ -93,16 +135,19 @@ class HistoryStore extends ChangeNotifier {
     }
   }
 
-  Future<void> remove(String id) async {
-    _jobs.remove(id)?.pause();
-    entries = entries.where((e) => e.id != id).toList();
-    notifyListeners();
-    try {
-      final p = await SharedPreferences.getInstance();
-      await p.remove('history.$id');
-      await p.setStringList(_index, [for (final e in entries) e.id]);
-    } catch (_) {}
-  }
+  Future<void> remove(String id) => _serial(() async {
+        _jobs.remove(id)?.pause();
+        entries = entries.where((e) => e.id != id).toList();
+        notifyListeners();
+        try {
+          final p = await SharedPreferences.getInstance();
+          await p.remove('$_prefix$id');
+          await p.setStringList(_index, [
+            for (final x in p.getStringList(_index) ?? <String>[])
+              if (x != id) x,
+          ]);
+        } catch (_) {}
+      });
 }
 
 final history = HistoryStore();

@@ -663,9 +663,9 @@ class _NavBar extends StatelessWidget {
         key: ValueKey(c.positionKey),
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // значок ветки: синий — ход из просчитанной линии движка, серый —
-          // свой ход, которого движок не смотрел
-          Icon(Icons.call_split_rounded, size: 16, color: vm.eval != null ? onlyMoveColor : scheme.outline),
+          // значок ветки: синий — линия анализа, серый — продолжение движка
+          // телефона, фиолетовый — свой ход
+          Icon(Icons.call_split_rounded, size: 16, color: branchColor(vm)),
           const SizedBox(width: 4),
           Text('${plyText(ply)} ${vm.san}', style: TextStyle(fontWeight: FontWeight.w700, color: color)),
           const SizedBox(width: 6),

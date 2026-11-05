@@ -24,6 +24,7 @@ import '../engine/bot.dart';
 import '../engine/game_job.dart' show JobState;
 import '../engine/puzzle_rater.dart';
 import 'board_screen.dart';
+import 'analysis_cache.dart';
 import 'analysis_queue.dart';
 import 'history_store.dart';
 import 'prefs.dart';
@@ -70,7 +71,7 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
     await Future<void>.delayed(const Duration(milliseconds: 350));
     final list = <Puzzle>[];
     for (final g in widget.games) {
-      list.addAll(puzzlesFrom(analyzeGame(g, const Settings(unit: Unit.pawns), book: widget.book)));
+      list.addAll(puzzlesFrom(await analysisOf(g, widget.book)));
     }
     // разборы своих партий из истории (законченные)
     await history.load();

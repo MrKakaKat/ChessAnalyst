@@ -15,6 +15,7 @@ import '../analysis/openings.dart';
 import '../analysis/pos.dart';
 import '../analysis/settings.dart';
 import '../analysis/weakness.dart';
+import 'analysis_cache.dart';
 import 'controller.dart';
 import 'game_screen.dart';
 import 'labels.dart';
@@ -59,10 +60,9 @@ int findRating(Pos board, String bestUci, List<String> pv, String type, Sharpnes
 }
 
 Future<List<PositionEntry>> collectPositions(List<GameData> showcase, OpeningBook? book) async {
-  const s = Settings(unit: Unit.pawns);
   await underlines.load();
   final analyses = [
-    for (final g in showcase) analyzeGame(g, s, book: book),
+    for (final g in showcase) await analysisOf(g, book),
     ...await ownAnalyses(book),
   ];
   // из задач — только сохранённые промахи (позиция, где был неверный ход)

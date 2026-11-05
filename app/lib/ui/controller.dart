@@ -82,6 +82,14 @@ class VarMove {
   /// Follows the analysed engine lines of the game (blue).
   bool get inLines => eval != null && !live;
 
+  /// Played by hand outside the analysed lines (purple): it starts its own
+  /// branch and is never replaced by a recalculation.
+  bool get manual => !auto && !inLines;
+
+  /// The engine's continuation computed on the device (grey): the only moves
+  /// that a recalculation may replace.
+  bool get engineLive => auto && live;
+
   /// Icon kind: the verdict's, best for a move along the engine line, null
   /// for an own move outside the lines.
   String? get kind {
@@ -124,17 +132,36 @@ class GameEnd {
 /// A branch from the game: starts after main-line ply [anchor] (−1: from the
 /// initial position).
 class Variation {
-  Variation(this.anchor);
+  Variation(this.anchor, {this.parent, this.forkAt = 0});
 
   final int anchor;
   final moves = <VarMove>[];
+
+  /// A branch forked from another one by a move played by hand: its first
+  /// [forkAt] moves are the parent's.
+  final Variation? parent;
+  final int forkAt;
 }
 
+/// Colours of branch moves: blue — the game's analysis, grey — the device
+/// engine's continuation, purple — a move played by hand.
+const branchAnalysisColor = Color(0xFF3B82F6);
+const branchEngineColor = Color(0xFF8A8F98);
+const branchManualColor = Color(0xFF8E5CD9);
+
+Color branchColor(VarMove m) =>
+    m.inLines ? branchAnalysisColor : (m.manual ? branchManualColor : branchEngineColor);
+
 class AnalysisController extends ChangeNotifier {
-  AnalysisController(this.game, {this.book, Unit unit = Unit.pawns, bool percentSteps = false})
+  /// [analysis]: an analysis made beforehand in pawns (analysis_cache.dart),
+  /// so the screen does not wait for it.
+  AnalysisController(this.game,
+      {this.book, Unit unit = Unit.pawns, bool percentSteps = false, GameAnalysis? analysis})
       : _unit = unit,
         _percent = percentSteps {
-    _analysis = analyzeGame(game, Settings(unit: unit, percentSteps: percentSteps), book: book);
+    _analysis = analysis != null && unit == Unit.pawns && !percentSteps
+        ? analysis
+        : analyzeGame(game, Settings(unit: unit, percentSteps: percentSteps), book: book);
     for (final p in game.plies) {
       final b = Pos.fromFen(p.fenBefore);
       before.add(b);
@@ -270,7 +297,7 @@ class AnalysisController extends ChangeNotifier {
     _ply = p;
     // ушли за пределы выбранной идеи — она снимается (и синий контур доски)
     final idea = _idea;
-    if (idea != null && !_playingIdea) {
+    if (idea != null && !_playingIdea && !_ideaNav) {
       final plies = chainPlies(idea);
       final last = math.max(plies.reduce(math.max), idea.punishPly + 1);
       if (p < plies.reduce(math.min) - 1 || p > last) _idea = null;
@@ -306,6 +333,8 @@ class AnalysisController extends ChangeNotifier {
   }
 
   void next() {
+    // в блоке идеи — только по её кадрам
+    if (_ideaStep(1)) return;
     final v = _var;
     if (v == null && errorsOnly) {
       final p = nextNegative();
@@ -378,7 +407,14 @@ class AnalysisController extends ChangeNotifier {
   }
 
   void prev() {
+    if (_ideaStep(-1)) return;
     final v = _var;
+    // назад с первого своего хода ответвления — в ветку, от которой оно
+    // ответвилось: «далее» поведёт по ней, а не по ответвлению
+    if (v != null && v.parent != null && _varIndex == v.forkAt && variations.contains(v.parent)) {
+      if (v.forkAt == 0) return exitVariation();
+      return selectVar(v.parent!, v.forkAt - 1);
+    }
     if (v == null && errorsOnly) {
       final p = prevNegative();
       if (p != null) select(p);
@@ -499,19 +535,49 @@ class AnalysisController extends ChangeNotifier {
   /// A move made on the board from the shown position.
   void playMove(NormalMove m) {
     m = _normalize(position, m);
+    // свой ход — выход из идеи
+    if (_idea != null) {
+      stopChain();
+      _idea = null;
+      _framesToken++;
+      _frames.clear();
+    }
     final v = _var;
     if (v == null) {
       final p = math.min(_ply, length - 1);
       if (p + 1 < length && moves[p + 1] == m) return select(p + 1);
       return _enter(p, [m]);
     }
-    // дальше в ветке только ходы, пролистанные по линии движка: они
-    // заменяются новым ходом, а не остаются отдельной веткой
-    final rest = v.moves.skip(_varIndex + 1);
-    if (rest.isNotEmpty && rest.every((x) => x.auto) && rest.first.move != m) {
-      v.moves.removeRange(_varIndex + 1, v.moves.length);
+    final at = _varIndex + 1;
+    // тот же ход, что дальше в ветке, — просто шаг
+    if (at < v.moves.length && v.moves[at].move == m) return selectVar(v, at);
+    // [авторское] дальше только серые ходы (продолжение движка телефона) —
+    // они заменяются; если дальше есть синие или свои (фиолетовые), ветка
+    // остаётся как есть, а свой ход открывает от неё новое ответвление
+    final rest = v.moves.skip(at);
+    if (rest.isEmpty || rest.every((x) => x.engineLive)) {
+      if (rest.isNotEmpty) v.moves.removeRange(at, v.moves.length);
+      _enter(v.anchor, [for (final x in v.moves) x.move, m]);
+      return;
     }
-    _enter(v.anchor, [for (final x in v.moves.take(_varIndex + 1)) x.move, m]);
+    _fork(v, at, m);
+  }
+
+  /// A new branch from [v]: its first [at] moves and the move [m] played by
+  /// hand (an existing fork with the same move is reused).
+  void _fork(Variation v, int at, NormalMove m) {
+    for (final x in variations) {
+      if (identical(x.parent, v) && x.forkAt == at && x.moves.length > at && x.moves[at].move == m) {
+        return selectVar(x, at);
+      }
+    }
+    final f = Variation(v.anchor, parent: v, forkAt: at);
+    f.moves.addAll(v.moves.take(at));
+    final pos = at == 0 ? _base(v.anchor) : v.moves[at - 1].after;
+    f.moves.add(_varMove(v.anchor, f.moves, pos, m));
+    variations.insert(variations.indexOf(v) + 1, f);
+    selectVar(f, at);
+    if (prefs.analyzeOwnMoves && f.moves[at].manual) _judge(f, at);
   }
 
   /// How the opponent profits from move [ply]: the engine's best line after
@@ -631,9 +697,10 @@ class AnalysisController extends ChangeNotifier {
     target.moves.add(_varMove(anchor, target.moves, pos, seq.last, auto: auto));
     selectVar(target, target.moves.length - 1);
     if (prefs.analyzeOwnMoves) {
-      // ходы из линий анализа (синие) не пересчитываются — только свои
+      // пересчитываются только свои (фиолетовые) ходы: синие — из анализа,
+      // серые — уже лучшие ходы движка
       for (var i = 0; i < target.moves.length; i++) {
-        if (target.moves[i].record == null && !target.moves[i].inLines) _judge(target, i);
+        if (target.moves[i].record == null && target.moves[i].manual) _judge(target, i);
       }
     }
   }
@@ -739,12 +806,17 @@ class AnalysisController extends ChangeNotifier {
   }
   void first() => select(-1);
   void last() => select(lastPly);
-  bool get canNext => _var == null
+  bool get canNext => (_idea != null && ideaFrameAt >= 0)
+      ? _ideaCanNext
+      : _var == null
       ? (errorsOnly ? nextNegative() != null : _ply < lastPly)
       : (_varIndex < _var!.moves.length - 1 ||
           _lineContinuation() != null ||
           (_var!.moves.isNotEmpty && !_var!.moves.last.after.p.isGameOver));
-  bool get canPrev => _var != null || (errorsOnly ? prevNegative() != null : _ply > -1);
+  bool get canPrev {
+    if (_idea != null && ideaFrameAt >= 0) return ideaFrameAt > 0;
+    return _var != null || (errorsOnly ? prevNegative() != null : _ply > -1);
+  }
 
   void flip() {
     _flipped = !_flipped;
@@ -883,7 +955,15 @@ class AnalysisController extends ChangeNotifier {
     stopChain();
     _idea = idea;
     _lock = null;
-    if (idea != null) select(chainPlies(idea).first);
+    _framesToken++;
+    _frames.clear();
+    _framesDone = false;
+    if (idea != null) {
+      _ideaNav = true;
+      select(chainPlies(idea).first);
+      _ideaNav = false;
+      _buildFrames(idea);
+    }
     notifyListeners();
   }
 
@@ -952,56 +1032,207 @@ class AnalysisController extends ChangeNotifier {
     return null;
   }
 
-  /// Plays the idea as one sequence, move by move, nothing skipped:
-  /// 1. the game from the idea's start up to the position before the error;
-  /// 2. the line the erring side missed there (the analysis line, then the
-  ///    device engine), until the opponent has more than three positive
-  ///    moves — the point where the calculation ends;
-  /// 3. back to the game: the error itself;
-  /// 4. how it is punished: the opponent's best line after it, until the
-  ///    erring side has more than three positive moves again.
-  /// A brilliant move: its line instead of the missed one, then the game.
-  /// [авторское] The lines go on past the analysed depth (up to 30 plies)
-  /// because only the place where the forced play ends shows what had to be
-  /// seen.
-  Future<void> playChain({Duration step = const Duration(milliseconds: 900)}) async {
-    final idea = _idea;
-    if (idea == null) return;
+  // --- проигрывание идеи ---
+  //
+  // [авторское] Идея — заранее построенный список кадров (позиция партии или
+  // ход ветки), в таком порядке:
+  // 1. партия от начала идеи до ошибки включительно;
+  // 2. наказание — лучшая линия соперника после ошибки;
+  // 3. лучшее продолжение, упущенное в позиции перед ошибкой.
+  // Линии идут, пока у стороны на ходу не будет трёх приемлемых ходов подряд
+  // среди лучших (см. [_calm]); дальше анализа их продолжает движок телефона.
+  // Пауза оставляет позицию; «далее» и «назад» ходят только по кадрам идеи;
+  // проигрывание продолжается с показанного кадра; свой ход выходит из идеи.
+
+  final _frames = <IdeaFrame>[];
+  bool _framesDone = false;
+  int _framesToken = 0;
+  int _playToken = 0;
+  bool _playingIdea = false;
+  bool _disposed = false;
+  bool _ideaNav = false;
+
+  /// Frames of the selected idea built so far (all of them when
+  /// [ideaFramesDone]).
+  List<IdeaFrame> get ideaFrames => _frames;
+  bool get ideaFramesDone => _framesDone;
+
+  /// The frame shown now, or −1 when the board is elsewhere.
+  int get ideaFrameAt {
+    for (var i = 0; i < _frames.length; i++) {
+      final f = _frames[i];
+      if (f.variation == null ? (_var == null && _ply == f.ply) : (identical(_var, f.variation) && _varIndex == f.index)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /// What is being shown: the game, the punishment or the better line.
+  String? get ideaPhase {
+    final i = ideaFrameAt;
+    return i < 0 ? null : _frames[i].phase;
+  }
+
+  /// Builds the frames of [idea]: the game part at once, the lines as the
+  /// engine gives them.
+  Future<void> _buildFrames(Idea idea) async {
+    final token = ++_framesToken;
+    _frames.clear();
+    _framesDone = false;
+    final k = idea.punishPly;
+    final brilliant = idea.kind == 'brilliant';
+    final first = chainPlies(idea).reduce(math.min);
+    final lastGame = brilliant ? k - 1 : k;
+    for (var p = first; p <= lastGame; p++) {
+      _frames.add(IdeaFrame(ply: p, phase: 'game'));
+    }
+    notifyListeners();
+    final mover = before[k].turn;
+    // наказание: линия соперника после ошибки
+    if (!brilliant && k + 1 < length && game.plies[k + 1].lines.first.pv.isNotEmpty) {
+      final v = await _ideaBranch(k, game.plies[k + 1].lines.first.pv, mover, token);
+      if (token != _framesToken) return;
+      if (v != null) {
+        for (var i = 0; i < v.moves.length; i++) {
+          _frames.add(IdeaFrame(variation: v, index: i, phase: 'punishment'));
+        }
+        notifyListeners();
+      }
+    }
+    // лучшее продолжение (у brilliant — его линия), с позиции перед ошибкой
+    final p = game.plies[k];
+    final better = brilliant ? p.played.pv : p.lines.first.pv;
+    if (better.isNotEmpty && (brilliant || better.first != p.uci)) {
+      final v = await _ideaBranch(k - 1, better, mover.opposite, token);
+      if (token != _framesToken) return;
+      if (v != null) {
+        for (var i = 0; i < v.moves.length; i++) {
+          _frames.add(IdeaFrame(variation: v, index: i, phase: brilliant ? 'brilliant' : 'better'));
+        }
+      }
+    }
+    // у brilliant после его линии — партия: как он сработал
+    if (brilliant) {
+      for (var q = k; q <= math.min(k + 4, length - 1); q++) {
+        _frames.add(IdeaFrame(ply: q, phase: 'game'));
+      }
+    }
+    _framesDone = true;
+    notifyListeners();
+  }
+
+  /// The branch of a line of the idea after main-line ply [anchor]: [pv]
+  /// (analysed, blue), then the device engine (grey), until [stopSide] is
+  /// calm (or 30 plies). Built without being selected.
+  Future<Variation?> _ideaBranch(int anchor, List<String> pv, Side stopSide, int token) async {
+    var pos = _base(anchor);
+    final v = Variation(anchor);
+    var i = 0;
+    while (v.moves.length < 30 && !pos.p.isGameOver) {
+      if (pos.turn == stopSide && v.moves.isNotEmpty && await _calm(pos)) break;
+      if (token != _framesToken || _disposed) return null;
+      NormalMove? m;
+      if (i < pv.length) {
+        m = Pos.move(pv[i]);
+        if (!pos.isLegal(m)) m = null;
+      }
+      if (m != null) {
+        v.moves.add(_varMove(anchor, v.moves, pos, m, auto: true));
+      } else {
+        final live = await _bestLine(pos);
+        if (token != _framesToken || _disposed) return null;
+        if (live == null) break;
+        m = Pos.move(live.move);
+        if (!pos.isLegal(m)) break;
+        final root = _base(anchor).turn;
+        v.moves.add(VarMove(
+          move: m,
+          san: pos.san(m),
+          before: pos,
+          after: pos.push(m),
+          eval: pos.turn == root ? live.eval : live.eval.negate(),
+          root: root,
+          auto: true,
+          live: true,
+        ));
+      }
+      i++;
+      pos = pos.push(m);
+    }
+    if (v.moves.isEmpty) return null;
+    // та же линия уже есть веткой — берётся она
+    for (final x in variationsAt(anchor)) {
+      if (x.moves.length == v.moves.length &&
+          [for (var j = 0; j < v.moves.length; j++) x.moves[j].move == v.moves[j].move].every((e) => e)) {
+        return x;
+      }
+    }
+    variations.add(v);
+    return v;
+  }
+
+  void _showFrame(int i) {
+    if (i < 0 || i >= _frames.length) return;
+    final f = _frames[i];
+    _ideaNav = true;
+    try {
+      if (f.variation == null) {
+        select(f.ply!);
+      } else {
+        selectVar(f.variation!, f.index);
+      }
+    } finally {
+      _ideaNav = false;
+    }
+  }
+
+  /// Within an idea "next" and "back" move through its frames only.
+  bool _ideaStep(int d) {
+    if (_idea == null || _frames.isEmpty) return false;
+    final at = ideaFrameAt;
+    if (at < 0) return false;
+    final to = at + d;
+    if (to >= 0 && to < _frames.length) _showFrame(to);
+    return true;
+  }
+
+  bool get _ideaCanNext {
+    final at = ideaFrameAt;
+    return at >= 0 && at + 1 < _frames.length;
+  }
+
+  /// Back to the idea's first frame.
+  void restartIdea() {
+    stopChain();
+    _showFrame(0);
+  }
+
+  /// Plays the idea from the frame shown (from its start when the board is
+  /// elsewhere or at the end), one frame per [prefs.ideaStepMs].
+  Future<void> playChain() async {
+    if (_idea == null || _frames.isEmpty) return;
     stopChain();
     final token = ++_playToken;
     _playingIdea = true;
     notifyListeners();
-    bool alive() => token == _playToken && !_disposed;
-    Future<bool> wait(Duration d) async {
-      await Future<void>.delayed(d);
-      return alive();
-    }
-
     try {
-      final k = idea.punishPly;
-      final first = chainPlies(idea).reduce(math.min);
-      // 1. партия до позиции перед ошибкой
-      final upTo = math.max(first, k - 1);
-      for (var at = first; at <= upTo; at++) {
-        select(at);
-        _idea = idea;
-        if (!await wait(at == first ? step : step * 0.7)) return;
+      var at = ideaFrameAt;
+      if (at < 0 || (at >= _frames.length - 1 && _framesDone)) {
+        at = 0;
+        _showFrame(0);
       }
-      // 2. упущенная линия (у brilliant — сыгранная) от позиции перед ошибкой
-      final p = game.plies[k];
-      final missed = idea.kind == 'brilliant' ? p.played.pv : p.lines.first.pv;
-      final mover = before[k].turn;
-      if (missed.isNotEmpty && (idea.kind == 'brilliant' || missed.first != p.uci)) {
-        if (!await _playIdeaLine(k - 1, missed, mover.opposite, step * 1.4, alive)) return;
-        if (!await wait(step)) return;
-      }
-      // 3. сама ошибка — ход партии
-      select(k);
-      _idea = idea;
-      if (!await wait(step * 1.2)) return;
-      // 4. наказание: лучшая линия соперника после ошибки
-      if (idea.kind != 'brilliant' && k + 1 < length && game.plies[k + 1].lines.first.pv.isNotEmpty) {
-        await _playIdeaLine(k, game.plies[k + 1].lines.first.pv, mover, step * 1.4, alive);
+      while (true) {
+        await Future<void>.delayed(Duration(milliseconds: prefs.ideaStepMs));
+        if (token != _playToken || _disposed) return;
+        // кадры линий ещё считаются — подождать их
+        while (at + 1 >= _frames.length && !_framesDone) {
+          await Future<void>.delayed(const Duration(milliseconds: 200));
+          if (token != _playToken || _disposed) return;
+        }
+        if (at + 1 >= _frames.length) break;
+        at++;
+        _showFrame(at);
       }
     } finally {
       if (token == _playToken) {
@@ -1011,83 +1242,34 @@ class AnalysisController extends ChangeNotifier {
     }
   }
 
-  int _playToken = 0;
-  bool _playingIdea = false;
-  bool _disposed = false;
-
-  /// Plays [pv] as a branch after main-line ply [anchor], one move per
-  /// [step]: first the analysed moves (blue), then the device engine's
-  /// (grey), until [stopSide] is to move with more than three positive moves
-  /// (or 30 plies). False when the playback was stopped.
-  Future<bool> _playIdeaLine(
-      int anchor, List<String> pv, Side stopSide, Duration step, bool Function() alive) async {
-    var pos = _base(anchor);
-    final seq = <NormalMove>[];
-    var i = 0;
-    while (seq.length < 30 && !pos.p.isGameOver) {
-      // конец счёта: у стороны stopSide больше трёх позитивных ходов
-      if (pos.turn == stopSide && seq.isNotEmpty && await _positiveCount(pos) > 3) break;
-      if (!alive()) return false;
-      NormalMove? m;
-      Line? live;
-      if (i < pv.length) {
-        m = Pos.move(pv[i]);
-        if (!pos.isLegal(m)) m = null;
-      }
-      if (m == null) {
-        live = await _bestLine(pos);
-        if (!alive()) return false;
-        if (live == null) break;
-        m = Pos.move(live.move);
-        if (!pos.isLegal(m)) break;
-      }
-      i++;
-      seq.add(m);
-      if (live == null) {
-        _enter(anchor, List.of(seq), auto: true);
-      } else {
-        final v = _var;
-        if (v == null) break;
-        final last = v.moves.last;
-        v.moves.add(VarMove(
-          move: m,
-          san: pos.san(m),
-          before: pos,
-          after: pos.push(m),
-          eval: pos.turn == last.root ? live.eval : live.eval.negate(),
-          root: last.root,
-          auto: true,
-          live: true,
-        ));
-        selectVar(v, v.moves.length - 1);
-      }
-      pos = pos.push(m);
-      if (!await Future<void>.delayed(step).then((_) => alive())) return false;
-    }
-    return alive();
-  }
+  /// [авторское] The line of an idea stops where the side to move is calm:
+  /// its three best moves all keep the category of the position and lose at
+  /// most half a pawn (neutral and positive moves alike). Two good moves and
+  /// two inaccuracies are not calm yet — the line goes on.
+  Future<bool> _calm(Pos pos) async => await _positiveCount(pos) >= 3;
 
   final _positiveCache = <String, int>{};
 
-  /// Positive moves of the side to move in [pos] (category kept, at most
-  /// 0.3 pawns lost to the best), by the device engine: depth 12, five lines.
+  /// How many of the three best moves of the side to move in [pos] are
+  /// acceptable (category kept, at most 0.5 pawns lost to the best), by the
+  /// device engine: depth 12, three lines.
   Future<int> _positiveCount(Pos pos) async {
     final key = pos.fen;
     if (_positiveCache[key] case final n?) return n;
     try {
       final bot = await EngineBot.shared();
-      final lines = await bot.analyse(pos.fen, depth: 12, multipv: 5);
-      if (lines.isEmpty) return 99;
+      final lines = await bot.analyse(pos.fen, depth: 12, multipv: 3);
+      if (lines.isEmpty) return 3;
       const s = Settings();
       final best = lines.first.eval.pawns(s);
       final n = lines.where((l) {
         final v = l.eval.pawns(s);
-        return category(v, s.pawns) >= category(best, s.pawns) && best - v <= positiveLoss;
+        return category(v, s.pawns) >= category(best, s.pawns) && best - v <= 0.5;
       }).length;
-      // пять линий — потолок: если все позитивны, ходов больше трёх
-      return _positiveCache[key] = n;
+      // меньше трёх легальных ходов — считать по ним
+      return _positiveCache[key] = lines.length < 3 && n == lines.length ? 3 : n;
     } catch (_) {
-      return 99;
+      return 3;
     }
   }
 
@@ -1193,4 +1375,17 @@ class AnalysisController extends ChangeNotifier {
     _player?.cancel();
     super.dispose();
   }
+}
+
+/// One frame of an idea's playback: a game position (after [ply]) or a move
+/// of a branch, with the part of the idea it belongs to.
+class IdeaFrame {
+  const IdeaFrame({this.ply, this.variation, this.index = 0, required this.phase});
+
+  final int? ply;
+  final Variation? variation;
+  final int index;
+
+  /// 'game', 'punishment', 'better' or 'brilliant'.
+  final String phase;
 }

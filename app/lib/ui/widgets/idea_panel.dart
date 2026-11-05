@@ -95,6 +95,8 @@ class IdeaPanel extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 6, bottom: 8),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       _ChainTimeline(controller: c, idea: idea),
+                      // под станциями — что показывается сейчас
+                      _PhaseLine(controller: c),
                       Text('Red arrow: the attacking piece and its target in each position of the idea.',
                           style: TextStyle(fontSize: 12, color: scheme.outline)),
                     ]),
@@ -221,9 +223,16 @@ class _IdeaTile extends StatelessWidget {
                     child: CustomPaint(size: const Size.square(22), painter: PlayStopPainter(0, scheme.onSurfaceVariant)),
                   ),
                 ),
+              // в начало идеи — без сброса паузы на старт
+              if (selected)
+                IconButton(
+                  tooltip: 'Back to the start of the idea',
+                  onPressed: c.ideaFrames.isEmpty ? null : c.restartIdea,
+                  icon: const Icon(Icons.replay_rounded),
+                ),
               if (selected)
                 IconButton.filled(
-                  tooltip: c.playing ? 'Stop' : 'Play chain',
+                  tooltip: c.playing ? 'Pause' : 'Play the idea',
                   onPressed: c.playing ? c.stopChain : c.playChain,
                   icon: TweenAnimationBuilder<double>(
                     tween: Tween(end: c.playing ? 1 : 0),
@@ -370,4 +379,39 @@ class PlayStopPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(PlayStopPainter old) => old.t != t || old.color != color;
+}
+
+/// What the idea's playback shows now: the game, the punishment or the
+/// better line (one line under the stations).
+class _PhaseLine extends StatelessWidget {
+  const _PhaseLine({required this.controller});
+
+  final AnalysisController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final phase = controller.ideaPhase;
+    final text = switch (phase) {
+      'game' => 'Now: the game',
+      'punishment' => 'Now: the punishment — the opponent\'s best line after the error',
+      'better' => 'Now: the better line — what was missed before the error',
+      'brilliant' => 'Now: the line of the brilliant move',
+      _ => controller.ideaFramesDone ? '' : 'Preparing the lines of the idea…',
+    };
+    return SizedBox(
+      height: 20,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 220),
+        child: Text(text,
+            key: ValueKey(text),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: phase == 'punishment' ? scheme.error : (phase == null ? scheme.outline : scheme.tertiary))),
+      ),
+    );
+  }
 }

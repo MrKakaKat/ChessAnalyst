@@ -184,11 +184,15 @@ began and ends with the move that wins material or mates.
   hides such cases.
 - **Why?** under a bad move opens its idea, or shows the opponent's best
   line after it, so you can see what the move allowed.
-- **Play** runs the idea in order: the game up to the error, the line the
-  player missed there, the error itself, then how it was punished. Each line
-  goes on (with the engine on the device past the analysis) until the side
-  to move has more than three good moves — where the calculation ends. An
-  idea also shows the earlier inaccuracy it began with.
+- **Play** runs the idea in order: the game up to the error, then how it
+  was punished, then the line the player missed before it. Each line goes
+  on (with the engine on the device past the analysis) until the side to
+  move has three acceptable moves among its best — where the calculation
+  ends. The card says which part is shown. Pause keeps the position; next
+  and back move inside the idea; play goes on from where you are; the
+  arrow button returns to the idea's start; a move of your own leaves the
+  idea. The speed is in Settings. An idea also shows the earlier inaccuracy
+  it began with.
 - When a forced chain of only moves led to the error, the idea starts where
   that chain began ("Only move since"). The mistake was missing the only
   path, not just the last move.
@@ -293,18 +297,23 @@ character, the kinds missed, the kinds you were punished by, and the cost.
 
 ## Games and analyses
 
-- The home screen holds the showcase games in decks: the masters,
-  AlphaZero against Stockfish 8, and engine games made for the app. Swipe
+- The home screen holds your last five analysed games on top, then the
+  showcase games in decks: the masters, AlphaZero against Stockfish 8, and
+  engine games made for the app. Swipe
   the top card away to see the next one. Below the decks is the list of all
   games.
 - **Copy PGN** (quick settings of a game) puts the game on the clipboard.
 - In the move list, hold a move to select it and drag to select a range;
   a button copies the moves. Under a move with an idea, "Better" and
   "Punished" open the idea's lines as branches.
-- Branch moves from the game's analysis are blue and are not recalculated;
-  your own moves and the device engine's continuations are grey. "Next" at
-  the end of a branch goes on with the device engine; a step back drops a
-  continuation that may be stale.
+- Branch moves are coloured by where they come from: blue — the game's
+  analysis (not recalculated), grey — the engine on the device continuing a
+  line, purple — a move you played. "Next" at the end of a branch goes on
+  with the device engine; a step back drops a grey continuation that may be
+  stale. A move of yours in the middle of a branch that goes on with blue or
+  purple moves opens a new branch from it; going back past your move
+  returns to the old branch. The number at the edge of a move counts its
+  branches; tap it to fold them.
 - While a game is being analysed, only the Game tab with the move list
   works; the other tabs and the graphs open when the analysis is done.
 - The rings at the bottom right show the analyses in the queue; the inner

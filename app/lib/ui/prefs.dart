@@ -83,6 +83,9 @@ class AppPrefs extends ChangeNotifier {
   /// The analysis rules version the update notice was last shown for.
   int seenRules = 0;
 
+  /// Pause between the moves of an idea's playback, milliseconds.
+  int ideaStepMs = 1200;
+
   /// Ideas tab: only serious tactics; which side's ideas are shown.
   bool seriousIdeas = true;
 
@@ -136,6 +139,7 @@ class AppPrefs extends ChangeNotifier {
       percentSteps = p.getBool('percentSteps') ?? percentSteps;
       showTrick = p.getBool('showTrick') ?? showTrick;
       seenRules = p.getInt('seenRules') ?? seenRules;
+      ideaStepMs = p.getInt('ideaStepMs') ?? ideaStepMs;
       seriousIdeas = p.getBool('seriousIdeas') ?? seriousIdeas;
       playerName = p.getString('playerName') ?? playerName;
       weaknessPuzzles = p.getBool('weaknessPuzzles') ?? weaknessPuzzles;
@@ -178,6 +182,7 @@ class AppPrefs extends ChangeNotifier {
       await p.setBool('percentSteps', percentSteps);
       await p.setBool('showTrick', showTrick);
       await p.setInt('seenRules', seenRules);
+      await p.setInt('ideaStepMs', ideaStepMs);
       await p.setBool('seriousIdeas', seriousIdeas);
       await p.setString('playerName', playerName);
       await p.setBool('weaknessPuzzles', weaknessPuzzles);
@@ -209,6 +214,7 @@ class AppPrefs extends ChangeNotifier {
     bool? percent,
     bool? trick,
     int? rulesSeen,
+    int? ideaStep,
     bool? serious,
     String? name,
     bool? weakness,
@@ -229,6 +235,7 @@ class AppPrefs extends ChangeNotifier {
     percentSteps = percent ?? percentSteps;
     showTrick = trick ?? showTrick;
     seenRules = rulesSeen ?? seenRules;
+    ideaStepMs = ideaStep ?? ideaStepMs;
     seriousIdeas = serious ?? seriousIdeas;
     playerName = name ?? playerName;
     weaknessPuzzles = weakness ?? weaknessPuzzles;

@@ -15,7 +15,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../analysis/game.dart';
+import '../engine/game_job.dart';
 import '../analysis/openings.dart';
+import 'analysis_cache.dart';
 import 'controller.dart';
 import 'game_screen.dart';
 import 'labels.dart';
@@ -106,6 +108,8 @@ class HomeScreen extends StatelessWidget {
               'Where the mistake began, not where the evaluation dropped.',
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
             ),
+            // свои партии — сверху, как только есть хоть один разбор
+            _OwnDeck(book: book),
             // колоды: мастера, AlphaZero против Stockfish, партии движков
             for (final (name, deck) in decks) ...[
               const SizedBox(height: 18),
@@ -151,17 +155,22 @@ class HomeScreen extends StatelessWidget {
 bool _noticeChecked = false;
 
 /// Opens a showcase game from the list (no board flight).
-void openShowcase(BuildContext context, GameData g, OpeningBook book) {
-  final c = AnalysisController(g, book: book)..select(-1);
+Future<void> openShowcase(BuildContext context, GameData g, OpeningBook book) async {
+  final a = await analysisOf(g, book);
+  if (!context.mounted) return;
+  final c = AnalysisController(g, book: book, analysis: a)..select(-1);
   Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => GameScreen(controller: c)));
 }
 
 /// Showcase games as a deck: the top card swipes away to either side and
 /// goes back under the others; the cards behind peek out below.
 class _GameDeck extends StatefulWidget {
-  const _GameDeck({required this.games, required this.book});
+  const _GameDeck({super.key, required this.games, required this.book, this.jobs = const {}});
 
   final List<GameData> games;
+
+  /// Own games still being analysed, by game id: the game screen follows them.
+  final Map<String, AnalysisJob> jobs;
   final OpeningBook book;
 
   @override
@@ -285,26 +294,40 @@ class _GameDeckState extends State<_GameDeck> with SingleTickerProviderStateMixi
   /// its height, so they show only at the top left.
   final _heights = <String, double>{};
 
-  Widget _card(int i, int depth) => _GameCard(game: widget.games[i], book: widget.book, delay: i * 150);
+  Widget _card(int i, int depth) =>
+      _GameCard(game: widget.games[i], book: widget.book, delay: i * 150, job: widget.jobs[widget.games[i].id]);
 }
 
 class _GameCard extends StatefulWidget {
-  const _GameCard({required this.game, required this.book, required this.delay});
+  const _GameCard({required this.game, required this.book, required this.delay, this.job});
 
   final GameData game;
   final OpeningBook book;
   final int delay;
+
+  /// The device analysis of an own game, while it runs.
+  final AnalysisJob? job;
 
   @override
   State<_GameCard> createState() => _GameCardState();
 }
 
 class _GameCardState extends State<_GameCard> {
-  late final AnalysisController _controller = AnalysisController(widget.game, book: widget.book);
+  /// Made when the game's analysis comes from the background (analysis_cache).
+  AnalysisController? _c;
+  AnalysisController get _controller => _c!;
+
+  @override
+  void initState() {
+    super.initState();
+    analysisOf(widget.game, widget.book).then((a) {
+      if (mounted) setState(() => _c = AnalysisController(widget.game, book: widget.book, analysis: a));
+    });
+  }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _c?.dispose();
     super.dispose();
   }
 
@@ -320,6 +343,49 @@ class _GameCardState extends State<_GameCard> {
   String get _showcaseKind {
     final r = _controller.analysis.records[_showcase];
     return iconKindOf(r.step, r.subtype);
+  }
+
+  /// While the analysis is being made: the card's frame with the start
+  /// position, the same size, no numbers yet.
+  Widget _placeholder(BuildContext context) {
+    final g = widget.game;
+    final scheme = Theme.of(context).colorScheme;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 380),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(g.title,
+                maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            Text('${g.headers['event']}', maxLines: 1, style: TextStyle(color: scheme.outline, fontSize: 13)),
+            const SizedBox(height: 12),
+            LayoutBuilder(builder: (context, box) {
+              final size = math.min(320.0, box.maxWidth);
+              return Center(
+                child: Opacity(
+                  opacity: 0.5,
+                  child: StaticChessboard(
+                    size: size,
+                    orientation: Side.white,
+                    fen: g.startFen,
+                    settings: StaticChessboardSettings(
+                      pieceAssets: prefs.pieceSet.assets,
+                      colorScheme: boardScheme('neutral'),
+                      borderRadius: const BorderRadius.all(Radius.circular(6)),
+                    ),
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 16),
+            const LinearProgressIndicator(minHeight: 2),
+            const SizedBox(height: 90),
+          ]),
+        ),
+      ),
+    );
   }
 
   /// The board in flight: crossfades between the card's position and the
@@ -339,7 +405,7 @@ class _GameCardState extends State<_GameCard> {
         transitionDuration: const Duration(milliseconds: 650),
         reverseTransitionDuration: const Duration(milliseconds: 450),
         pageBuilder: (context, a, _) =>
-            GameScreen(controller: _controller, heroTag: widget.game.id, heroShuttle: _shuttle),
+            GameScreen(controller: _controller, heroTag: widget.game.id, heroShuttle: _shuttle, job: widget.job),
         transitionsBuilder: (context, a, _, child) {
           // фон темнеет, пока доска летит, и светлеет к её приземлению
           final dim = Tween(begin: 0.0, end: 1.0).animate(a);
@@ -363,6 +429,7 @@ class _GameCardState extends State<_GameCard> {
   Widget build(BuildContext context) {
     final g = widget.game;
     final scheme = Theme.of(context).colorScheme;
+    if (_c == null) return _placeholder(context);
     final records = _controller.analysis.records;
     int count(Side side, bool Function(String) f) => records.where((r) => r.side == side && f(r.step)).length;
     final brilliant = records.where((r) => r.subtype == 'brilliant').length;
@@ -671,5 +738,68 @@ class _RenderSizeReporter extends RenderProxyBox {
       final s = size;
       WidgetsBinding.instance.addPostFrameCallback((_) => onSize(s));
     }
+  }
+}
+
+/// The last five own analysed games, as the first deck.
+class _OwnDeck extends StatefulWidget {
+  const _OwnDeck({required this.book});
+
+  final OpeningBook book;
+
+  @override
+  State<_OwnDeck> createState() => _OwnDeckState();
+}
+
+class _OwnDeckState extends State<_OwnDeck> {
+  List<GameData> _games = const [];
+  Map<String, AnalysisJob> _jobs = const {};
+  String _shown = '';
+
+  @override
+  void initState() {
+    super.initState();
+    history.addListener(_reload);
+    history.load();
+  }
+
+  @override
+  void dispose() {
+    history.removeListener(_reload);
+    super.dispose();
+  }
+
+  Future<void> _reload() async {
+    final ids = [for (final e in history.entries) e.id];
+    // те же партии, та же глубина — колода не перестраивается
+    final key = [for (final e in history.entries.take(5)) '${e.id}:${e.depth}'].join(',');
+    if (key == _shown) return;
+    final games = <GameData>[];
+    final jobs = <String, AnalysisJob>{};
+    for (final id in ids) {
+      if (games.length >= 5) break;
+      final job = await history.open(id);
+      if (job == null || !job.ready) continue;
+      games.add(job.snapshot());
+      if (!job.done) jobs[job.id] = job;
+    }
+    if (!mounted) return;
+    setState(() {
+      _shown = key;
+      _games = games;
+      _jobs = jobs;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_games.isEmpty) return const SizedBox.shrink();
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const SizedBox(height: 18),
+      Text('Your games', style: Theme.of(context).textTheme.titleMedium),
+      const SizedBox(height: 6),
+      RepaintBoundary(
+          child: _GameDeck(key: ValueKey(_shown), games: _games, book: widget.book, jobs: _jobs)),
+    ]);
   }
 }

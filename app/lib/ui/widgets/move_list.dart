@@ -207,17 +207,19 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
       },
     );
     // одна и та же структура с выделением и без: прокрутка не сбрасывается
-    return Stack(children: [
-      list,
-      if (_selA != null)
-        Positioned(
-          left: 0,
-          right: 0,
-          top: _pressing || _barTop ? 6 : null,
-          bottom: _pressing || _barTop ? null : 6 + widget.bottomPadding,
-          child: Center(child: _copyBar(context)),
-        ),
-    ]);
+    return Stack(
+      children: [
+        list,
+        if (_selA != null)
+          Positioned(
+            left: 0,
+            right: 0,
+            top: _pressing || _barTop ? 6 : null,
+            bottom: _pressing || _barTop ? null : 6 + widget.bottomPadding,
+            child: Center(child: _copyBar(context)),
+          ),
+      ],
+    );
   }
 
   /// Under a move with an idea: its lines from the analysis — what the
@@ -331,6 +333,9 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
                     padding: const EdgeInsets.only(left: 4),
                     child: Icon(Icons.lightbulb_outline, size: 14, color: current ? scheme.onPrimary : scheme.tertiary),
                   ),
+                // ветки — числом на краю клетки, без отдельной строки
+                const Spacer(),
+                _branchCount(context, ply, current),
               ],
             ),
           ),
@@ -375,10 +380,48 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
   }
 
   /// Branches starting after [anchor]: a fold button and the branch lines.
+  /// The branch count at the edge of the move's cell: a small chip with the
+  /// number only; a tap folds or unfolds the branches under the row.
+  Widget _branchCount(BuildContext context, int anchor, bool current) {
+    final n = c.variationsAt(anchor).length;
+    if (n == 0) return const SizedBox.shrink();
+    final scheme = Theme.of(context).colorScheme;
+    final open = !_folded.contains(anchor);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => setState(() => open ? _folded.add(anchor) : _folded.remove(anchor)),
+      child: Container(
+        margin: const EdgeInsets.only(left: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+        decoration: BoxDecoration(
+          color: current
+              ? scheme.onPrimary.withValues(alpha: 0.2)
+              : scheme.tertiary.withValues(alpha: open ? 0.18 : 0.08),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.call_split_rounded, size: 11, color: current ? scheme.onPrimary : scheme.tertiary),
+            Text(
+              '$n',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: current ? scheme.onPrimary : scheme.tertiary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Branches starting after [anchor], under the row (folded with the count
+  /// chip of the move).
   Widget _branches(BuildContext context, int anchor) {
     final list = c.variationsAt(anchor);
     if (list.isEmpty) return const SizedBox.shrink();
-    final scheme = Theme.of(context).colorScheme;
     final open = !_folded.contains(anchor);
     return Padding(
       padding: const EdgeInsets.only(left: 30, right: 6, bottom: 2),
@@ -386,29 +429,8 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          InkWell(
-            borderRadius: BorderRadius.circular(6),
-            onTap: () => setState(() => open ? _folded.add(anchor) : _folded.remove(anchor)),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedRotation(
-                    turns: open ? 0.25 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(Icons.chevron_right_rounded, size: 18, color: scheme.tertiary),
-                  ),
-                  Icon(Icons.call_split_rounded, size: 14, color: scheme.tertiary),
-                  const SizedBox(width: 4),
-                  Text(
-                    list.length == 1 ? '1 variation' : '${list.length} variations',
-                    style: TextStyle(fontSize: 12, color: scheme.tertiary, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // ветки от начальной позиции — у них нет клетки хода, счётчик здесь
+          if (anchor == -1) _branchCount(context, -1, false),
           AnimatedSize(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeInOutCubic,
@@ -441,29 +463,30 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
               spacing: 2,
               runSpacing: 2,
               children: [
+                if (v.forkAt > 0)
+                  Text('… ', style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.outline)),
                 for (final (i, m) in v.moves.indexed)
-                  InkWell(
-                    borderRadius: BorderRadius.circular(6),
-                    onTap: () => c.selectVar(v, i),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: identical(c.variation, v) && c.varIndex == i ? scheme.tertiary : Colors.transparent,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        '${_moveNo(v, i)}${m.san}${m.eval != null ? ' ${whiteEvalText(m.eval!, m.root, c.unit)}' : ''}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          // синие — линии анализа партии, серые — посчитанные на устройстве
-                          color: identical(c.variation, v) && c.varIndex == i
-                              ? scheme.onTertiary
-                              : (m.inLines ? scheme.primary : (m.live ? scheme.outline : scheme.onSurface)),
+                  if (i >= v.forkAt)
+                    InkWell(
+                      borderRadius: BorderRadius.circular(6),
+                      onTap: () => c.selectVar(v, i),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: identical(c.variation, v) && c.varIndex == i ? scheme.tertiary : Colors.transparent,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '${_moveNo(v, i)}${m.san}${m.eval != null ? ' ${whiteEvalText(m.eval!, m.root, c.unit)}' : ''}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            // синие — линии анализа партии, серые — посчитанные на устройстве
+                            color: identical(c.variation, v) && c.varIndex == i ? scheme.onTertiary : branchColor(m),
+                          ),
                         ),
                       ),
                     ),
-                  ),
               ],
             ),
           ),

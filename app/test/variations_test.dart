@@ -86,4 +86,33 @@ void main() {
     // дальше — продолжение движком на устройстве
     expect(c.canNext, isTrue);
   });
+
+  test('a hand move inside an analysed line forks a new branch; back returns to the old one', () {
+    final c = AnalysisController(game);
+    final ply = c.analysis.records.indexWhere((r) => r.bestMoves.isNotEmpty && r.bestMoves.first.uci != r.uci);
+    final line = c.game.plies[ply].lines.first;
+    c.select(ply);
+    c.playAlternative(ply, line.move);
+    c.next();
+    c.next();
+    final parent = c.variation!;
+    expect(parent.moves.length, 3);
+    // назад на первый ход и свой ход, не совпадающий с линией
+    c.prev();
+    c.prev();
+    final pos = c.position;
+    final other = pos.legalMoves.firstWhere((m) => m.uci != parent.moves[1].move.uci);
+    c.playMove(other);
+    final fork = c.variation!;
+    expect(identical(fork, parent), isFalse);
+    expect(fork.parent, same(parent));
+    expect(fork.moves[1].manual, isTrue);
+    // старая ветка цела
+    expect(parent.moves.length, 3);
+    // назад со своего хода — в старую ветку, «далее» идёт по ней
+    c.prev();
+    expect(c.variation, same(parent));
+    c.next();
+    expect(c.varMove!.move, parent.moves[1].move);
+  });
 }
