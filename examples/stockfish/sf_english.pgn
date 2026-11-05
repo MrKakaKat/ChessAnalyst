@@ -1,0 +1,9 @@
+[Event "Stockfish: English Opening (closed)"]
+[Site "ChessAnalyst"]
+[Date "2026.11.04"]
+[Round "?"]
+[White "Stockfish 16 (skill 20)"]
+[Black "Stockfish 16 (skill 20)"]
+[Result "1/2-1/2"]
+
+1. c4 e5 2. Nc3 Nf6 3. g3 d5 4. cxd5 Nxd5 5. Bg2 Nb6 6. Nf3 Nc6 7. O-O Be7 8. a3 O-O 9. b4 Be6 10. Rb1 f6 11. b5 Nd4 12. e3 Nxf3+ 13. Bxf3 Qc8 14. a4 a5 15. bxa6 Rxa6 16. d4 Rd8 17. Re1 c6 18. Be4 c5 19. Ba3 f5 20. Bd3 Nc4 21. Bxc4 Bxc4 22. Qc2 h6 23. dxc5 Qc6 24. Red1 Rxd1+ 25. Qxd1 Kh7 26. Qc2 Be6 27. Rb5 Bd7 28. e4 fxe4 29. Qb1 Bf5 30. Rxb7 Bxc5 31. Bxc5 Qxc5 32. Nxe4 Qc6 33. Rb4 Rxa4 34. Rxa4 Qxa4 35. Nc5 Qg4 36. Qe1 Qd4 37. Nb3 Qd3 38. Nd2 Kg6 39. f3 Bd7 40. Qe4+ Qxe4 41. fxe4 Bc6 42. Kf2 Kf6 43. Kf3 Ba4 44. Nc4 Bb5 45. Ne3 Bc6 46. Ng4+ Ke6 47. Ne3 Kf6 48. Nf5 Bb5 49. Nh4 Bd7 50. Ke3 Bb5 51. Ng2 Bd7 52. Kf3 Bc6 53. Ke3 Ke6 54. Nh4 Bb5 55. Nf5 Kf6 56. Kd2 Kg5 57. Nd6 Bc6 58. Kd3 Ba4 59. Nf7+ Kf6 60. Nd6 Bc6 61. Ke3 Ke6 62. Nc4 Bb5 63. Nd2 Kd6 64. Nf3 Ke6 65. Kd2 Kf6 66. Nh4 Bc6 67. Ke3 Ke6 68. Kd3 Bd7 69. Ke3 Ba4 70. Kd3 Bb5+ 71. Ke3 Ba4 72. Nf3 Kf6 73. Ne1 Bc6 74. Nf3 Be8 75. Nd2 Bb5 76. Nf3 Bd7 77. Nd2 Bc6 78. Nf3 Bd7 79. Ne1 Ke6 80. Kd2 Bb5 81. Nd3 Kd6 82. Ne1 Be8 83. Kd3 Bb5+ 84. Ke3 Bd7 85. Kd2 Bb5 86. Nf3 Ke6 87. Ne1 Kd6 88. Ke3 Be8 89. h4 Bb5 90. Nf3 Bd7 91. Nd2 Bb5 92. Nf3 Bd7 93. Nh2 Bb5 1/2-1/2

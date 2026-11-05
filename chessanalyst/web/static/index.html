@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChessAnalyst</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <h1>ChessAnalyst</h1>
+  <nav id="tabs">
+    <button data-tab="load" class="active">Загрузка</button>
+    <button data-tab="game">Партия</button>
+    <button data-tab="ideas">Идеи</button>
+    <button data-tab="play">Игра</button>
+    <button data-tab="puzzles">Задачи и проба</button>
+    <button data-tab="library">Библиотека</button>
+    <button data-tab="stats">Статистика</button>
+    <button data-tab="day">День</button>
+  </nav>
+</header>
+<main>
+
+<!-- 1. Загрузка -->
+<section id="tab-load" class="tab active">
+  <div class="cols">
+    <div class="card">
+      <h2>PGN</h2>
+      <textarea id="pgn-text" rows="10" placeholder="Вставьте PGN одной или нескольких партий"></textarea>
+      <div class="row">
+        <input type="file" id="pgn-file" accept=".pgn,.txt">
+        <label>Глубина <input type="number" id="load-depth" min="6" max="40" value="18"></label>
+        <label>Единица
+          <select id="load-unit"><option value="both">обе</option><option value="wdl">WDL</option><option value="pawns">пешки</option></select>
+        </label>
+        <label><input type="checkbox" id="load-analyze" checked> сразу анализировать</label>
+      </div>
+      <button id="pgn-upload" class="primary">Загрузить</button>
+      <h3>chess.com</h3>
+      <div class="row">
+        <input id="cc-user" placeholder="ник">
+        <label>месяцев <input type="number" id="cc-months" value="1" min="1" max="24"></label>
+        <input id="cc-tc" placeholder="rapid blitz" value="rapid">
+        <input id="cc-results" placeholder="loss draw" value="loss draw">
+        <label><input type="checkbox" id="cc-easy" checked> без лёгких</label>
+        <label>не больше <input type="number" id="cc-limit" value="10" min="1"></label>
+        <button id="cc-import">Импорт</button>
+      </div>
+      <p class="hint">Импорт с chess.com — вторичная функция: фильтры по контролю, результату и разнице рейтингов отсекают «лёгкие» партии.</p>
+    </div>
+    <div class="card grow">
+      <h2>Очередь партий</h2>
+      <table id="queue"><thead><tr><th>#</th><th>Партия</th><th>Полуходов</th><th>Статус</th><th>Остановился</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Партия -->
+<section id="tab-game" class="tab">
+  <div class="cols">
+    <div class="card board-card">
+      <div id="game-title" class="title"></div>
+      <div id="game-board" class="board"></div>
+      <div class="row nav">
+        <button data-nav="first">⏮</button><button data-nav="prev">◀</button>
+        <button data-nav="next">▶</button><button data-nav="last">⏭</button>
+        <button id="game-flip">⇅</button>
+        <label>Единица
+          <select id="game-unit"><option value="both">обе</option><option value="wdl">WDL</option><option value="pawns">пешки</option></select>
+        </label>
+      </div>
+      <div id="game-graph" class="graph"></div>
+      <p class="hint">Стрелки: синяя — сыгранный ход, зелёная — лучший. Клик по графику — к ходу.</p>
+    </div>
+    <div class="card moves-card"><h2>Ходы</h2><div id="game-moves" class="moves"></div></div>
+    <div class="card grow">
+      <h2>Ход</h2>
+      <div id="move-detail"></div>
+      <h3>Все ходы позиции</h3>
+      <div class="row">
+        <button id="pos-deepen">Углубить ветку</button>
+        <span id="pos-depth" class="hint"></span>
+      </div>
+      <table id="pos-lines"><thead><tr><th>Ход</th><th>Оценка</th><th>WDL</th><th>Вариант</th></tr></thead><tbody></tbody></table>
+      <h3>Покажи своё продолжение</h3>
+      <p class="hint">Позиция после сыгранного хода: ответ соперника и ещё 2–3 хода (SAN).</p>
+      <div class="row"><input id="cont-line" class="grow" placeholder="Kxd7 Rd1 ..."><button id="cont-send">Сравнить</button></div>
+      <div id="cont-result"></div>
+      <h3>Действия</h3>
+      <div class="row">
+        <input id="lib-title" placeholder="Название идеи" class="grow">
+        <button id="lib-save">В библиотеку</button>
+        <button id="play-here">Играть отсюда</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. Идейная цепочка -->
+<section id="tab-ideas" class="tab">
+  <div class="cols">
+    <div class="card"><h2>Идеи партии</h2><div id="idea-list"></div>
+      <label><input type="checkbox" id="idea-exercise"> упражнение: найди начало идеи сам</label>
+    </div>
+    <div class="card grow"><h2>Цепочка назад от наказания</h2><div id="idea-chain"></div></div>
+  </div>
+</section>
+
+<!-- 4. Игра -->
+<section id="tab-play" class="tab">
+  <div class="cols">
+    <div class="card board-card">
+      <div id="play-board" class="board"></div>
+      <div class="row"><input id="play-fen" class="grow" placeholder="FEN выигрышной позиции"><button id="play-start" class="primary">Начать</button></div>
+      <div class="row"><input id="play-move" placeholder="ход (SAN) или клик по доске"><button id="play-send">Ход</button></div>
+      <p class="hint">Компьютер иногда сознательно уходит с главной линии (неточности, laxity, без зевков). Задача — реализовать перевес.</p>
+    </div>
+    <div class="card grow">
+      <h2>Партия</h2><div id="play-status"></div><div id="play-moves" class="moves"></div>
+      <h3>Покажи своё продолжение</h3>
+      <div class="row"><input id="play-cont" class="grow" placeholder="ответ соперника и ещё 2–3 хода"><button id="play-cont-send">Сравнить</button></div>
+      <div id="play-cont-result"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. Задачи и проба -->
+<section id="tab-puzzles" class="tab">
+  <div class="cols">
+    <div class="card board-card">
+      <div id="pz-info" class="title"></div>
+      <div id="pz-board" class="board"></div>
+      <div class="row"><span id="pz-timer" class="timer">0.0 с</span><span id="pz-msg"></span></div>
+      <div id="pz-reflect" class="hidden">
+        <h3>Как решалось?</h3>
+        <div class="row">Сложность: <span id="pz-diff"></span></div>
+        <div id="pz-reasons"></div>
+        <button id="pz-reflect-send" class="primary">Записать</button>
+      </div>
+    </div>
+    <div class="card grow">
+      <h2>Задачи</h2>
+      <div class="row">
+        <select id="pz-theme"><option value="">любая тема</option></select>
+        <input type="number" id="pz-min" placeholder="от" style="width:5em">
+        <input type="number" id="pz-max" placeholder="до" style="width:5em">
+        <button id="pz-next" class="primary">Новая задача</button>
+      </div>
+      <h2>Проба: туман или слепота</h2>
+      <p class="hint">Три лёгкие задачи на 300–400 ниже уровня, потом — лёгкость и желание играть. Сон не записывается, только время суток.</p>
+      <button id="probe-start">Пройти пробу</button>
+      <div id="probe-final" class="hidden">
+        <div class="row">Лёгкость: <span id="probe-ease"></span></div>
+        <div class="row">Желание играть: <span id="probe-interest"></span></div>
+        <button id="probe-finish" class="primary">Итог</button>
+      </div>
+      <div id="probe-result"></div>
+      <h3>Настройки</h3>
+      <div class="row"><label>Мой рейтинг задач <input type="number" id="pref-rating" style="width:6em"></label><button id="pref-save">Сохранить</button></div>
+      <h3>Импорт базы Lichess</h3>
+      <div class="row">
+        <input id="pzi-path" class="grow" placeholder="путь к lichess_db_puzzle.csv(.zst)">
+        <input id="pzi-themes" placeholder="темы через пробел">
+        <input type="number" id="pzi-min" placeholder="от" style="width:5em">
+        <input type="number" id="pzi-max" placeholder="до" style="width:5em">
+        <input type="number" id="pzi-limit" placeholder="лимит" style="width:6em">
+        <button id="pzi-go">Импорт</button>
+      </div>
+      <div id="pz-count" class="hint"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Библиотека идей -->
+<section id="tab-library" class="tab">
+  <div class="cols">
+    <div class="card board-card">
+      <h2>Тренировка</h2>
+      <div id="lib-board" class="board"></div>
+      <div class="row">
+        <button id="lib-next" class="primary">Следующая идея</button>
+        <label><input type="checkbox" id="lib-memory"> по памяти (позиция скрывается)</label>
+        <input type="number" id="lib-seconds" value="10" min="2" style="width:4em"> с
+      </div>
+      <div id="lib-task"></div>
+      <div class="row"><input id="lib-line" class="grow" placeholder="ключевая линия (SAN)"></div>
+      <div class="row"><input id="lib-recall" class="grow" placeholder="позиция по памяти: Kg1 Rd1 Pa2 ke8 nd7 (белые заглавными)"></div>
+      <button id="lib-check">Проверить</button>
+      <div id="lib-result"></div>
+    </div>
+    <div class="card grow">
+      <h2>Коллекция</h2>
+      <div id="lib-list"></div>
+      <h3>Добавить свою</h3>
+      <div class="row"><input id="libn-title" placeholder="название"><input id="libn-fen" class="grow" placeholder="FEN"></div>
+      <div class="row"><input id="libn-line" class="grow" placeholder="ключевая линия (SAN)"><input id="libn-locus" placeholder="место во дворце памяти"><button id="libn-add">Добавить</button></div>
+      <h2>Определи метку хода</h2>
+      <p class="hint">Освоение: тип считается освоенным, когда верно определён в новых позициях заданное число раз. Ошибки не отнимают прогресс.</p>
+      <div class="cols">
+        <div id="quiz-board" class="board small"></div>
+        <div class="grow"><div id="quiz-q"></div><div id="quiz-buttons" class="row wrap"></div><div id="quiz-result"></div>
+          <button id="quiz-next">Новая позиция</button></div>
+      </div>
+      <table id="mastery"></table>
+    </div>
+  </div>
+</section>
+
+<!-- 7. Статистика -->
+<section id="tab-stats" class="tab"><div id="stats" class="card"></div></section>
+
+<!-- День -->
+<section id="tab-day" class="tab">
+  <div class="card">
+    <h2>Сегодняшний сюжет</h2>
+    <div id="day-summary"></div>
+    <h3>Главная находка дня</h3>
+    <textarea id="day-finding" rows="3" placeholder="Одна идея, которую ты сегодня понял"></textarea>
+    <button id="day-save" class="primary">Завершить день</button>
+    <p class="hint">Без серий и штрафов: очки начисляются за процесс (разбор, классификацию, найденное начало идеи) и не сгорают.</p>
+  </div>
+</section>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>

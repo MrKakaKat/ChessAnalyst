@@ -1,0 +1,4 @@
+PuzzleId,FEN,Moves,Rating,RatingDeviation,Popularity,NbPlays,Themes,GameUrl,OpeningTags
+p0001,6k1/5ppp/8/8/8/8/5PPP/R5K1 b - - 0 1,h7h6 a1a8,1100,80,90,1000,mate mateIn1 backRankMate short,https://lichess.org/x,
+p0002,r3k3/p7/8/1N6/8/8/8/4K3 b - - 0 1,a7a6 b5c7 e8d7 c7a8,1150,80,90,1000,fork crushing short,https://lichess.org/y,
+p0003,6k1/5ppp/8/8/8/8/5PPP/R5K1 b - - 0 1,g7g6 a1a8,1700,80,90,1000,mate mateIn1 endgame,https://lichess.org/z,

@@ -1,0 +1,72 @@
+# Пример настроек. Все значения — стартовые, их подбирают по прогонам.
+# Запуск: python -m chessanalyst run partiya.pgn --settings settings.example.toml
+# Версия настроек (хэш) пишется в каждую запись хода, так что прогоны с разными
+# порогами хранятся в базе рядом и не перезаписывают друг друга.
+
+unit = "both"            # pawns | wdl | both (both: строже из двух вердиктов)
+engine_path = "stockfish"
+depth = 18
+multipv = 5
+# time_per_position = 15.0   # секунд на позицию, ограничитель бюджета
+threads = 1
+hash_mb = 128
+
+excellent_ratio = 0.7    # D/G для «отличного»
+good_ratio = 0.3         # D/G для «хорошего»
+pass_ratio = 0.3         # D/G < этого после подарка соперника — pass
+
+brilliant_material = 2   # жертва минимум в столько пешек
+brilliant_hold_replies = 2  # материал не возвращается столько ответов соперника
+tactical_window_plies = 4
+tactical_min_forcing = 2
+attack_threshold = 1
+defense_threshold = 2
+threats_removed_threshold = 1
+
+opening_max_move = 12
+opening_min_undeveloped = 3
+endgame_material = 26
+
+multipv_max = 10         # если все 5 линий «практически равны лучшему» — повтор с 10
+trivial_depth = 8        # все легальные ходы для «тривиальной позиции»
+trivial_share = 0.8      # «почти все» ходы сохраняют категорию
+theory_plies = 0         # первые N полуходов — теория, вне статистики
+
+idea_window_plies = 10   # K: за сколько полуходов фигура достигает цели
+idea_scan_plies = 10     # где в линии наказания искать ключевое событие
+idea_min_gain = 2        # выигрыш материала, который считается наказанием
+
+# --- не влияют на метки ходов (не входят в версию настроек) ---
+play_depth = 12
+play_multipv = 8
+play_deviation_rate = 0.5    # доля ходов, где компьютер уходит с главной линии
+play_max_loss_pawns = 0.6    # насколько хуже лучшего может быть такой уход
+human_temperature = 0.0      # > 0 — ход по softmax оценок (имитация человека)
+human_engine_path = ""       # lc0 с весами Maia: ход с nodes=1
+
+puzzle_base_seconds = 40.0   # ожидаемое время задачи своего рейтинга
+probe_size = 3
+probe_offset_min = 300
+probe_offset_max = 400
+probe_history_min = 10       # после стольких проб — сравнение со средней
+mastery_required = 5         # верных определений ступени для освоения
+
+[pawns]                  # в пешках
+b1 = 0.7                 # равно / лучше
+b2 = 2.0                 # лучше / выигрыш
+eps1 = 0.01              # зона A
+eps2 = 0.05              # зона B
+g_significant = 0.3
+lax_threshold = 0.2
+neutral_eps = 0.1
+pass_step = 1.0
+
+[wdl]                    # в ожидаемом результате W + D/2
+b1 = 0.10                # 0,60 / 0,40
+b2 = 0.30                # 0,80 / 0,20
+eps1 = 0.002
+eps2 = 0.01
+g_significant = 0.05
+lax_threshold = 0.03
+neutral_eps = 0.02
+pass_step = 0.15

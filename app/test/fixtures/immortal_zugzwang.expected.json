@@ -1,0 +1,6215 @@
+{
+ "settings_version": "c9f7b2de00",
+ "units": {
+  "both": {
+   "records": [
+    {
+     "ply": 0,
+     "san": "d4",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g1f3",
+      "d2d4",
+      "e2e4"
+     ],
+     "near_best": [],
+     "opening": "Queen's Pawn Game",
+     "engine_step": "best",
+     "pawns": [
+      0.3,
+      0.3,
+      0.29
+     ],
+     "wdl": [
+      0.517,
+      0.517,
+      0.517
+     ]
+    },
+    {
+     "ply": 1,
+     "san": "Nf6",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g8f6",
+      "e7e6"
+     ],
+     "near_best": [
+      "d7d5"
+     ],
+     "opening": "Indian Defense",
+     "engine_step": "best",
+     "pawns": [
+      -0.3,
+      -0.32,
+      -0.32
+     ],
+     "wdl": [
+      0.483,
+      0.48,
+      0.48
+     ]
+    },
+    {
+     "ply": 2,
+     "san": "c4",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c2c4"
+     ],
+     "near_best": [
+      "g1f3"
+     ],
+     "opening": "Indian Defense: Normal Variation",
+     "engine_step": "best",
+     "pawns": [
+      0.32,
+      0.27,
+      0.27
+     ],
+     "wdl": [
+      0.52,
+      0.514,
+      0.514
+     ]
+    },
+    {
+     "ply": 3,
+     "san": "e6",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g7g6"
+     ],
+     "near_best": [
+      "e7e6",
+      "c7c6"
+     ],
+     "opening": "Indian Defense: Normal Variation",
+     "engine_step": "neutral",
+     "pawns": [
+      -0.27,
+      -0.34,
+      -0.36
+     ],
+     "wdl": [
+      0.486,
+      0.479,
+      0.477
+     ]
+    },
+    {
+     "ply": 4,
+     "san": "Nf3",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "neutral",
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g2g3"
+     ],
+     "near_best": [
+      "g1f3"
+     ],
+     "opening": "Indian Defense: Anti-Nimzo-Indian",
+     "engine_step": "neutral",
+     "pawns": [
+      0.34,
+      0.41,
+      0.38
+     ],
+     "wdl": [
+      0.521,
+      0.529,
+      0.5255
+     ]
+    },
+    {
+     "ply": 5,
+     "san": "b6",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b7b6",
+      "f8e7"
+     ],
+     "near_best": [
+      "d7d5"
+     ],
+     "opening": "Queen's Indian Defense",
+     "engine_step": "best",
+     "pawns": [
+      -0.41,
+      -0.35,
+      -0.35
+     ],
+     "wdl": [
+      0.471,
+      0.479,
+      0.479
+     ]
+    },
+    {
+     "ply": 6,
+     "san": "g3",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g2g3"
+     ],
+     "near_best": [],
+     "opening": "Queen's Indian Defense: Fianchetto Variation",
+     "engine_step": "best",
+     "pawns": [
+      0.35,
+      0.35,
+      0.35
+     ],
+     "wdl": [
+      0.521,
+      0.521,
+      0.521
+     ]
+    },
+    {
+     "ply": 7,
+     "san": "Bb7",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "neutral",
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f8b4"
+     ],
+     "near_best": [
+      "c8b7",
+      "c8a6"
+     ],
+     "opening": "Queen's Indian Defense: Fianchetto Variation, Traditional Line",
+     "engine_step": "neutral",
+     "pawns": [
+      -0.35,
+      -0.39,
+      -0.41
+     ],
+     "wdl": [
+      0.479,
+      0.475,
+      0.472
+     ]
+    },
+    {
+     "ply": 8,
+     "san": "Bg2",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f1g2"
+     ],
+     "near_best": [],
+     "opening": "Queen's Indian Defense: Fianchetto Variation, Traditional Line",
+     "engine_step": "best",
+     "pawns": [
+      0.39,
+      0.36,
+      0.36
+     ],
+     "wdl": [
+      0.525,
+      0.5215,
+      0.5215
+     ]
+    },
+    {
+     "ply": 9,
+     "san": "Be7",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "inaccuracy",
+      "wdl": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "d7d5"
+     ],
+     "near_best": [
+      "f8b4",
+      "c7c5"
+     ],
+     "opening": "Queen's Indian Defense: Traditional Variation",
+     "engine_step": "inaccuracy",
+     "pawns": [
+      -0.36,
+      -0.42,
+      -0.6
+     ],
+     "wdl": [
+      0.4785,
+      0.4715,
+      0.4305
+     ]
+    },
+    {
+     "ply": 10,
+     "san": "Nc3",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "inaccuracy",
+      "wdl": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "d4d5",
+      "e1g1"
+     ],
+     "near_best": [],
+     "opening": "Queen's Indian Defense: Anti-Queen's Indian System",
+     "engine_step": "inaccuracy",
+     "pawns": [
+      0.42,
+      0.53,
+      0.41
+     ],
+     "wdl": [
+      0.5285,
+      0.549,
+      0.527
+     ]
+    },
+    {
+     "ply": 11,
+     "san": "O-O",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "e8g8"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.53,
+      -0.32,
+      -0.32
+     ],
+     "wdl": [
+      0.451,
+      0.4835,
+      0.4835
+     ]
+    },
+    {
+     "ply": 12,
+     "san": "O-O",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [
+      "near_best",
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "d4d5"
+     ],
+     "near_best": [
+      "e1g1"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.32,
+      0.34,
+      0.32
+     ],
+     "wdl": [
+      0.5165,
+      0.5185,
+      0.517
+     ]
+    },
+    {
+     "ply": 13,
+     "san": "d5",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [
+      "near_best",
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f6e4"
+     ],
+     "near_best": [
+      "d7d5"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.34,
+      -0.31,
+      -0.33
+     ],
+     "wdl": [
+      0.4815,
+      0.485,
+      0.483
+     ]
+    },
+    {
+     "ply": 14,
+     "san": "Ne5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking",
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c4d5",
+      "f3e5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.31,
+      0.34,
+      0.34
+     ],
+     "wdl": [
+      0.515,
+      0.518,
+      0.518
+     ]
+    },
+    {
+     "ply": 15,
+     "san": "c6",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "laxity",
+      "wdl": "mistake"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "b8d7"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.34,
+      -0.44,
+      -1.0
+     ],
+     "wdl": [
+      0.482,
+      0.47,
+      0.213
+     ]
+    },
+    {
+     "ply": 16,
+     "san": "cxd5",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "tactical",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "laxity",
+      "wdl": "mistake"
+     },
+     "cat_e1": "better",
+     "cat_ep": "equal",
+     "best": [
+      "e2e4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.44,
+      0.92,
+      0.0
+     ],
+     "wdl": [
+      0.53,
+      0.7275,
+      0.5
+     ]
+    },
+    {
+     "ply": 17,
+     "san": "cxd5",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c6d5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.92,
+      -0.1,
+      -0.1
+     ],
+     "wdl": [
+      0.2725,
+      0.4965,
+      0.4965
+     ]
+    },
+    {
+     "ply": 18,
+     "san": "Bf4",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c1f4"
+     ],
+     "near_best": [
+      "c1g5"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.1,
+      0.06,
+      0.06
+     ],
+     "wdl": [
+      0.5035,
+      0.502,
+      0.502
+     ]
+    },
+    {
+     "ply": 19,
+     "san": "a6",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "inaccuracy",
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b8c6"
+     ],
+     "near_best": [
+      "b8d7"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.06,
+      0.0,
+      -0.34
+     ],
+     "wdl": [
+      0.498,
+      0.4995,
+      0.4835
+     ]
+    },
+    {
+     "ply": 20,
+     "san": "Rc1",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "a1c1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.0,
+      0.37,
+      0.37
+     ],
+     "wdl": [
+      0.5005,
+      0.52,
+      0.52
+     ]
+    },
+    {
+     "ply": 21,
+     "san": "b5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b6b5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.37,
+      -0.37,
+      -0.37
+     ],
+     "wdl": [
+      0.48,
+      0.4805,
+      0.4805
+     ]
+    },
+    {
+     "ply": 22,
+     "san": "Qb3",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "inaccuracy",
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "a2a4"
+     ],
+     "near_best": [
+      "c3b1"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.37,
+      0.4,
+      0.16
+     ],
+     "wdl": [
+      0.5195,
+      0.5225,
+      0.5055
+     ]
+    },
+    {
+     "ply": 23,
+     "san": "Nc6",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [
+      "near_best",
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "neutral",
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f6d7",
+      "b8d7"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.4,
+      -0.21,
+      -0.3
+     ],
+     "wdl": [
+      0.4775,
+      0.4925,
+      0.4875
+     ]
+    },
+    {
+     "ply": 24,
+     "san": "Nxc6",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "counterattacking",
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "inaccuracy",
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c3d5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.21,
+      0.27,
+      0.1
+     ],
+     "wdl": [
+      0.5075,
+      0.511,
+      0.503
+     ]
+    },
+    {
+     "ply": 25,
+     "san": "Bxc6",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "tactical",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b7c6"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.27,
+      -0.12,
+      -0.12
+     ],
+     "wdl": [
+      0.489,
+      0.496,
+      0.496
+     ]
+    },
+    {
+     "ply": 26,
+     "san": "h3",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity",
+      "wdl": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c3e4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.12,
+      0.18,
+      -0.36
+     ],
+     "wdl": [
+      0.504,
+      0.5055,
+      0.482
+     ]
+    },
+    {
+     "ply": 27,
+     "san": "Qd7",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "a8c8",
+      "d8d7"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.18,
+      0.39,
+      0.38
+     ],
+     "wdl": [
+      0.4945,
+      0.52,
+      0.5195
+     ]
+    },
+    {
+     "ply": 28,
+     "san": "Kh2",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "laxity",
+      "wdl": "mistake"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "c3b1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.39,
+      -0.42,
+      -0.94
+     ],
+     "wdl": [
+      0.48,
+      0.4755,
+      0.2635
+     ]
+    },
+    {
+     "ply": 29,
+     "san": "Nh5",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "better",
+     "cat_ep": "better",
+     "best": [
+      "f6h5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.42,
+      0.92,
+      0.92
+     ],
+     "wdl": [
+      0.5245,
+      0.722,
+      0.722
+     ]
+    },
+    {
+     "ply": 30,
+     "san": "Bd2",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "worse",
+     "cat_ep": "worse",
+     "best": [
+      "f4d2"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.92,
+      -1.03,
+      -1.03
+     ],
+     "wdl": [
+      0.278,
+      0.2055,
+      0.2055
+     ]
+    },
+    {
+     "ply": 31,
+     "san": "f5",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "mistake",
+      "wdl": "mistake"
+     },
+     "cat_e1": "better",
+     "cat_ep": "equal",
+     "best": [
+      "b5b4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      1.03,
+      1.03,
+      -0.04
+     ],
+     "wdl": [
+      0.7945,
+      0.796,
+      0.499
+     ]
+    },
+    {
+     "ply": 32,
+     "san": "Qd1",
+     "step": "pass",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "pass",
+      "wdl": "pass"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "c3b1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -1.03,
+      0.08,
+      -0.93
+     ],
+     "wdl": [
+      0.204,
+      0.502,
+      0.276
+     ]
+    },
+    {
+     "ply": 33,
+     "san": "b4",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "better",
+     "cat_ep": "better",
+     "best": [
+      "b5b4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.08,
+      0.82,
+      0.82
+     ],
+     "wdl": [
+      0.498,
+      0.6545,
+      0.6545
+     ]
+    },
+    {
+     "ply": 34,
+     "san": "Nb1",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "worse",
+     "cat_ep": "worse",
+     "best": [
+      "c3b1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.82,
+      -0.87,
+      -0.87
+     ],
+     "wdl": [
+      0.3455,
+      0.3175,
+      0.3175
+     ]
+    },
+    {
+     "ply": 35,
+     "san": "Bb5",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "neutral",
+      "wdl": "inaccuracy"
+     },
+     "cat_e1": "better",
+     "cat_ep": "better",
+     "best": [
+      "c6a4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.87,
+      0.85,
+      0.75
+     ],
+     "wdl": [
+      0.6825,
+      0.668,
+      0.614
+     ]
+    },
+    {
+     "ply": 36,
+     "san": "Rg1",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "pass",
+      "wdl": "mistake"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "g2f3"
+     ],
+     "near_best": [
+      "a2a3"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.85,
+      -0.7,
+      -1.04
+     ],
+     "wdl": [
+      0.332,
+      0.4085,
+      0.203
+     ]
+    },
+    {
+     "ply": 37,
+     "san": "Bd6",
+     "step": "pass",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "good",
+      "wdl": "pass"
+     },
+     "cat_e1": "win",
+     "cat_ep": "better",
+     "best": [
+      "a6a5"
+     ],
+     "near_best": [
+      "f5f4"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.7,
+      1.07,
+      0.82
+     ],
+     "wdl": [
+      0.5915,
+      0.814,
+      0.6505
+     ]
+    },
+    {
+     "ply": 38,
+     "san": "e4",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "tactical",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "mistake",
+      "wdl": "mistake"
+     },
+     "cat_e1": "worse",
+     "cat_ep": "loss",
+     "best": [
+      "g2f3"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -1.07,
+      -0.84,
+      -2.14
+     ],
+     "wdl": [
+      0.186,
+      0.3375,
+      0.001
+     ]
+    },
+    {
+     "ply": 39,
+     "san": "fxe4",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [
+      "counterattacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f5e4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.84,
+      2.16,
+      2.16
+     ],
+     "wdl": [
+      0.6625,
+      0.9995,
+      0.9995
+     ]
+    },
+    {
+     "ply": 40,
+     "san": "Qxh5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral",
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "d1h5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -2.16,
+      -2.33,
+      -2.33
+     ],
+     "wdl": [
+      0.0005,
+      0.0005,
+      0.0005
+     ]
+    },
+    {
+     "ply": 41,
+     "san": "Rxf2",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f8f2"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      2.33,
+      2.19,
+      2.19
+     ],
+     "wdl": [
+      0.9995,
+      0.9995,
+      0.9995
+     ]
+    },
+    {
+     "ply": 42,
+     "san": "Qg5",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity",
+      "wdl": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "h2h1"
+     ],
+     "near_best": [
+      "a2a3"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -2.19,
+      -2.24,
+      -3.03
+     ],
+     "wdl": [
+      0.0005,
+      0.0005,
+      0.0
+     ]
+    },
+    {
+     "ply": 43,
+     "san": "Raf8",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "a8f8"
+     ],
+     "near_best": [
+      "h7h6"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      2.24,
+      3.17,
+      3.17
+     ],
+     "wdl": [
+      0.9995,
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "ply": 44,
+     "san": "Kh1",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "inaccuracy",
+      "wdl": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "g5h4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -3.17,
+      -3.55,
+      -3.9
+     ],
+     "wdl": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "ply": 45,
+     "san": "R8f5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking",
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f8f5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      3.55,
+      4.32,
+      4.32
+     ],
+     "wdl": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "ply": 46,
+     "san": "Qe3",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity",
+      "wdl": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "g5h4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -4.32,
+      -4.17,
+      -4.68
+     ],
+     "wdl": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "ply": 47,
+     "san": "Bd3",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity",
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f2e2"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      4.17,
+      5.16,
+      4.36
+     ],
+     "wdl": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "ply": 48,
+     "san": "Rce1",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral",
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "pawns": "best",
+      "wdl": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "c1e1",
+      "g1e1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -5.16,
+      -4.46,
+      -4.46
+     ],
+     "wdl": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "ply": 49,
+     "san": "h6",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [
+      "near_best"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral",
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "a6a5"
+     ],
+     "near_best": [
+      "h7h6"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      4.46,
+      4.74,
+      4.7
+     ],
+     "wdl": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    }
+   ],
+   "ideas": [
+    {
+     "kind": "punishment",
+     "punish_ply": 15,
+     "owner": "white",
+     "victim": "black",
+     "signature": {
+      "attacker": {
+       "piece": "N",
+       "square": "e5"
+      },
+      "target": {
+       "kind": "piece",
+       "square": "f6",
+       "piece": "n"
+      },
+      "motif": "material",
+      "key": "Nexd5"
+     },
+     "signature_text": "♘e5 → ♞f6 (material)",
+     "start_ply": 16,
+     "miss_ply": 15,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 14,
+       "side": "white",
+       "present": false,
+       "attacker": "f3",
+       "target": "f6"
+      },
+      {
+       "ply": 16,
+       "side": "white",
+       "present": true,
+       "attacker": "e5",
+       "target": "f6"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♘e5 → ♞f6 (material) | ♙e2"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 16,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "q",
+       "square": "d8"
+      },
+      "target": {
+       "kind": "piece",
+       "square": "e5",
+       "piece": "N"
+      },
+      "motif": "hanging",
+      "key": "Qxd7"
+     },
+     "signature_text": "♛d8 → ♘e5 (hanging)",
+     "start_ply": 15,
+     "miss_ply": 16,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 13,
+       "side": "black",
+       "present": false,
+       "attacker": "d8",
+       "target": "f3"
+      },
+      {
+       "ply": 15,
+       "side": "black",
+       "present": true,
+       "attacker": "d8",
+       "target": "e5"
+      },
+      {
+       "ply": 17,
+       "side": "black",
+       "present": true,
+       "attacker": "d8",
+       "target": "e5"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♛d8 → ♘e5 (hanging) | ♟c6, ♞b8"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 28,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "n",
+       "square": "f6"
+      },
+      "target": {
+       "kind": "square",
+       "square": "h5",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "Nh5"
+     },
+     "signature_text": "♞f6 → h5 (plan)",
+     "start_ply": 29,
+     "miss_ply": 28,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 29,
+       "side": "black",
+       "present": true,
+       "attacker": "f6",
+       "target": "h5"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♞f6 → h5 (plan)"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 31,
+     "owner": "white",
+     "victim": "black",
+     "signature": {
+      "attacker": {
+       "piece": "N",
+       "square": "c3"
+      },
+      "target": {
+       "kind": "square",
+       "square": "b1",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "Nb1"
+     },
+     "signature_text": "♘c3 → b1 (plan)",
+     "start_ply": 32,
+     "miss_ply": 31,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 32,
+       "side": "white",
+       "present": true,
+       "attacker": "c3",
+       "target": "b1"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♘c3 → b1 (plan) | ♖c1"
+    },
+    {
+     "kind": "pass",
+     "punish_ply": 32,
+     "owner": "white",
+     "victim": "black",
+     "signature": {
+      "attacker": {
+       "piece": "N",
+       "square": "c3"
+      },
+      "target": {
+       "kind": "square",
+       "square": "b1",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "Nb1"
+     },
+     "signature_text": "♘c3 → b1 (plan)",
+     "start_ply": 32,
+     "miss_ply": null,
+     "distance": null,
+     "chain": [
+      {
+       "ply": 32,
+       "side": "white",
+       "present": true,
+       "attacker": "c3",
+       "target": "b1"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♘c3 → b1 (plan) | ♖c1"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 36,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "p",
+       "square": "a6"
+      },
+      "target": {
+       "kind": "square",
+       "square": "a5",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "a5"
+     },
+     "signature_text": "♟a6 → a5 (plan)",
+     "start_ply": 37,
+     "miss_ply": 36,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 37,
+       "side": "black",
+       "present": true,
+       "attacker": "a6",
+       "target": "a5"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♟a6 → a5 (plan)"
+    },
+    {
+     "kind": "pass",
+     "punish_ply": 37,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "p",
+       "square": "a6"
+      },
+      "target": {
+       "kind": "square",
+       "square": "a5",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "a5"
+     },
+     "signature_text": "♟a6 → a5 (plan)",
+     "start_ply": 37,
+     "miss_ply": null,
+     "distance": null,
+     "chain": [
+      {
+       "ply": 37,
+       "side": "black",
+       "present": true,
+       "attacker": "a6",
+       "target": "a5"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♟a6 → a5 (plan)"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 38,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "b",
+       "square": "b5"
+      },
+      "target": {
+       "kind": "piece",
+       "square": "b1",
+       "piece": "N"
+      },
+      "motif": "material",
+      "key": "Bxb1"
+     },
+     "signature_text": "♝b5 → ♘b1 (material)",
+     "start_ply": 39,
+     "miss_ply": 38,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 37,
+       "side": "black",
+       "present": false,
+       "attacker": "b5",
+       "target": "b1"
+      },
+      {
+       "ply": 39,
+       "side": "black",
+       "present": true,
+       "attacker": "b5",
+       "target": "b1"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♝b5 → ♘b1 (material) | ♟f5, ♟a6, ♜f8"
+    }
+   ]
+  },
+  "pawns": {
+   "records": [
+    {
+     "ply": 0,
+     "san": "d4",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g1f3",
+      "d2d4",
+      "e2e4"
+     ],
+     "near_best": [],
+     "opening": "Queen's Pawn Game",
+     "engine_step": "best",
+     "pawns": [
+      0.3,
+      0.3,
+      0.29
+     ],
+     "wdl": [
+      0.517,
+      0.517,
+      0.517
+     ]
+    },
+    {
+     "ply": 1,
+     "san": "Nf6",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g8f6",
+      "e7e6"
+     ],
+     "near_best": [
+      "d7d5"
+     ],
+     "opening": "Indian Defense",
+     "engine_step": "best",
+     "pawns": [
+      -0.3,
+      -0.32,
+      -0.32
+     ],
+     "wdl": [
+      0.483,
+      0.48,
+      0.48
+     ]
+    },
+    {
+     "ply": 2,
+     "san": "c4",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c2c4"
+     ],
+     "near_best": [
+      "g1f3"
+     ],
+     "opening": "Indian Defense: Normal Variation",
+     "engine_step": "best",
+     "pawns": [
+      0.32,
+      0.27,
+      0.27
+     ],
+     "wdl": [
+      0.52,
+      0.514,
+      0.514
+     ]
+    },
+    {
+     "ply": 3,
+     "san": "e6",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g7g6"
+     ],
+     "near_best": [
+      "e7e6",
+      "c7c6"
+     ],
+     "opening": "Indian Defense: Normal Variation",
+     "engine_step": "neutral",
+     "pawns": [
+      -0.27,
+      -0.34,
+      -0.36
+     ],
+     "wdl": [
+      0.486,
+      0.479,
+      0.477
+     ]
+    },
+    {
+     "ply": 4,
+     "san": "Nf3",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g2g3"
+     ],
+     "near_best": [
+      "g1f3"
+     ],
+     "opening": "Indian Defense: Anti-Nimzo-Indian",
+     "engine_step": "neutral",
+     "pawns": [
+      0.34,
+      0.41,
+      0.38
+     ],
+     "wdl": [
+      0.521,
+      0.529,
+      0.5255
+     ]
+    },
+    {
+     "ply": 5,
+     "san": "b6",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b7b6",
+      "f8e7"
+     ],
+     "near_best": [
+      "d7d5"
+     ],
+     "opening": "Queen's Indian Defense",
+     "engine_step": "best",
+     "pawns": [
+      -0.41,
+      -0.35,
+      -0.35
+     ],
+     "wdl": [
+      0.471,
+      0.479,
+      0.479
+     ]
+    },
+    {
+     "ply": 6,
+     "san": "g3",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g2g3"
+     ],
+     "near_best": [],
+     "opening": "Queen's Indian Defense: Fianchetto Variation",
+     "engine_step": "best",
+     "pawns": [
+      0.35,
+      0.35,
+      0.35
+     ],
+     "wdl": [
+      0.521,
+      0.521,
+      0.521
+     ]
+    },
+    {
+     "ply": 7,
+     "san": "Bb7",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f8b4"
+     ],
+     "near_best": [
+      "c8b7",
+      "c8a6"
+     ],
+     "opening": "Queen's Indian Defense: Fianchetto Variation, Traditional Line",
+     "engine_step": "neutral",
+     "pawns": [
+      -0.35,
+      -0.39,
+      -0.41
+     ],
+     "wdl": [
+      0.479,
+      0.475,
+      0.472
+     ]
+    },
+    {
+     "ply": 8,
+     "san": "Bg2",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f1g2"
+     ],
+     "near_best": [],
+     "opening": "Queen's Indian Defense: Fianchetto Variation, Traditional Line",
+     "engine_step": "best",
+     "pawns": [
+      0.39,
+      0.36,
+      0.36
+     ],
+     "wdl": [
+      0.525,
+      0.5215,
+      0.5215
+     ]
+    },
+    {
+     "ply": 9,
+     "san": "Be7",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "d7d5"
+     ],
+     "near_best": [
+      "f8b4",
+      "c7c5"
+     ],
+     "opening": "Queen's Indian Defense: Traditional Variation",
+     "engine_step": "inaccuracy",
+     "pawns": [
+      -0.36,
+      -0.42,
+      -0.6
+     ],
+     "wdl": [
+      0.4785,
+      0.4715,
+      0.4305
+     ]
+    },
+    {
+     "ply": 10,
+     "san": "Nc3",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "d4d5",
+      "e1g1"
+     ],
+     "near_best": [],
+     "opening": "Queen's Indian Defense: Anti-Queen's Indian System",
+     "engine_step": "inaccuracy",
+     "pawns": [
+      0.42,
+      0.53,
+      0.41
+     ],
+     "wdl": [
+      0.5285,
+      0.549,
+      0.527
+     ]
+    },
+    {
+     "ply": 11,
+     "san": "O-O",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "e8g8"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.53,
+      -0.32,
+      -0.32
+     ],
+     "wdl": [
+      0.451,
+      0.4835,
+      0.4835
+     ]
+    },
+    {
+     "ply": 12,
+     "san": "O-O",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [
+      "near_best",
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "d4d5"
+     ],
+     "near_best": [
+      "e1g1"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.32,
+      0.34,
+      0.32
+     ],
+     "wdl": [
+      0.5165,
+      0.5185,
+      0.517
+     ]
+    },
+    {
+     "ply": 13,
+     "san": "d5",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [
+      "near_best",
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f6e4"
+     ],
+     "near_best": [
+      "d7d5"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.34,
+      -0.31,
+      -0.33
+     ],
+     "wdl": [
+      0.4815,
+      0.485,
+      0.483
+     ]
+    },
+    {
+     "ply": 14,
+     "san": "Ne5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking",
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c4d5",
+      "f3e5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.31,
+      0.34,
+      0.34
+     ],
+     "wdl": [
+      0.515,
+      0.518,
+      0.518
+     ]
+    },
+    {
+     "ply": 15,
+     "san": "c6",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "b8d7"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.34,
+      -0.44,
+      -1.0
+     ],
+     "wdl": [
+      0.482,
+      0.47,
+      0.213
+     ]
+    },
+    {
+     "ply": 16,
+     "san": "cxd5",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "tactical",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity"
+     },
+     "cat_e1": "better",
+     "cat_ep": "equal",
+     "best": [
+      "e2e4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.44,
+      0.92,
+      0.0
+     ],
+     "wdl": [
+      0.53,
+      0.7275,
+      0.5
+     ]
+    },
+    {
+     "ply": 17,
+     "san": "cxd5",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c6d5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.92,
+      -0.1,
+      -0.1
+     ],
+     "wdl": [
+      0.2725,
+      0.4965,
+      0.4965
+     ]
+    },
+    {
+     "ply": 18,
+     "san": "Bf4",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c1f4"
+     ],
+     "near_best": [
+      "c1g5"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.1,
+      0.06,
+      0.06
+     ],
+     "wdl": [
+      0.5035,
+      0.502,
+      0.502
+     ]
+    },
+    {
+     "ply": 19,
+     "san": "a6",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b8c6"
+     ],
+     "near_best": [
+      "b8d7"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.06,
+      0.0,
+      -0.34
+     ],
+     "wdl": [
+      0.498,
+      0.4995,
+      0.4835
+     ]
+    },
+    {
+     "ply": 20,
+     "san": "Rc1",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "a1c1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.0,
+      0.37,
+      0.37
+     ],
+     "wdl": [
+      0.5005,
+      0.52,
+      0.52
+     ]
+    },
+    {
+     "ply": 21,
+     "san": "b5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b6b5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.37,
+      -0.37,
+      -0.37
+     ],
+     "wdl": [
+      0.48,
+      0.4805,
+      0.4805
+     ]
+    },
+    {
+     "ply": 22,
+     "san": "Qb3",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "a2a4"
+     ],
+     "near_best": [
+      "c3b1"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.37,
+      0.4,
+      0.16
+     ],
+     "wdl": [
+      0.5195,
+      0.5225,
+      0.5055
+     ]
+    },
+    {
+     "ply": 23,
+     "san": "Nc6",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f6d7",
+      "b8d7"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.4,
+      -0.21,
+      -0.3
+     ],
+     "wdl": [
+      0.4775,
+      0.4925,
+      0.4875
+     ]
+    },
+    {
+     "ply": 24,
+     "san": "Nxc6",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "counterattacking",
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c3d5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.21,
+      0.27,
+      0.1
+     ],
+     "wdl": [
+      0.5075,
+      0.511,
+      0.503
+     ]
+    },
+    {
+     "ply": 25,
+     "san": "Bxc6",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b7c6"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.27,
+      -0.12,
+      -0.12
+     ],
+     "wdl": [
+      0.489,
+      0.496,
+      0.496
+     ]
+    },
+    {
+     "ply": 26,
+     "san": "h3",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c3e4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.12,
+      0.18,
+      -0.36
+     ],
+     "wdl": [
+      0.504,
+      0.5055,
+      0.482
+     ]
+    },
+    {
+     "ply": 27,
+     "san": "Qd7",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "a8c8",
+      "d8d7"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.18,
+      0.39,
+      0.38
+     ],
+     "wdl": [
+      0.4945,
+      0.52,
+      0.5195
+     ]
+    },
+    {
+     "ply": 28,
+     "san": "Kh2",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "c3b1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.39,
+      -0.42,
+      -0.94
+     ],
+     "wdl": [
+      0.48,
+      0.4755,
+      0.2635
+     ]
+    },
+    {
+     "ply": 29,
+     "san": "Nh5",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "better",
+     "cat_ep": "better",
+     "best": [
+      "f6h5"
+     ],
+     "near_best": [
+      "f8c8"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.42,
+      0.92,
+      0.92
+     ],
+     "wdl": [
+      0.5245,
+      0.722,
+      0.722
+     ]
+    },
+    {
+     "ply": 30,
+     "san": "Bd2",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "worse",
+     "cat_ep": "worse",
+     "best": [
+      "f4d2"
+     ],
+     "near_best": [
+      "f4e3",
+      "b3c2",
+      "e2e4"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.92,
+      -1.03,
+      -1.03
+     ],
+     "wdl": [
+      0.278,
+      0.2055,
+      0.2055
+     ]
+    },
+    {
+     "ply": 31,
+     "san": "f5",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "mistake"
+     },
+     "cat_e1": "better",
+     "cat_ep": "equal",
+     "best": [
+      "b5b4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      1.03,
+      1.03,
+      -0.04
+     ],
+     "wdl": [
+      0.7945,
+      0.796,
+      0.499
+     ]
+    },
+    {
+     "ply": 32,
+     "san": "Qd1",
+     "step": "pass",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "pass"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "c3b1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -1.03,
+      0.08,
+      -0.93
+     ],
+     "wdl": [
+      0.204,
+      0.502,
+      0.276
+     ]
+    },
+    {
+     "ply": 33,
+     "san": "b4",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "better",
+     "cat_ep": "better",
+     "best": [
+      "b5b4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.08,
+      0.82,
+      0.82
+     ],
+     "wdl": [
+      0.498,
+      0.6545,
+      0.6545
+     ]
+    },
+    {
+     "ply": 34,
+     "san": "Nb1",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "worse",
+     "cat_ep": "worse",
+     "best": [
+      "c3b1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.82,
+      -0.87,
+      -0.87
+     ],
+     "wdl": [
+      0.3455,
+      0.3175,
+      0.3175
+     ]
+    },
+    {
+     "ply": 35,
+     "san": "Bb5",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral"
+     },
+     "cat_e1": "better",
+     "cat_ep": "better",
+     "best": [
+      "c6a4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.87,
+      0.85,
+      0.75
+     ],
+     "wdl": [
+      0.6825,
+      0.668,
+      0.614
+     ]
+    },
+    {
+     "ply": 36,
+     "san": "Rg1",
+     "step": "pass",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "pass"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "g2f3"
+     ],
+     "near_best": [
+      "a2a3"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.85,
+      -0.7,
+      -1.04
+     ],
+     "wdl": [
+      0.332,
+      0.4085,
+      0.203
+     ]
+    },
+    {
+     "ply": 37,
+     "san": "Bd6",
+     "step": "good",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "good"
+     },
+     "cat_e1": "better",
+     "cat_ep": "better",
+     "best": [
+      "a6a5",
+      "f5f4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.7,
+      1.07,
+      0.82
+     ],
+     "wdl": [
+      0.5915,
+      0.814,
+      0.6505
+     ]
+    },
+    {
+     "ply": 38,
+     "san": "e4",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "mistake"
+     },
+     "cat_e1": "worse",
+     "cat_ep": "loss",
+     "best": [
+      "g2f3"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -1.07,
+      -0.84,
+      -2.14
+     ],
+     "wdl": [
+      0.186,
+      0.3375,
+      0.001
+     ]
+    },
+    {
+     "ply": 39,
+     "san": "fxe4",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [
+      "counterattacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f5e4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.84,
+      2.16,
+      2.16
+     ],
+     "wdl": [
+      0.6625,
+      0.9995,
+      0.9995
+     ]
+    },
+    {
+     "ply": 40,
+     "san": "Qxh5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "d1h5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -2.16,
+      -2.33,
+      -2.33
+     ],
+     "wdl": [
+      0.0005,
+      0.0005,
+      0.0005
+     ]
+    },
+    {
+     "ply": 41,
+     "san": "Rxf2",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f8f2"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      2.33,
+      2.19,
+      2.19
+     ],
+     "wdl": [
+      0.9995,
+      0.9995,
+      0.9995
+     ]
+    },
+    {
+     "ply": 42,
+     "san": "Qg5",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "h2h1"
+     ],
+     "near_best": [
+      "a2a3"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -2.19,
+      -2.24,
+      -3.03
+     ],
+     "wdl": [
+      0.0005,
+      0.0005,
+      0.0
+     ]
+    },
+    {
+     "ply": 43,
+     "san": "Raf8",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "a8f8"
+     ],
+     "near_best": [
+      "h7h6"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      2.24,
+      3.17,
+      3.17
+     ],
+     "wdl": [
+      0.9995,
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "ply": 44,
+     "san": "Kh1",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "inaccuracy"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "g5h4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -3.17,
+      -3.55,
+      -3.9
+     ],
+     "wdl": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "ply": 45,
+     "san": "R8f5",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking",
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f8f5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      3.55,
+      4.32,
+      4.32
+     ],
+     "wdl": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "ply": 46,
+     "san": "Qe3",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "g5h4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -4.32,
+      -4.17,
+      -4.68
+     ],
+     "wdl": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "ply": 47,
+     "san": "Bd3",
+     "step": "laxity",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "laxity"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f2e2"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      4.17,
+      5.16,
+      4.36
+     ],
+     "wdl": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "ply": 48,
+     "san": "Rce1",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "c1e1",
+      "g1e1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -5.16,
+      -4.46,
+      -4.46
+     ],
+     "wdl": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "ply": 49,
+     "san": "h6",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [
+      "near_best"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "pawns",
+     "unit_steps": {
+      "pawns": "neutral"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "a6a5"
+     ],
+     "near_best": [
+      "h7h6"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      4.46,
+      4.74,
+      4.7
+     ],
+     "wdl": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    }
+   ],
+   "ideas": [
+    {
+     "kind": "pass",
+     "punish_ply": 16,
+     "owner": "white",
+     "victim": "black",
+     "signature": {
+      "attacker": {
+       "piece": "N",
+       "square": "e5"
+      },
+      "target": {
+       "kind": "piece",
+       "square": "f6",
+       "piece": "n"
+      },
+      "motif": "material",
+      "key": "Nexd5"
+     },
+     "signature_text": "♘e5 → ♞f6 (material)",
+     "start_ply": 16,
+     "miss_ply": null,
+     "distance": null,
+     "chain": [
+      {
+       "ply": 14,
+       "side": "white",
+       "present": false,
+       "attacker": "f3",
+       "target": "f6"
+      },
+      {
+       "ply": 16,
+       "side": "white",
+       "present": true,
+       "attacker": "e5",
+       "target": "f6"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♘e5 → ♞f6 (material) | ♙e2"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 31,
+     "owner": "white",
+     "victim": "black",
+     "signature": {
+      "attacker": {
+       "piece": "N",
+       "square": "c3"
+      },
+      "target": {
+       "kind": "square",
+       "square": "b1",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "Nb1"
+     },
+     "signature_text": "♘c3 → b1 (plan)",
+     "start_ply": 32,
+     "miss_ply": 31,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 32,
+       "side": "white",
+       "present": true,
+       "attacker": "c3",
+       "target": "b1"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♘c3 → b1 (plan) | ♖c1"
+    },
+    {
+     "kind": "pass",
+     "punish_ply": 32,
+     "owner": "white",
+     "victim": "black",
+     "signature": {
+      "attacker": {
+       "piece": "N",
+       "square": "c3"
+      },
+      "target": {
+       "kind": "square",
+       "square": "b1",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "Nb1"
+     },
+     "signature_text": "♘c3 → b1 (plan)",
+     "start_ply": 32,
+     "miss_ply": null,
+     "distance": null,
+     "chain": [
+      {
+       "ply": 32,
+       "side": "white",
+       "present": true,
+       "attacker": "c3",
+       "target": "b1"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♘c3 → b1 (plan) | ♖c1"
+    },
+    {
+     "kind": "pass",
+     "punish_ply": 36,
+     "owner": "white",
+     "victim": "black",
+     "signature": {
+      "attacker": {
+       "piece": "B",
+       "square": "g2"
+      },
+      "target": {
+       "kind": "square",
+       "square": "f3",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "Bf3"
+     },
+     "signature_text": "♗g2 → f3 (plan)",
+     "start_ply": 36,
+     "miss_ply": null,
+     "distance": null,
+     "chain": [
+      {
+       "ply": 36,
+       "side": "white",
+       "present": true,
+       "attacker": "g2",
+       "target": "f3"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♗g2 → f3 (plan) | ♙e2"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 38,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "b",
+       "square": "b5"
+      },
+      "target": {
+       "kind": "piece",
+       "square": "b1",
+       "piece": "N"
+      },
+      "motif": "material",
+      "key": "Bxb1"
+     },
+     "signature_text": "♝b5 → ♘b1 (material)",
+     "start_ply": 39,
+     "miss_ply": 38,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 37,
+       "side": "black",
+       "present": false,
+       "attacker": "b5",
+       "target": "b1"
+      },
+      {
+       "ply": 39,
+       "side": "black",
+       "present": true,
+       "attacker": "b5",
+       "target": "b1"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♝b5 → ♘b1 (material) | ♟f5, ♟a6, ♜f8"
+    }
+   ]
+  },
+  "wdl": {
+   "records": [
+    {
+     "ply": 0,
+     "san": "d4",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g1f3",
+      "d2d4",
+      "e2e4"
+     ],
+     "near_best": [
+      "c2c4",
+      "g2g3",
+      "e2e3"
+     ],
+     "opening": "Queen's Pawn Game",
+     "engine_step": "best",
+     "pawns": [
+      0.3,
+      0.3,
+      0.29
+     ],
+     "wdl": [
+      0.517,
+      0.517,
+      0.517
+     ]
+    },
+    {
+     "ply": 1,
+     "san": "Nf6",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g8f6",
+      "e7e6"
+     ],
+     "near_best": [
+      "d7d5"
+     ],
+     "opening": "Indian Defense",
+     "engine_step": "best",
+     "pawns": [
+      -0.3,
+      -0.32,
+      -0.32
+     ],
+     "wdl": [
+      0.483,
+      0.48,
+      0.48
+     ]
+    },
+    {
+     "ply": 2,
+     "san": "c4",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c2c4",
+      "g1f3"
+     ],
+     "near_best": [
+      "c1f4",
+      "g2g3",
+      "e2e3"
+     ],
+     "opening": "Indian Defense: Normal Variation",
+     "engine_step": "best",
+     "pawns": [
+      0.32,
+      0.27,
+      0.27
+     ],
+     "wdl": [
+      0.52,
+      0.514,
+      0.514
+     ]
+    },
+    {
+     "ply": 3,
+     "san": "e6",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g7g6",
+      "e7e6"
+     ],
+     "near_best": [
+      "c7c6"
+     ],
+     "opening": "Indian Defense: Normal Variation",
+     "engine_step": "best",
+     "pawns": [
+      -0.27,
+      -0.34,
+      -0.36
+     ],
+     "wdl": [
+      0.486,
+      0.479,
+      0.477
+     ]
+    },
+    {
+     "ply": 4,
+     "san": "Nf3",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g2g3"
+     ],
+     "near_best": [
+      "g1f3"
+     ],
+     "opening": "Indian Defense: Anti-Nimzo-Indian",
+     "engine_step": "neutral",
+     "pawns": [
+      0.34,
+      0.41,
+      0.38
+     ],
+     "wdl": [
+      0.521,
+      0.529,
+      0.5255
+     ]
+    },
+    {
+     "ply": 5,
+     "san": "b6",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b7b6",
+      "f8e7",
+      "d7d5"
+     ],
+     "near_best": [
+      "a7a6",
+      "f8b4"
+     ],
+     "opening": "Queen's Indian Defense",
+     "engine_step": "best",
+     "pawns": [
+      -0.41,
+      -0.35,
+      -0.35
+     ],
+     "wdl": [
+      0.471,
+      0.479,
+      0.479
+     ]
+    },
+    {
+     "ply": 6,
+     "san": "g3",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "g2g3"
+     ],
+     "near_best": [],
+     "opening": "Queen's Indian Defense: Fianchetto Variation",
+     "engine_step": "best",
+     "pawns": [
+      0.35,
+      0.35,
+      0.35
+     ],
+     "wdl": [
+      0.521,
+      0.521,
+      0.521
+     ]
+    },
+    {
+     "ply": 7,
+     "san": "Bb7",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f8b4"
+     ],
+     "near_best": [
+      "c8b7",
+      "c8a6"
+     ],
+     "opening": "Queen's Indian Defense: Fianchetto Variation, Traditional Line",
+     "engine_step": "neutral",
+     "pawns": [
+      -0.35,
+      -0.39,
+      -0.41
+     ],
+     "wdl": [
+      0.479,
+      0.475,
+      0.472
+     ]
+    },
+    {
+     "ply": 8,
+     "san": "Bg2",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f1g2"
+     ],
+     "near_best": [],
+     "opening": "Queen's Indian Defense: Fianchetto Variation, Traditional Line",
+     "engine_step": "best",
+     "pawns": [
+      0.39,
+      0.36,
+      0.36
+     ],
+     "wdl": [
+      0.525,
+      0.5215,
+      0.5215
+     ]
+    },
+    {
+     "ply": 9,
+     "san": "Be7",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "d7d5"
+     ],
+     "near_best": [
+      "f8b4",
+      "c7c5"
+     ],
+     "opening": "Queen's Indian Defense: Traditional Variation",
+     "engine_step": "inaccuracy",
+     "pawns": [
+      -0.36,
+      -0.42,
+      -0.6
+     ],
+     "wdl": [
+      0.4785,
+      0.4715,
+      0.4305
+     ]
+    },
+    {
+     "ply": 10,
+     "san": "Nc3",
+     "step": "book",
+     "subtype": null,
+     "flags": [
+      "book"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "opening",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "d4d5",
+      "e1g1"
+     ],
+     "near_best": [],
+     "opening": "Queen's Indian Defense: Anti-Queen's Indian System",
+     "engine_step": "inaccuracy",
+     "pawns": [
+      0.42,
+      0.53,
+      0.41
+     ],
+     "wdl": [
+      0.5285,
+      0.549,
+      0.527
+     ]
+    },
+    {
+     "ply": 11,
+     "san": "O-O",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "e8g8"
+     ],
+     "near_best": [
+      "f6e4",
+      "e7b4",
+      "d7d5"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.53,
+      -0.32,
+      -0.32
+     ],
+     "wdl": [
+      0.451,
+      0.4835,
+      0.4835
+     ]
+    },
+    {
+     "ply": 12,
+     "san": "O-O",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "d4d5",
+      "e1g1"
+     ],
+     "near_best": [
+      "d1c2"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.32,
+      0.34,
+      0.32
+     ],
+     "wdl": [
+      0.5165,
+      0.5185,
+      0.517
+     ]
+    },
+    {
+     "ply": 13,
+     "san": "d5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f6e4",
+      "d7d5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.34,
+      -0.31,
+      -0.33
+     ],
+     "wdl": [
+      0.4815,
+      0.485,
+      0.483
+     ]
+    },
+    {
+     "ply": 14,
+     "san": "Ne5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking",
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c4d5",
+      "f3e5"
+     ],
+     "near_best": [
+      "b2b3"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.31,
+      0.34,
+      0.34
+     ],
+     "wdl": [
+      0.515,
+      0.518,
+      0.518
+     ]
+    },
+    {
+     "ply": 15,
+     "san": "c6",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "mistake"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "b8d7"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.34,
+      -0.44,
+      -1.0
+     ],
+     "wdl": [
+      0.482,
+      0.47,
+      0.213
+     ]
+    },
+    {
+     "ply": 16,
+     "san": "cxd5",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "tactical",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "mistake"
+     },
+     "cat_e1": "better",
+     "cat_ep": "equal",
+     "best": [
+      "e2e4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.44,
+      0.92,
+      0.0
+     ],
+     "wdl": [
+      0.53,
+      0.7275,
+      0.5
+     ]
+    },
+    {
+     "ply": 17,
+     "san": "cxd5",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c6d5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.92,
+      -0.1,
+      -0.1
+     ],
+     "wdl": [
+      0.2725,
+      0.4965,
+      0.4965
+     ]
+    },
+    {
+     "ply": 18,
+     "san": "Bf4",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c1f4",
+      "c1g5"
+     ],
+     "near_best": [
+      "c1e3",
+      "h2h4",
+      "a2a4",
+      "c1d2",
+      "a2a3",
+      "d1d3",
+      "f1e1",
+      "d1b3"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.1,
+      0.06,
+      0.06
+     ],
+     "wdl": [
+      0.5035,
+      0.502,
+      0.502
+     ]
+    },
+    {
+     "ply": 19,
+     "san": "a6",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b8c6",
+      "b8d7",
+      "f6d7"
+     ],
+     "near_best": [
+      "h7h6"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.06,
+      0.0,
+      -0.34
+     ],
+     "wdl": [
+      0.498,
+      0.4995,
+      0.4835
+     ]
+    },
+    {
+     "ply": 20,
+     "san": "Rc1",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "a1c1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.0,
+      0.37,
+      0.37
+     ],
+     "wdl": [
+      0.5005,
+      0.52,
+      0.52
+     ]
+    },
+    {
+     "ply": 21,
+     "san": "b5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b6b5"
+     ],
+     "near_best": [
+      "b8d7"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.37,
+      -0.37,
+      -0.37
+     ],
+     "wdl": [
+      0.48,
+      0.4805,
+      0.4805
+     ]
+    },
+    {
+     "ply": 22,
+     "san": "Qb3",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "a2a4"
+     ],
+     "near_best": [
+      "c3b1"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.37,
+      0.4,
+      0.16
+     ],
+     "wdl": [
+      0.5195,
+      0.5225,
+      0.5055
+     ]
+    },
+    {
+     "ply": 23,
+     "san": "Nc6",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [
+      "near_best",
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "f6d7",
+      "b8d7"
+     ],
+     "near_best": [
+      "b8c6"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.4,
+      -0.21,
+      -0.3
+     ],
+     "wdl": [
+      0.4775,
+      0.4925,
+      0.4875
+     ]
+    },
+    {
+     "ply": 24,
+     "san": "Nxc6",
+     "step": "neutral",
+     "subtype": null,
+     "flags": [
+      "near_best",
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "counterattacking",
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "neutral"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c3d5"
+     ],
+     "near_best": [
+      "e5c6"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.21,
+      0.27,
+      0.1
+     ],
+     "wdl": [
+      0.5075,
+      0.511,
+      0.503
+     ]
+    },
+    {
+     "ply": 25,
+     "san": "Bxc6",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "tactical",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "b7c6"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.27,
+      -0.12,
+      -0.12
+     ],
+     "wdl": [
+      0.489,
+      0.496,
+      0.496
+     ]
+    },
+    {
+     "ply": 26,
+     "san": "h3",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "inaccuracy"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "c3e4"
+     ],
+     "near_best": [
+      "f4g5"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.12,
+      0.18,
+      -0.36
+     ],
+     "wdl": [
+      0.504,
+      0.5055,
+      0.482
+     ]
+    },
+    {
+     "ply": 27,
+     "san": "Qd7",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "equal",
+     "best": [
+      "a8c8",
+      "d8d7"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.18,
+      0.39,
+      0.38
+     ],
+     "wdl": [
+      0.4945,
+      0.52,
+      0.5195
+     ]
+    },
+    {
+     "ply": 28,
+     "san": "Kh2",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "mistake"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "c3b1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.39,
+      -0.42,
+      -0.94
+     ],
+     "wdl": [
+      0.48,
+      0.4755,
+      0.2635
+     ]
+    },
+    {
+     "ply": 29,
+     "san": "Nh5",
+     "step": "best",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "better",
+     "cat_ep": "better",
+     "best": [
+      "f6h5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.42,
+      0.92,
+      0.92
+     ],
+     "wdl": [
+      0.5245,
+      0.722,
+      0.722
+     ]
+    },
+    {
+     "ply": 30,
+     "san": "Bd2",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "worse",
+     "cat_ep": "worse",
+     "best": [
+      "f4d2"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.92,
+      -1.03,
+      -1.03
+     ],
+     "wdl": [
+      0.278,
+      0.2055,
+      0.2055
+     ]
+    },
+    {
+     "ply": 31,
+     "san": "f5",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "mistake"
+     },
+     "cat_e1": "better",
+     "cat_ep": "equal",
+     "best": [
+      "b5b4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      1.03,
+      1.03,
+      -0.04
+     ],
+     "wdl": [
+      0.7945,
+      0.796,
+      0.499
+     ]
+    },
+    {
+     "ply": 32,
+     "san": "Qd1",
+     "step": "pass",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "pass"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "c3b1"
+     ],
+     "near_best": [
+      "a2a3",
+      "g2f3"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -1.03,
+      0.08,
+      -0.93
+     ],
+     "wdl": [
+      0.204,
+      0.502,
+      0.276
+     ]
+    },
+    {
+     "ply": 33,
+     "san": "b4",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "better",
+     "cat_ep": "better",
+     "best": [
+      "b5b4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.08,
+      0.82,
+      0.82
+     ],
+     "wdl": [
+      0.498,
+      0.6545,
+      0.6545
+     ]
+    },
+    {
+     "ply": 34,
+     "san": "Nb1",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "worse",
+     "cat_ep": "worse",
+     "best": [
+      "c3b1"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.82,
+      -0.87,
+      -0.87
+     ],
+     "wdl": [
+      0.3455,
+      0.3175,
+      0.3175
+     ]
+    },
+    {
+     "ply": 35,
+     "san": "Bb5",
+     "step": "inaccuracy",
+     "subtype": null,
+     "flags": [],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "inaccuracy"
+     },
+     "cat_e1": "better",
+     "cat_ep": "better",
+     "best": [
+      "c6a4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.87,
+      0.85,
+      0.75
+     ],
+     "wdl": [
+      0.6825,
+      0.668,
+      0.614
+     ]
+    },
+    {
+     "ply": 36,
+     "san": "Rg1",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "mistake"
+     },
+     "cat_e1": "equal",
+     "cat_ep": "worse",
+     "best": [
+      "g2f3"
+     ],
+     "near_best": [
+      "a2a3"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -0.85,
+      -0.7,
+      -1.04
+     ],
+     "wdl": [
+      0.332,
+      0.4085,
+      0.203
+     ]
+    },
+    {
+     "ply": 37,
+     "san": "Bd6",
+     "step": "pass",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "pass"
+     },
+     "cat_e1": "win",
+     "cat_ep": "better",
+     "best": [
+      "a6a5"
+     ],
+     "near_best": [
+      "f5f4"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.7,
+      1.07,
+      0.82
+     ],
+     "wdl": [
+      0.5915,
+      0.814,
+      0.6505
+     ]
+    },
+    {
+     "ply": 38,
+     "san": "e4",
+     "step": "mistake",
+     "subtype": null,
+     "flags": [
+      "pass"
+     ],
+     "move_type": "tactical",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "mistake"
+     },
+     "cat_e1": "worse",
+     "cat_ep": "loss",
+     "best": [
+      "g2f3"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -1.07,
+      -0.84,
+      -2.14
+     ],
+     "wdl": [
+      0.186,
+      0.3375,
+      0.001
+     ]
+    },
+    {
+     "ply": 39,
+     "san": "fxe4",
+     "step": "best",
+     "subtype": "only_light",
+     "flags": [],
+     "move_type": "tactical",
+     "type_subtypes": [
+      "counterattacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f5e4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      0.84,
+      2.16,
+      2.16
+     ],
+     "wdl": [
+      0.6625,
+      0.9995,
+      0.9995
+     ]
+    },
+    {
+     "ply": 40,
+     "san": "Qxh5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral",
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "d1h5",
+      "a2a4",
+      "d2e3",
+      "a2a3",
+      "h3h4",
+      "g1e1",
+      "d1g4",
+      "d2g5",
+      "d2e1",
+      "f2f4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -2.16,
+      -2.33,
+      -2.33
+     ],
+     "wdl": [
+      0.0005,
+      0.0005,
+      0.0005
+     ]
+    },
+    {
+     "ply": 41,
+     "san": "Rxf2",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f8f2"
+     ],
+     "near_best": [
+      "f8f5"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      2.33,
+      2.19,
+      2.19
+     ],
+     "wdl": [
+      0.9995,
+      0.9995,
+      0.9995
+     ]
+    },
+    {
+     "ply": 42,
+     "san": "Qg5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral",
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "h2h1",
+      "a2a3",
+      "d2f4",
+      "g1e1",
+      "h5h4",
+      "h5d1",
+      "a2a4",
+      "c1e1",
+      "h5g4",
+      "h5g5"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -2.19,
+      -2.24,
+      -3.03
+     ],
+     "wdl": [
+      0.0005,
+      0.0005,
+      0.0
+     ]
+    },
+    {
+     "ply": 43,
+     "san": "Raf8",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "a8f8",
+      "h7h6",
+      "d6e7",
+      "a6a5",
+      "d7f7",
+      "b5d3",
+      "d7e8",
+      "a8b8",
+      "a8e8",
+      "g8h8"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      2.24,
+      3.17,
+      3.17
+     ],
+     "wdl": [
+      0.9995,
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "ply": 44,
+     "san": "Kh1",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral",
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "g5h4",
+      "g1e1",
+      "c1e1",
+      "h2h1",
+      "a2a4",
+      "a2a3",
+      "d2e1",
+      "h3h4",
+      "d2e3",
+      "b2b3"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -3.17,
+      -3.55,
+      -3.9
+     ],
+     "wdl": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "ply": 45,
+     "san": "R8f5",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking",
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f8f5",
+      "d6e7",
+      "h7h6",
+      "a6a5",
+      "b5d3",
+      "d7f7",
+      "f8f6",
+      "d7e8",
+      "f8f7",
+      "g8h8"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      3.55,
+      4.32,
+      4.32
+     ],
+     "wdl": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "ply": 46,
+     "san": "Qe3",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral",
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "attacking"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "g5h4",
+      "g5e3",
+      "g5g4",
+      "d2e3",
+      "a2a3",
+      "g5f4",
+      "a2a4",
+      "g5f5",
+      "d2f4",
+      "h3h4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -4.32,
+      -4.17,
+      -4.68
+     ],
+     "wdl": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "ply": 47,
+     "san": "Bd3",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral",
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [
+      "defensive"
+     ],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "f2e2",
+      "b5d3",
+      "a6a5",
+      "h7h6",
+      "h7h5",
+      "f5f6",
+      "g7g6",
+      "d7e8",
+      "d7d8"
+     ],
+     "near_best": [
+      "g8h8"
+     ],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      4.17,
+      5.16,
+      4.36
+     ],
+     "wdl": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    {
+     "ply": 48,
+     "san": "Rce1",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral",
+      "trivial"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "loss",
+     "cat_ep": "loss",
+     "best": [
+      "c1e1",
+      "g1e1",
+      "b1c3",
+      "g1d1",
+      "d2b4",
+      "a2a3",
+      "d2e1",
+      "b2b3",
+      "e3e1",
+      "a2a4"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      -5.16,
+      -4.46,
+      -4.46
+     ],
+     "wdl": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "ply": 49,
+     "san": "h6",
+     "step": "best",
+     "subtype": null,
+     "flags": [
+      "neutral"
+     ],
+     "move_type": "positional",
+     "type_subtypes": [],
+     "stage": "middlegame",
+     "decided_by": "wdl",
+     "unit_steps": {
+      "wdl": "best"
+     },
+     "cat_e1": "win",
+     "cat_ep": "win",
+     "best": [
+      "a6a5",
+      "h7h6",
+      "d7f7",
+      "d7c7",
+      "h7h5",
+      "d7e8",
+      "d7d8",
+      "d7a7",
+      "f5f6",
+      "f5f8"
+     ],
+     "near_best": [],
+     "opening": null,
+     "engine_step": null,
+     "pawns": [
+      4.46,
+      4.74,
+      4.7
+     ],
+     "wdl": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    }
+   ],
+   "ideas": [
+    {
+     "kind": "punishment",
+     "punish_ply": 15,
+     "owner": "white",
+     "victim": "black",
+     "signature": {
+      "attacker": {
+       "piece": "N",
+       "square": "e5"
+      },
+      "target": {
+       "kind": "piece",
+       "square": "f6",
+       "piece": "n"
+      },
+      "motif": "material",
+      "key": "Nexd5"
+     },
+     "signature_text": "♘e5 → ♞f6 (material)",
+     "start_ply": 16,
+     "miss_ply": 15,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 14,
+       "side": "white",
+       "present": false,
+       "attacker": "f3",
+       "target": "f6"
+      },
+      {
+       "ply": 16,
+       "side": "white",
+       "present": true,
+       "attacker": "e5",
+       "target": "f6"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♘e5 → ♞f6 (material) | ♙e2"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 16,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "q",
+       "square": "d8"
+      },
+      "target": {
+       "kind": "piece",
+       "square": "e5",
+       "piece": "N"
+      },
+      "motif": "hanging",
+      "key": "Qxd7"
+     },
+     "signature_text": "♛d8 → ♘e5 (hanging)",
+     "start_ply": 15,
+     "miss_ply": 16,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 13,
+       "side": "black",
+       "present": false,
+       "attacker": "d8",
+       "target": "f3"
+      },
+      {
+       "ply": 15,
+       "side": "black",
+       "present": true,
+       "attacker": "d8",
+       "target": "e5"
+      },
+      {
+       "ply": 17,
+       "side": "black",
+       "present": true,
+       "attacker": "d8",
+       "target": "e5"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♛d8 → ♘e5 (hanging) | ♟c6, ♞b8"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 28,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "n",
+       "square": "f6"
+      },
+      "target": {
+       "kind": "square",
+       "square": "h5",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "Nh5"
+     },
+     "signature_text": "♞f6 → h5 (plan)",
+     "start_ply": 29,
+     "miss_ply": 28,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 29,
+       "side": "black",
+       "present": true,
+       "attacker": "f6",
+       "target": "h5"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♞f6 → h5 (plan)"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 31,
+     "owner": "white",
+     "victim": "black",
+     "signature": {
+      "attacker": {
+       "piece": "N",
+       "square": "c3"
+      },
+      "target": {
+       "kind": "square",
+       "square": "b1",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "Nb1"
+     },
+     "signature_text": "♘c3 → b1 (plan)",
+     "start_ply": 32,
+     "miss_ply": 31,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 32,
+       "side": "white",
+       "present": true,
+       "attacker": "c3",
+       "target": "b1"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♘c3 → b1 (plan) | ♖c1"
+    },
+    {
+     "kind": "pass",
+     "punish_ply": 32,
+     "owner": "white",
+     "victim": "black",
+     "signature": {
+      "attacker": {
+       "piece": "N",
+       "square": "c3"
+      },
+      "target": {
+       "kind": "square",
+       "square": "b1",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "Nb1"
+     },
+     "signature_text": "♘c3 → b1 (plan)",
+     "start_ply": 32,
+     "miss_ply": null,
+     "distance": null,
+     "chain": [
+      {
+       "ply": 32,
+       "side": "white",
+       "present": true,
+       "attacker": "c3",
+       "target": "b1"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♘c3 → b1 (plan) | ♖c1"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 36,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "p",
+       "square": "a6"
+      },
+      "target": {
+       "kind": "square",
+       "square": "a5",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "a5"
+     },
+     "signature_text": "♟a6 → a5 (plan)",
+     "start_ply": 37,
+     "miss_ply": 36,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 37,
+       "side": "black",
+       "present": true,
+       "attacker": "a6",
+       "target": "a5"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♟a6 → a5 (plan)"
+    },
+    {
+     "kind": "pass",
+     "punish_ply": 37,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "p",
+       "square": "a6"
+      },
+      "target": {
+       "kind": "square",
+       "square": "a5",
+       "piece": null
+      },
+      "motif": "plan",
+      "key": "a5"
+     },
+     "signature_text": "♟a6 → a5 (plan)",
+     "start_ply": 37,
+     "miss_ply": null,
+     "distance": null,
+     "chain": [
+      {
+       "ply": 37,
+       "side": "black",
+       "present": true,
+       "attacker": "a6",
+       "target": "a5"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♟a6 → a5 (plan)"
+    },
+    {
+     "kind": "punishment",
+     "punish_ply": 38,
+     "owner": "black",
+     "victim": "white",
+     "signature": {
+      "attacker": {
+       "piece": "b",
+       "square": "b5"
+      },
+      "target": {
+       "kind": "piece",
+       "square": "b1",
+       "piece": "N"
+      },
+      "motif": "material",
+      "key": "Bxb1"
+     },
+     "signature_text": "♝b5 → ♘b1 (material)",
+     "start_ply": 39,
+     "miss_ply": 38,
+     "distance": 0,
+     "chain": [
+      {
+       "ply": 37,
+       "side": "black",
+       "present": false,
+       "attacker": "b5",
+       "target": "b1"
+      },
+      {
+       "ply": 39,
+       "side": "black",
+       "present": true,
+       "attacker": "b5",
+       "target": "b1"
+      }
+     ],
+     "builder_plies": [],
+     "chunk": "♝b5 → ♘b1 (material) | ♟f5, ♟a6, ♜f8"
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chessanalyst"
+version = "0.1.0"
+description = "ChessAnalyst: разбор партии от идеи, а не от позиции"
+requires-python = ">=3.11"
+dependencies = ["chess>=1.10"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+zst = ["zstandard>=0.21"]
+
+[project.scripts]
+chessanalyst = "chessanalyst.cli:main"
+
+[tool.setuptools]
+packages = ["chessanalyst", "chessanalyst.web"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"chessanalyst.web" = ["static/*"]
+"chessanalyst" = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

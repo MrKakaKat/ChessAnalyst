@@ -1,0 +1,9 @@
+[Event "Stockfish: Gruenfeld Defence (hypermodern)"]
+[Site "ChessAnalyst"]
+[Date "2026.11.04"]
+[Round "?"]
+[White "Stockfish 16 (skill 20)"]
+[Black "Stockfish 16 (skill 20)"]
+[Result "1/2-1/2"]
+
+1. d4 Nf6 2. c4 g6 3. Nc3 d5 4. cxd5 Nxd5 5. e4 Nxc3 6. bxc3 Bg7 7. Bc4 c5 8. Ne2 O-O 9. Be3 Nc6 10. O-O b6 11. Qd2 Bb7 12. Rac1 e6 13. Rfd1 Rc8 14. Bg5 Qd7 15. h4 cxd4 16. cxd4 Na5 17. Bd3 Rxc1 18. Rxc1 Nc6 19. Bb5 a6 20. Bxc6 Bxc6 21. Ng3 Rc8 22. d5 Bb5 23. Rxc8+ Qxc8 24. Qf4 Qd7 25. h5 exd5 26. exd5 f5 27. Qd2 Be5 28. h6 Bc4 29. Bf4 Bf6 30. Bg5 Bxg5 31. Qxg5 Qxd5 32. Qf6 Qf7 33. Qxb6 Qf8 34. Qb7 Bxa2 35. Qxa6 Bf7 36. Qc6 Qxh6 37. Nxf5 Qf8 38. Nd4 Qe7 39. Nf3 Kg7 40. Qc3+ Qf6 41. Ne5 Be6 42. Qd4 h6 43. Qd6 Kg8 44. Qb8+ Kh7 45. Qa7+ Kh8 46. Qb8+ Kh7 47. Qa7+ Kh8 48. Qc5 Kh7 1/2-1/2

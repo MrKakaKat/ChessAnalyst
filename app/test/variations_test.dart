@@ -1,0 +1,89 @@
+import 'dart:io';
+
+import 'package:chessanalyst/analysis/game.dart';
+import 'package:chessanalyst/analysis/pos.dart';
+import 'package:chessanalyst/ui/controller.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  final game = GameData.parse(File('assets/games/kasparov_topalov_1999.json').readAsStringSync());
+
+  test('game opens at the start; the game move on the board follows the game', () {
+    final c = AnalysisController(game);
+    expect(c.atStart, isTrue);
+    expect(c.lastMove, isNull);
+    c.playMove(c.moves[0]);
+    expect(c.inVariation, isFalse);
+    expect(c.ply, 0);
+  });
+
+  test('resignation is the last pseudo-move, graded by the position', () {
+    final c = AnalysisController(game);
+    expect(c.end, isNotNull); // Kasparov - Topalov: 1-0, Black resigned
+    expect(c.end!.kind, 'resign');
+    c.last();
+    expect(c.atEnd, isTrue);
+    expect(c.end!.step, 'neutral'); // позиция чёрных проиграна
+  });
+
+  test('own move outside the lines has no verdict; a best move gets one', () {
+    final c = AnalysisController(game);
+    c.select(20);
+    final lines = c.game.plies[21].lines.map((l) => l.move).toSet();
+    final own = c.position.legalMoves.firstWhere((m) => !lines.contains(m.uci) && m != c.moves[21]);
+    c.playMove(own);
+    expect(c.varMove!.kind, isNull);
+    c.exitVariation();
+    final best = c.analysis.records[21].bestMoves.first.uci;
+    if (best != c.moves[21].uci) {
+      c.playAlternative(21, best);
+      expect(c.varMove!.record, isNotNull);
+    }
+  });
+
+  test('another move starts a branch, the next one extends it', () {
+    final c = AnalysisController(game);
+    c.select(5);
+    final alt = c.position.legalMoves.firstWhere((m) => m != c.moves[6]);
+    c.playMove(alt);
+    expect(c.inVariation, isTrue);
+    expect(c.variation!.anchor, 5);
+    expect(c.ply, 6); // панели — на заменённом ходе партии
+    final reply = c.position.legalMoves.first;
+    c.playMove(reply);
+    expect(c.variations.length, 1);
+    expect(c.variation!.moves.length, 2);
+    c.prev();
+    c.prev();
+    expect(c.inVariation, isFalse);
+    expect(c.ply, 5);
+  });
+
+  test('best move alternative gets the engine evaluation', () {
+    final c = AnalysisController(game);
+    final ply = c.analysis.records.indexWhere((r) => r.bestMoves.isNotEmpty && r.bestMoves.first.uci != r.uci);
+    final best = c.analysis.records[ply].bestMoves.first;
+    c.select(ply);
+    c.playAlternative(ply, best.uci);
+    expect(c.varMove!.san, best.san);
+    expect(c.varMove!.eval, isNotNull);
+    expect(c.position.fen, Pos.fromFen(game.plies[ply].fenBefore).push(Pos.move(best.uci)).fen);
+  });
+
+  test('next keeps playing the chosen engine line to its end', () {
+    final c = AnalysisController(game);
+    final ply = c.analysis.records.indexWhere((r) => r.bestMoves.isNotEmpty && r.bestMoves.first.uci != r.uci);
+    final line = c.game.plies[ply].lines.first;
+    c.select(ply);
+    c.playAlternative(ply, line.move);
+    for (var i = 1; i < line.pv.length; i++) {
+      expect(c.canNext, isTrue);
+      c.next();
+    }
+    expect(c.variation!.moves.length, line.pv.length);
+    // ходы линии анализа — синие, без пересчёта
+    expect(c.variation!.moves.every((m) => m.inLines && !m.live), isTrue);
+    // дальше — продолжение движком на устройстве
+    expect(c.canNext, isTrue);
+  });
+}
