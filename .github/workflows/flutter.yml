@@ -1,13 +1,19 @@
 name: Flutter
 
 # Тесты — на каждый пуш и PR. Сборка APK и веб-версии и релиз — только по
-# тегу версии (v1.0, v1.1, ...), чтобы не тратить минуты на каждый коммит.
+# тегу версии (v1.0, v1.1, ...) или вручную (Run workflow с номером версии:
+# тег создаётся сам), чтобы не тратить минуты на каждый коммит.
 on:
   push:
     branches: [main]
     tags: ["v*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 1.0); empty: tests only"
+        required: false
+        default: ""
 
 env:
   FLUTTER_VERSION: "3.47.9"
@@ -34,12 +40,13 @@ jobs:
 
   release:
     needs: test
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.version != '')
     runs-on: ubuntu-latest
     permissions:
       contents: write
     env:
       GH_TOKEN: ${{ github.token }}
+      TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}', inputs.version) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -57,7 +64,7 @@ jobs:
       - name: Build APK
         run: |
           flutter build apk --release --target-platform android-arm64 \
-            --build-name "${GITHUB_REF_NAME#v}" --build-number $((1000 + GITHUB_RUN_NUMBER))
+            --build-name "${TAG#v}" --build-number $((1000 + GITHUB_RUN_NUMBER))
           cp build/app/outputs/flutter-apk/app-release.apk /tmp/ChessAnalyst-arm64-v8a.apk
       # WebAssembly: dartchess использует 64-битные целые, которых нет в dart2js.
       - name: Build web (wasm)
@@ -67,6 +74,6 @@ jobs:
       - name: Publish the release
         working-directory: .
         run: |
-          gh release create "$GITHUB_REF_NAME" /tmp/ChessAnalyst-arm64-v8a.apk /tmp/ChessAnalyst-web.zip \
-            --title "ChessAnalyst ${GITHUB_REF_NAME#v}" \
+          gh release create "$TAG" /tmp/ChessAnalyst-arm64-v8a.apk /tmp/ChessAnalyst-web.zip \
+            --target "$GITHUB_SHA" --title "ChessAnalyst ${TAG#v}" \
             --notes "ChessAnalyst-arm64-v8a.apk: Android (arm64-v8a). ChessAnalyst-web.zip: the web app (WebAssembly; serve the folder over HTTP)."
