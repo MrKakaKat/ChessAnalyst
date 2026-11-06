@@ -68,7 +68,8 @@ Future<List<PositionEntry>> collectPositions(List<GameData> showcase, OpeningBoo
   // из задач — только сохранённые промахи (позиция, где был неверный ход)
   final missed = <String, PuzzleAttempt>{};
   for (final a in await PuzzleHistory.load()) {
-    if (!a.solved && a.fen != null) missed.putIfAbsent(a.id, () => a);
+    // попытки с ошибками (решённые потом или нет) — позиция ошибки
+    if (a.fen != null && (!a.solved || a.errors > 0)) missed.putIfAbsent(a.id, () => a);
   }
   final ratings = await PuzzleRatings.load();
   final out = <PositionEntry>[];

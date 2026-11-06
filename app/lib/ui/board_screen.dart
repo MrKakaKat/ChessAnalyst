@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'package:chessground/chessground.dart';
 import 'package:dartchess/dartchess.dart' hide Board;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../analysis/eval.dart';
 import '../analysis/pos.dart';
@@ -308,10 +309,70 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
 
 /// Moves as a tree: the main line, branches in brackets; long-press removes
 /// a branch.
-class _MoveTree extends StatelessWidget {
+class _MoveTree extends StatefulWidget {
   const _MoveTree({required this.c});
 
   final SessionController c;
+
+  @override
+  State<_MoveTree> createState() => _MoveTreeState();
+}
+
+/// A move held down is selected: round buttons copy the line up to it or
+/// delete it with everything after it.
+class _MoveTreeState extends State<_MoveTree> {
+  SessionController get c => widget.c;
+  MoveNode? _sel;
+
+  /// The line from the start to [n] with move numbers.
+  String _lineText(MoveNode n) {
+    final path = <MoveNode>[];
+    for (MoveNode? x = n; x != null && x.parent != null; x = x.parent) {
+      path.insert(0, x);
+    }
+    final black0 = c.session.root.pos.turn == Side.black;
+    final words = <String>[];
+    for (final (i, x) in path.indexed) {
+      final ply = x.ply - 1 + (black0 ? 1 : 0);
+      if (ply.isEven) {
+        words.add('${ply ~/ 2 + 1}.');
+      } else if (i == 0) {
+        words.add('${ply ~/ 2 + 1}...');
+      }
+      words.add(x.san);
+    }
+    return words.join(' ');
+  }
+
+  Widget _bar(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final n = _sel!;
+    Widget round(IconData icon, String tip, VoidCallback onTap, {Color? color}) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 3),
+          child: IconButton.filled(
+            tooltip: tip,
+            style: IconButton.styleFrom(
+                backgroundColor: color ?? scheme.inverseSurface, foregroundColor: scheme.onInverseSurface),
+            onPressed: onTap,
+            icon: Icon(icon, size: 20),
+          ),
+        );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        round(Icons.content_copy_rounded, 'Copy the line up to this move', () {
+          Clipboard.setData(ClipboardData(text: _lineText(n)));
+          ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(content: Text('Moves copied')));
+          setState(() => _sel = null);
+        }),
+        round(Icons.delete_outline_rounded, 'Delete this move and all after it', () {
+          c.delete(n);
+          setState(() => _sel = null);
+        }, color: scheme.error),
+        round(Icons.close_rounded, 'Cancel', () => setState(() => _sel = null)),
+      ]),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -323,14 +384,18 @@ class _MoveTree extends StatelessWidget {
       final ply = n.ply - 1 + (c.session.root.pos.turn == Side.black ? 1 : 0);
       final no = ply.isEven ? '${ply ~/ 2 + 1}. ' : (number ? '${ply ~/ 2 + 1}... ' : '');
       return GestureDetector(
-        onLongPress: () => c.delete(n),
+        // зажатие — выбрать ход: скопировать линию или удалить
+        onLongPress: () => setState(() => _sel = n),
         child: InkWell(
           borderRadius: BorderRadius.circular(6),
-          onTap: () => c.go(n),
+          onTap: () {
+            if (_sel != null) return setState(() => _sel = null);
+            c.go(n);
+          },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             decoration: BoxDecoration(
-              color: current ? scheme.primary : Colors.transparent,
+              color: current ? scheme.primary : (identical(n, _sel) ? scheme.primaryContainer : Colors.transparent),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text('$no${n.san}', style: TextStyle(color: current ? scheme.onPrimary : null)),
@@ -357,10 +422,13 @@ class _MoveTree extends StatelessWidget {
     }
 
     if (c.session.root.children.isEmpty) {
-      return Text('Play a move on the board. Moves off the line become branches; long-press a move to delete it.',
+      return Text('Play a move on the board. Moves off the line become branches; hold a move to copy or delete it.',
           style: TextStyle(color: scheme.outline, fontSize: 13));
     }
     cont(c.session.root, true);
-    return Wrap(spacing: 2, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: items);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      if (_sel != null) _bar(context),
+      Wrap(spacing: 2, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: items),
+    ]);
   }
 }

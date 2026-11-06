@@ -7,7 +7,7 @@ library;
 
 import 'dart:convert';
 
-import 'package:dartchess/dartchess.dart' show Side, kInitialFEN;
+import 'package:dartchess/dartchess.dart' show Side, Square, kInitialFEN;
 
 import 'classify.dart';
 import 'eval.dart';
@@ -141,6 +141,35 @@ class GameData {
   }
 }
 
+/// A "desperado" piece: sacrifices with check by the same piece in a row
+/// (usually a rook looking for stalemate or perpetual check). Only the first
+/// move of the chain is brilliant, and only when the draw is safe after it
+/// (evaluation within 0.3 pawns of zero); otherwise it is an only move. Its
+/// further checks are obvious only moves (only_light). As in Python
+/// (pipeline.desperado).
+void desperado(List<PlyAnalysis> analysed, List<MoveRecord> records) {
+  (Square, Square)? checks(int i) {
+    if (i < 0 || i >= analysed.length) return null;
+    final board = analysed[i].board;
+    final m = Pos.move(analysed[i].played.move);
+    return board.givesCheck(m) ? (m.from, m.to) : null;
+  }
+
+  for (var i = 0; i < records.length; i++) {
+    final r = records[i];
+    if (r.subtype != 'brilliant') continue;
+    final me = checks(i);
+    if (me == null) continue;
+    final prev = checks(i - 2);
+    if (prev != null && prev.$2 == me.$1) {
+      r.subtype = 'only_light';
+      continue;
+    }
+    final next = checks(i + 2);
+    if (next != null && next.$1 == me.$2 && r.pawns.ep.abs() > 0.3) r.subtype = 'only_move';
+  }
+}
+
 class GameAnalysis {
   GameAnalysis(this.game, this.settings, this.records, this.ideas);
 
@@ -176,5 +205,6 @@ GameAnalysis analyzeGame(GameData game, Settings s, {OpeningBook? book}) {
         opening: openings[ply],
         continuation: [for (final x in analysed.skip(ply + 1).take(6)) x.played.move]));
   }
+  desperado(analysed, records);
   return GameAnalysis(game, s, records, findIdeas(analysed, records, s));
 }

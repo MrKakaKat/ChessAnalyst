@@ -74,7 +74,36 @@ def classify_analysed(analysed: list[PlyAnalysis], s: Settings) -> list[MoveReco
         records.append(classify(a.board, a.lines, a.played, prev_root, s, ply=ply, all_lines=a.all_lines,
                                 opening=openings[ply],
                                 continuation=[x.played.move for x in analysed[ply + 1:ply + 7]]))
+    desperado(analysed, records)
     return records
+
+
+def desperado(analysed: list[PlyAnalysis], records: list[MoveRecord]) -> None:
+    """«Бешеная» фигура: жертвы с шахом одной и той же фигурой подряд (обычно
+    ладья, ищущая пат или вечный шах). Блестящим считается только первый ход
+    цепочки, и лишь когда ничья после него обеспечена (оценка около нуля, до
+    0,3 пешки); иначе он — единственный ход (only_move). Следующие её шахи —
+    единственные ходы облегчённые (only_light)."""
+    def checks(i: int) -> tuple[int, int] | None:
+        if i < 0 or i >= len(analysed):
+            return None
+        board = analysed[i].board
+        m = chess.Move.from_uci(analysed[i].played.move)
+        return (m.from_square, m.to_square) if board.gives_check(m) else None
+
+    for i, r in enumerate(records):
+        if r.subtype != "brilliant":
+            continue
+        me = checks(i)
+        if me is None:
+            continue
+        prev = checks(i - 2)
+        if prev is not None and prev[1] == me[0]:
+            r.subtype = "only_light"
+            continue
+        nxt = checks(i + 2)
+        if nxt is not None and nxt[0] == me[1] and abs(r.pawns.ep) > 0.3:
+            r.subtype = "only_move"
 
 
 def save_records(conn: sqlite3.Connection, game_id: int, records: list[MoveRecord], s: Settings) -> None:

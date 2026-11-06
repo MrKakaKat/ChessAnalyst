@@ -37,7 +37,10 @@ an allowed mate stays a blunder. A move is neutral only when it loses up to
 
 **Special marks**
 - **Brilliant** — a best move that gives up material, and the material does
-  not come back at once.
+  not come back at once. A desperado piece (a rook giving check after check
+  that cannot be taken without stalemate) is brilliant only on its first
+  check, and only when the draw is certain; otherwise the first check is
+  an only move. The checks after it are plain only moves.
 - **Only move** — every other move spoils the position. There are two kinds:
   - **Only move** (blue, the sign jumps): a long forcing line follows,
     found only by calculation;
@@ -98,6 +101,10 @@ what you missed, then by what you were punished with.
 |---|---|
 | Mate, Promotion | mates, or promotes a pawn |
 | Fork | the piece attacks two valuable pieces at once |
+| Discovered check | a piece steps away and opens a line of another piece onto the king |
+| Discovered attack on the queen | the same, the opened line hits the queen |
+| Discovered attack | the same, the opened line hits another piece |
+| Escape from check | the answer to a check: taking the checking piece, a king move or a block |
 | Pin | an enemy piece can no longer move without losing something behind it |
 | Overloaded piece | an enemy piece is the only defender of two attacked pieces: taking one loses the other |
 | Sacrifice | material given away for an attack or a position |
@@ -292,13 +299,17 @@ The rating of a puzzle comes from the engine. It is computed when the
 game's analysis ends, and again when the analysis is sent deeper. It
 depends on how deep the engine must search before it keeps choosing the
 solution, how many other moves look as good at a glance, whether the key
-move is quiet, the length of the solution and a defensive goal. Puzzles
+move is quiet, the length of the solution and a defensive goal. It also
+counts the opponent's counter-chances: replies with check or capture that
+nearly hold and have to be calculated, and how long the forcing play lasts. Puzzles
 that were not rated yet (the showcase games) are rated in the background
 while the Puzzles screen is open.
 
-A solved puzzle is recorded as a hit by itself. After a wrong move you can
-save the miss: the position where it happened goes to the Positions
-screen.
+A solved puzzle is recorded as a hit by itself. After a wrong move,
+"Show the consequences" plays the engine's punishment of it, and "Record"
+saves the attempt with the number of mistakes; such puzzles go to the
+Positions screen. The list of attempts is clickable: a puzzle opens again
+with your mistakes from last time and the solution button.
 
 ---
 
@@ -334,6 +345,11 @@ character, the kinds missed, the kinds you were punished by, and the cost.
   purple moves opens a new branch from it; going back past your move
   returns to the old branch. The number at the edge of a move counts its
   branches; tap it to fold them.
+- The analysis window shows the engine power modes; the mode can be
+  changed while the analysis runs. A finished analysis offers to open the
+  game or to close the window.
+- On the free analysis board, hold a move to select it: the round buttons
+  copy the line up to it or delete it with every move after it.
 - While a game is being analysed, only the Game tab with the move list
   works; the other tabs and the graphs open when the analysis is done.
 - The rings at the bottom right show the analyses in the queue; the inner

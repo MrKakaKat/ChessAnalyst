@@ -85,7 +85,8 @@ class MoveRecord {
   final String? catE0;
   final String catE1, catEp;
   final String step;
-  final String? subtype;
+  /// Not final: [desperado] corrects it after the whole game is judged.
+  String? subtype;
   final String moveType;
   final List<String> typeSubtypes;
   final List<String> flags;

@@ -244,7 +244,14 @@ int autoRating(List<PuzzleAttempt> attempts) {
 }
 
 class PuzzleAttempt {
-  const PuzzleAttempt(this.id, this.source, this.solved, this.date, {this.rating, this.goal, this.step, this.fen});
+  const PuzzleAttempt(this.id, this.source, this.solved, this.date,
+      {this.rating, this.goal, this.step, this.fen, this.wrong = const []});
+
+  /// The wrong moves of this try, in UCI, with their index in the solution
+  /// ("3:e2e4").
+  final List<String> wrong;
+
+  int get errors => wrong.length;
 
   final String id, source;
   final bool solved;
@@ -257,7 +264,8 @@ class PuzzleAttempt {
   final int? step;
   final String? fen;
 
-  PuzzleAttempt withRating(int r) => PuzzleAttempt(id, source, solved, date, rating: r, goal: goal, step: step, fen: fen);
+  PuzzleAttempt withRating(int r) =>
+      PuzzleAttempt(id, source, solved, date, rating: r, goal: goal, step: step, fen: fen, wrong: wrong);
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -268,6 +276,7 @@ class PuzzleAttempt {
         'goal': goal,
         if (step != null) 'step': step,
         if (fen != null) 'fen': fen,
+        if (wrong.isNotEmpty) 'wrong': wrong,
       };
 
   factory PuzzleAttempt.fromJson(Map<String, dynamic> j) => PuzzleAttempt(
@@ -279,6 +288,7 @@ class PuzzleAttempt {
         goal: j['goal'] as String?,
         step: j['step'] as int?,
         fen: j['fen'] as String?,
+        wrong: (j['wrong'] as List?)?.cast<String>() ?? const [],
       );
 }
 
@@ -286,9 +296,17 @@ class PuzzleAttempt {
 class PuzzleRatings {
   static const _key = 'puzzles.ratings';
 
+  /// Version of the rating formula (puzzle_rater.dart): ratings of an older
+  /// one are forgotten and the puzzles are rated again.
+  static const version = 2;
+
   static Future<Map<String, int>> load() async {
     try {
       final p = await SharedPreferences.getInstance();
+      if (p.getInt('puzzles.ratingVersion') != version) {
+        await p.remove(_key);
+        await p.setInt('puzzles.ratingVersion', version);
+      }
       final raw = p.getString(_key);
       return raw == null ? {} : (jsonDecode(raw) as Map<String, dynamic>).cast<String, int>();
     } catch (_) {

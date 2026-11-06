@@ -27,6 +27,11 @@ void main() {
     expect(k('4k3/8/8/3p4/8/4P3/8/4K3 w - - 0 1', 'e3e4'), contains('break'));
     // ладья на открытую линию
     expect(k('4k3/8/8/8/8/8/PP4PP/R3K3 w - - 0 1', 'a1d1'), contains('open_file'));
+    // слон открывает линию ладьи на короля — вскрытый шах
+    expect(k('4k3/8/8/8/4B3/8/8/4R1K1 w - - 0 1', 'e4b7'), contains('discovered_check'));
+    expect(k('4q1k1/8/8/8/4B3/8/8/4R1K1 w - - 0 1', 'e4b7'), contains('discovered_queen'));
+    // выход из-под шаха
+    expect(k('4k3/8/8/8/8/8/8/r3K3 w - - 0 1', 'e1e2'), contains('check_escape'));
     // конь под ударом пешки уходит — отступление
     expect(k('4k3/8/3p4/4N3/8/8/8/R3K3 w - - 0 1', 'e5f3'), contains('retreat'));
     expect(k('4k3/8/3p4/4N3/8/8/8/R3K3 w - - 0 1', 'a1a5'), isNot(contains('retreat')));

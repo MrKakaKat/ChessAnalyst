@@ -87,7 +87,7 @@ class _JobScreenState extends State<JobScreen> {
         !job.pausedByUser &&
         job.state != JobState.failed &&
         analysisQueue.jobs.any((j) => j.state == JobState.running && j != job);
-    final title = switch (job.state) {
+    final title = job.done ? 'Analysis finished' : switch (job.state) {
       JobState.failed => 'The engine stopped',
       JobState.paused when waiting => 'Waiting in the queue',
       JobState.paused => 'Paused',
@@ -136,7 +136,33 @@ class _JobScreenState extends State<JobScreen> {
               Text(job.error!, style: TextStyle(color: scheme.error)),
             ],
             const SizedBox(height: 20),
+            // режим энергии — меняется прямо здесь, действует со следующей позиции
+            if (!job.done) ...[
+              SegmentedButton<EnginePower>(
+                segments: const [
+                  ButtonSegment(value: EnginePower.low, label: Text('Low'), icon: Icon(Icons.eco_outlined)),
+                  ButtonSegment(value: EnginePower.medium, label: Text('Medium')),
+                  ButtonSegment(value: EnginePower.high, label: Text('High'), icon: Icon(Icons.bolt_rounded)),
+                ],
+                selected: {job.power},
+                showSelectedIcon: false,
+                onSelectionChanged: (s) => setState(() {
+                  job.power = s.first;
+                  job.onSave?.call(job);
+                }),
+              ),
+              const SizedBox(height: 16),
+            ],
             Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: [
+              // анализ закончен: открыть партию или закрыть окно
+              if (job.done) ...[
+                FilledButton.icon(
+                    onPressed: _openGame, icon: const Icon(Icons.visibility_rounded), label: const Text('Open the game')),
+                OutlinedButton.icon(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.check_rounded),
+                    label: const Text('Close')),
+              ] else ...[
               if (job.state == JobState.running)
                 OutlinedButton.icon(onPressed: job.pause, icon: const Icon(Icons.pause_rounded), label: const Text('Pause'))
               else
@@ -159,6 +185,7 @@ class _JobScreenState extends State<JobScreen> {
                 icon: const Icon(Icons.open_in_new_rounded),
                 label: const Text('Continue in the background'),
               ),
+              ],
             ]),
           ]),
         ),

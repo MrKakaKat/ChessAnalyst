@@ -30,6 +30,12 @@
 ///   pawn), the moved piece defended — equal pieces offer an exchange,
 ///   different ones a barter;
 /// - free material: a capture of a piece no one defends;
+/// - discovered attack: the move uncovers a line of another own piece (a
+///   bishop, rook or queen) onto an enemy piece it did not attack — on the
+///   king (discovered check), on the queen, or on another piece (not a
+///   pawn);
+/// - escape from check: the move gets out of check (taking the checking
+///   piece, moving the king, or blocking the line);
 /// - retreat: a quiet move of a piece that could be taken for free (attacked
 ///   and undefended, or attacked by a cheaper piece) to a square where it is
 ///   safe — it steps away from the attack instead of defending;
@@ -78,6 +84,10 @@ const kindLabels = {
   'free': 'Free material',
   'retreat': 'Retreat from attack',
   'missed_again': 'Missed again',
+  'discovered_check': 'Discovered check',
+  'discovered_queen': 'Discovered attack on the queen',
+  'discovered_attack': 'Discovered attack',
+  'check_escape': 'Escape from check',
   'trade_choice': 'Choice of trade',
   'wrong_piece': 'Wrong piece',
   'development': 'Development',
@@ -128,6 +138,12 @@ List<String> kindsOf(Pos board, NormalMove move, List<String> pv, Eval eval, Set
       break;
     }
   }
+
+  // вскрытое нападение: ход открывает линию другой своей фигуры
+  if (_discovered(board, after, move, me) case final d?) out.add(d);
+
+  // выход из-под шаха: взятие, уход короля или перекрытие
+  if (board.isCheck) out.add('check_escape');
 
   if (_overload(board, after, move, me)) out.add('overload');
 
@@ -253,6 +269,25 @@ List<String> playedKinds(Pos board, NormalMove move, List<String> pv, Eval eval,
     return ['poisoned', ...out.where((k) => k != 'capture' && k != 'free')];
   }
   return out;
+}
+
+/// The strongest target newly attacked by a line the move opened: 'king',
+/// 'queen' or another piece (not a pawn), as a kind; null when none.
+String? _discovered(Pos board, Pos after, NormalMove move, Side me) {
+  var best = 0;
+  for (final (sq, p) in after.pieces) {
+    if (p.color != me || sq == move.to) continue;
+    if (p.role != Role.bishop && p.role != Role.rook && p.role != Role.queen) continue;
+    final was = board.attacks(sq);
+    for (final t in after.attacks(sq).squares) {
+      if (was.has(t)) continue;
+      final target = after.pieceAt(t);
+      if (target == null || target.color == me || target.role == Role.pawn) continue;
+      final rank = switch (target.role) { Role.king => 3, Role.queen => 2, _ => 1 };
+      if (rank > best) best = rank;
+    }
+  }
+  return switch (best) { 3 => 'discovered_check', 2 => 'discovered_queen', 1 => 'discovered_attack', _ => null };
 }
 
 /// A trade: a piece (not a pawn or the king) takes a defended piece that is

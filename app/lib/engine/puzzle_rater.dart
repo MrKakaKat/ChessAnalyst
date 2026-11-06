@@ -7,9 +7,16 @@
 ///   at once is easy, one that needs a deep search is hard;
 /// - traps: other moves that look as good at a shallow depth (2), up to 3;
 /// - a quiet key move (no capture or check) is harder to see;
-/// - the length of the solution and a defensive goal add difficulty.
+/// - the length of the solution and a defensive goal add difficulty;
+/// - the opponent's counter-resources after the key move: replies that check
+///   or capture and keep the opponent within a pawn of their best — each has
+///   to be calculated through (a discovered check, a counter-sacrifice…);
+/// - the length of the forcing line after the key move, beyond two plies.
 /// rating = 700 + 75·(depth − 1) + 80·traps + 120 (quiet) + 90·(moves − 1)
-/// + 100 (defence), within 400…3000.
+/// + 100 (defence) + 70·resources (up to 3) + 25·forcing plies beyond 2
+/// (up to 8), within 400…3000.
+/// The first version looked only at the main line and rated a four-move
+/// tactic with a discovered check in the defence at about 1200.
 /// The game analysis rates its puzzles when it ends (and again when it is
 /// sent deeper); the puzzle screen rates any that are still unrated.
 library;
@@ -18,6 +25,7 @@ import 'dart:math' as math;
 
 import 'package:dartchess/dartchess.dart' show NormalMove;
 
+import '../analysis/features.dart' as features;
 import '../analysis/pos.dart';
 import '../analysis/settings.dart';
 import '../ui/puzzles.dart';
@@ -50,13 +58,33 @@ Future<int> estimateRating(Puzzle p, {bool Function()? cancelled}) async {
   final pos = Pos.fromFen(p.fen);
   final m = NormalMove.fromUci(p.solution.first);
   final quiet = !pos.isCapture(m) && !pos.givesCheck(m) && m.promotion == null;
+  // контрудары соперника после ключевого хода, которые надо просчитать
+  var resources = 0;
+  var forcing = 0;
+  if (pos.isLegal(m)) {
+    final after = pos.push(m);
+    if (cancelled?.call() ?? false) throw StateError('cancelled');
+    final replies = await bot.analyse(after.fen, depth: 10, multipv: 5);
+    if (replies.isNotEmpty) {
+      final best = replies.first.eval.pawns(s);
+      for (final l in replies) {
+        final r = Pos.move(l.move);
+        if (!after.isLegal(r)) continue;
+        final sharp = after.givesCheck(r) || after.isCapture(r);
+        if (sharp && best - l.eval.pawns(s) <= 1.0) resources++;
+      }
+      forcing = features.forcingCount(after, replies.first.pv, 12);
+    }
+  }
   final rating = 700 +
       75 * (found - 1) +
       80 * traps +
       (quiet ? 120 : 0) +
       90 * (p.solverMoves - 1) +
-      (p.goal == PuzzleGoal.defend ? 100 : 0);
-  return rating.clamp(400, 3000);
+      (p.goal == PuzzleGoal.defend ? 100 : 0) +
+      70 * math.min(3, resources) +
+      25 * math.min(8, math.max(0, forcing - 2));
+  return rating.clamp(400, 3000).toInt();
 }
 
 /// Rates [puzzles] one by one ([again]: also the rated ones, after a deeper

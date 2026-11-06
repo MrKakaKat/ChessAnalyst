@@ -179,6 +179,19 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
     return [..._puzzles!]..sort((a, b) => key(a) - key(b));
   }
 
+  /// A recorded attempt: its puzzle again, with the mistakes made then.
+  Future<void> _openAttempt(PuzzleAttempt a) async {
+    final p = (_puzzles ?? const <Puzzle>[]).where((x) => x.id == a.id).firstOrNull;
+    if (p == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('This puzzle is no longer among the analysed games.')));
+      return;
+    }
+    await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PuzzleScreen(puzzles: [p], review: a)));
+    final attempts = await PuzzleHistory.load();
+    if (mounted) setState(() => _attempts = attempts);
+  }
+
   Future<void> _start() async {
     await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PuzzleScreen(puzzles: _ordered())));
     final attempts = await PuzzleHistory.load();
@@ -275,13 +288,23 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
               ? FilledButton.icon(
                   onPressed: () => prefs.update(autoRating: false),
                   icon: const Icon(Icons.auto_mode_rounded, size: 18),
-                  label: const Text('Rating by your results · tap to choose'),
+                  label: const Text('Rating by your results'),
                 )
               : OutlinedButton.icon(
                   onPressed: () => prefs.update(autoRating: true),
                   icon: const Icon(Icons.auto_mode_rounded, size: 18),
                   label: const Text('Choose the rating automatically'),
                 ),
+        ),
+        // начать — сразу под выбором рейтинга, той же ширины
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: list == null || list.isEmpty ? null : _start,
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: Text(list == null ? 'Loading…' : (list.isEmpty ? 'No puzzles yet' : 'Start to solve')),
+          ),
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
@@ -299,15 +322,6 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
           value: prefs.estimatePuzzleRating,
           onChanged: (v) => prefs.update(puzzleRating: v),
         ),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.icon(
-            onPressed: list == null || list.isEmpty ? null : _start,
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: Text(list == null ? 'Loading…' : (list.isEmpty ? 'No puzzles yet' : 'Start to solve')),
-          ),
-        ),
         const SizedBox(height: 24),
         Row(children: [
           Expanded(child: Text('Recorded attempts', style: theme.textTheme.titleMedium)),
@@ -315,17 +329,20 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
         ]),
         const SizedBox(height: 6),
         if (_attempts.isEmpty)
-          Text('Nothing recorded yet. Solved puzzles are recorded as hits; after a mistake you can save the miss.',
+          Text('Nothing recorded yet. Puzzles solved cleanly are recorded by themselves; after a mistake, record it '
+              'with its mistakes.',
               style: TextStyle(color: scheme.outline, fontSize: 13)),
         for (final a in _attempts)
           ListTile(
             contentPadding: EdgeInsets.zero,
+            // попытка открывается: решить снова, посмотреть решение и свои ошибки
+            onTap: () => _openAttempt(a),
             leading: a.solved
                 ? const SizedBox(width: 28, height: 28, child: CustomPaint(painter: DartboardPainter()))
                 : Icon(Icons.close_rounded, color: scheme.error),
             title: Text(a.source, maxLines: 1, overflow: TextOverflow.ellipsis),
             subtitle: Text([
-              a.solved ? 'Hit' : 'Miss',
+              a.solved ? (a.errors == 0 ? 'Hit' : 'Solved with ${a.errors} mistake${a.errors == 1 ? '' : 's'}') : 'Miss',
               if (a.rating != null) 'rating ${a.rating}',
               a.date.toLocal().toString().substring(0, 16),
             ].join(' · ')),
@@ -345,9 +362,12 @@ String _goalTitle(PuzzleGoal g) => switch (g) {
 enum _State { solving, wrong, solved, shown }
 
 class PuzzleScreen extends StatefulWidget {
-  const PuzzleScreen({super.key, required this.puzzles});
+  const PuzzleScreen({super.key, required this.puzzles, this.review});
 
   final List<Puzzle> puzzles;
+
+  /// Opened from the recorded attempts: the mistakes made then are shown.
+  final PuzzleAttempt? review;
 
   @override
   State<PuzzleScreen> createState() => _PuzzleScreenState();
@@ -364,6 +384,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   bool _erred = false;
   int? _errStep;
   String? _errFen;
+
+  /// Wrong moves of this try ("step:uci").
+  final _wrongs = <String>[];
   bool _showSource = false;
   int? _rating;
   bool _ratingBusy = false;
@@ -510,6 +533,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       _erred = false;
       _errStep = null;
       _errFen = null;
+      _wrongs.clear();
       _showSource = false;
       _pos = Pos.fromFen(p.fen);
       _last = null;
@@ -579,6 +603,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         _errStep = _step;
         _errFen = _pos.fen;
       }
+      _wrongs.add('$_step:${m.uci}');
       _last = m;
       _pos = _pos.push(m);
       _state = _State.wrong;
@@ -651,6 +676,54 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     });
   }
 
+  /// "Move 2: Qxb7 instead of Qa4" for a recorded wrong move ("step:uci").
+  String _wrongText(String w) {
+    final i = w.indexOf(':');
+    final step = int.tryParse(w.substring(0, i)) ?? 0;
+    final uci = w.substring(i + 1);
+    var pos = Pos.fromFen(p.fen);
+    for (final u in p.solution.take(step)) {
+      final m = NormalMove.fromUci(u);
+      if (!pos.isLegal(m)) break;
+      pos = pos.push(m);
+    }
+    final m = NormalMove.fromUci(uci);
+    final played = pos.isLegal(m) ? pos.san(m) : uci;
+    final right = step < p.solution.length && pos.isLegal(NormalMove.fromUci(p.solution[step]))
+        ? pos.san(NormalMove.fromUci(p.solution[step]))
+        : '';
+    return 'Move ${step ~/ 2 + 1}: $played${right.isEmpty ? '' : ' instead of $right'}';
+  }
+
+  bool _consequencesBusy = false;
+
+  /// After a wrong move: the opponent's best line from there (the engine on
+  /// the device, depth 14, up to six plies), move by move.
+  Future<void> _consequences() async {
+    final puzzle = p;
+    setState(() => _consequencesBusy = true);
+    try {
+      final bot = await EngineBot.shared();
+      final lines = await bot.analyse(_pos.fen, depth: 14, multipv: 1);
+      if (!mounted || !identical(puzzle, p) || lines.isEmpty) return;
+      for (final uci in lines.first.pv.take(6)) {
+        if (!mounted || !identical(puzzle, p) || _state != _State.wrong) return;
+        final m = NormalMove.fromUci(uci);
+        if (!_pos.isLegal(m)) break;
+        setState(() {
+          _last = m;
+          _pos = _pos.push(m);
+        });
+        _sync();
+        await Future<void>.delayed(const Duration(milliseconds: 750));
+      }
+    } catch (_) {
+      // движок недоступен
+    } finally {
+      if (mounted) setState(() => _consequencesBusy = false);
+    }
+  }
+
   /// Back to the position before the wrong move; the pieces slide back.
   void _retry() {
     setState(() {
@@ -680,7 +753,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
   Future<void> _record(bool solved) async {
     await PuzzleHistory.add(PuzzleAttempt(p.id, p.source, solved, DateTime.now(),
-        rating: _rating, goal: goalLabels[p.goal], step: solved ? null : _errStep, fen: solved ? null : _errFen));
+        rating: _rating, goal: goalLabels[p.goal], step: _errStep, fen: _errFen, wrong: List.of(_wrongs)));
     if (mounted) setState(() => _recorded = true);
   }
 
@@ -845,26 +918,45 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           ),
         ),
       ),
+      // открыта из записанных попыток — какие ошибки были тогда
+      if (widget.review case final r? when r.wrong.isNotEmpty)
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(top: 4),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+              color: scheme.errorContainer.withValues(alpha: 0.4), borderRadius: BorderRadius.circular(10)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Your mistakes last time', style: TextStyle(fontWeight: FontWeight.w700, color: scheme.error)),
+            for (final w in r.wrong) Text(_wrongText(w), style: const TextStyle(fontSize: 13)),
+          ]),
+        ),
       const SizedBox(height: 8),
       if (_state == _State.wrong)
         Wrap(spacing: 8, runSpacing: 8, children: [
           FilledButton.icon(onPressed: _retry, icon: const Icon(Icons.replay_rounded), label: const Text('Try again')),
           OutlinedButton.icon(
               onPressed: _showSolution, icon: const Icon(Icons.visibility_outlined), label: const Text('Show solution')),
+          // что даёт неверный ход: лучшая линия соперника после него
+          OutlinedButton.icon(
+              onPressed: _consequencesBusy ? null : _consequences,
+              icon: const Icon(Icons.play_arrow_rounded),
+              label: const Text('Show the consequences')),
         ]),
       // предложение записать — исчезает плавно, кнопки ниже поднимаются
       AnimatedSwitcher(
         duration: const Duration(milliseconds: 260),
         transitionBuilder: (w, a) => FadeTransition(opacity: a, child: SizeTransition(sizeFactor: a, child: w)),
         // позиция сохраняется только после ошибки — та, где был неверный ход
-        child: _erred && !_recorded && _state != _State.solving
+        // запись попытки с ошибками: решена ли и сколько было ошибок
+        child: _erred && !_recorded && (finished || _state == _State.wrong)
             ? Padding(
                 key: const ValueKey('record'),
                 padding: const EdgeInsets.only(top: 8, bottom: 12),
                 child: OutlinedButton.icon(
-                  onPressed: () => _record(false),
+                  onPressed: () => _record(_state == _State.solved),
                   icon: const Icon(Icons.bookmark_add_outlined),
-                  label: const Text('Save result after mistake'),
+                  label: Text('Record · ${_wrongs.length} mistake${_wrongs.length == 1 ? '' : 's'}'),
                 ),
               )
             : const SizedBox(width: double.infinity, key: ValueKey('none')),
