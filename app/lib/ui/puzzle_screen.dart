@@ -18,7 +18,6 @@ import '../analysis/game.dart';
 import '../analysis/openings.dart';
 import '../analysis/pgn_import.dart' show normalizeCastling;
 import '../analysis/pos.dart';
-import '../analysis/settings.dart';
 import '../analysis/weakness.dart' show similarity;
 import '../engine/bot.dart';
 import '../engine/game_job.dart' show JobState;
@@ -80,8 +79,9 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
     for (final e in history.entries) {
       final job = await history.open(e.id);
       if (job == null || !job.ready) continue;
-      own.add(analyzeGame(job.snapshot(), const Settings(unit: Unit.pawns), book: widget.book));
-      list.addAll(puzzlesFrom(own.last));
+      own.add(await analysisOf(job.snapshot(), widget.book));
+      // партия без задач — только для профиля слабостей
+      if (job.puzzles) list.addAll(puzzlesFrom(own.last));
     }
     // профиль слабостей — по своим ошибкам (для «Consider weaknesses»)
     final stats = await collectStats(own, puzzles: list);

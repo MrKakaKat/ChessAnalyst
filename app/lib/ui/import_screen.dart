@@ -14,6 +14,7 @@ import 'history_store.dart';
 import 'home_screen.dart' show PawnIcon;
 import 'analysis_queue.dart';
 import 'job_screen.dart';
+import 'notices.dart';
 import 'prefs.dart';
 
 class ImportScreen extends StatefulWidget {
@@ -32,6 +33,9 @@ class _ImportScreenState extends State<ImportScreen> {
 
   /// Stop after the quick pass (depth 8), or go on to the chosen depth.
   bool _quickOnly = false;
+
+  /// Puzzles are made from this game (on by default).
+  bool _puzzles = true;
   String? _error;
   ImportedGame? _preview;
 
@@ -138,10 +142,14 @@ class _ImportScreenState extends State<ImportScreen> {
       quickFirst: _quickOnly,
       multipv: prefs.engineLines,
       power: _power,
+      puzzles: _puzzles,
     );
     // в очередь: если движок занят другой партией, эта ждёт своей очереди
     analysisQueue.add(job);
     await _batteryHint();
+    if (!mounted) return;
+    // после подсказки о батарее — один раз вопрос об уведомлениях
+    await askNotifications(context);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(builder: (_) => JobScreen(job: job, book: widget.book)));
@@ -250,7 +258,23 @@ class _ImportScreenState extends State<ImportScreen> {
               },
               style: TextStyle(fontSize: 12, color: scheme.outline)),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
+        // задачи из партии — от края до края, включено по умолчанию
+        SizedBox(
+          width: double.infinity,
+          child: _puzzles
+              ? FilledButton.tonalIcon(
+                  onPressed: () => setState(() => _puzzles = false),
+                  icon: const Icon(Icons.extension_rounded, size: 18),
+                  label: const Text('Puzzles from this game: on'),
+                )
+              : OutlinedButton.icon(
+                  onPressed: () => setState(() => _puzzles = true),
+                  icon: const Icon(Icons.extension_off_outlined, size: 18),
+                  label: const Text('Puzzles from this game: off'),
+                ),
+        ),
+        const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerRight,
           child: FilledButton.icon(

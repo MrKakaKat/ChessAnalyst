@@ -396,6 +396,18 @@ class _Card extends StatelessWidget {
             ),
           ),
       ],
+      if (!variation && negativeSteps.contains(r.step))
+        if (c.weightAt(c.ply) case final w?)
+          // вес ошибки: насколько трудно было увидеть наказание
+          _kv(context, 'Weight', Text('${w.value} · ${w.why}', style: _valueStyle)),
+      if (!variation && r.step != 'book' && r.step != 'forced' && r.bestMoves.isNotEmpty)
+        _kv(
+            context,
+            'Intuitive',
+            Text(
+                '${c.intuitivenessAt(c.ply)} · ${switch (c.intuitivenessAt(c.ply)) { < 30 => 'hard to see', < 60 => 'takes a look', _ => 'natural' }} '
+                '(${r.bestMoves.first.san})',
+                style: _valueStyle)),
       if (!variation && negativeSteps.contains(r.step)) ...[
         if (lossKind(r.pawns.e1, r.pawns.ep) case final l?) _kv(context, 'Loss', Text(lossLabels[l]!, style: _valueStyle)),
         _kv(context, 'Irreversibility', Text(irreversibilityLabels[irreversibilityOf(r.pawns.e1)]!, style: _valueStyle)),

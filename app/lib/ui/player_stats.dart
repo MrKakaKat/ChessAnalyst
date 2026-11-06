@@ -9,11 +9,12 @@ library;
 import 'package:dartchess/dartchess.dart' show Side;
 
 import '../analysis/game.dart';
+import '../analysis/human.dart';
 import '../analysis/kinds.dart';
 import '../analysis/openings.dart';
 import '../analysis/pos.dart';
-import '../analysis/settings.dart';
 import '../analysis/weakness.dart';
+import 'analysis_cache.dart';
 import 'history_store.dart';
 import 'labels.dart' show typeLabels;
 import 'prefs.dart';
@@ -56,7 +57,7 @@ Future<List<GameAnalysis>> ownAnalyses(OpeningBook? book) async {
     final job = await history.open(e.id);
     if (job == null || !job.ready) continue;
     if (job.tagSnapshot case final snap?) _snapshots[job.id] = snap;
-    out.add(analyzeGame(job.snapshot(), const Settings(unit: Unit.pawns), book: book));
+    out.add(await analysisOf(job.snapshot(), book));
   }
   return out;
 }
@@ -134,7 +135,13 @@ Future<PlayerStats> collectStats(List<GameAnalysis> games, {List<Puzzle> puzzles
       final next = r.ply + 1 < a.game.plies.length ? a.game.plies[r.ply + 1] : null;
       final tags = mistakeTags(r, board, best,
           after: next == null ? null : Pos.fromFen(next.fenBefore), reply: next?.lines.firstOrNull, lines: p.lines);
-      final w = mistakeWeight(r.step, underlined: underlines.has(a.game.id, r.ply));
+      // [авторское] вес ошибки в профиле растёт с трудностью наказания
+      // (human.dart, вес 0…100 даёт ×1…×2) и с каждым повторным пропуском
+      // того же лучшего хода (×1,5 за раз)
+      final hard = moveWeight(a.game, r.ply)?.value ?? 40;
+      final w = mistakeWeight(r.step, underlined: underlines.has(a.game.id, r.ply)) *
+          (1 + hard / 100) *
+          (1 + 0.5 * missedAgain(a, r.ply));
       for (final t in tags) {
         st.profile[t] = (st.profile[t] ?? 0) + w;
         if (t.startsWith('kind:')) st.missed[t.substring(5)] = (st.missed[t.substring(5)] ?? 0) + 1;

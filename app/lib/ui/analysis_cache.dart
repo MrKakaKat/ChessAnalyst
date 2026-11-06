@@ -22,7 +22,8 @@ Future<void> _queue = Future.value();
 
 /// The analysis of [g] in pawns, from the cache or made in the background.
 Future<GameAnalysis> analysisOf(GameData g, OpeningBook? book) {
-  final key = '${g.id}:${identityHashCode(g)}';
+  // одна и та же партия на той же глубине — тот же разбор
+  final key = '${g.id}:${g.plies.length}:${g.engine['depth']}';
   return _cache.putIfAbsent(key, () {
     final done = Completer<GameAnalysis>();
     _queue = _queue.then((_) async {

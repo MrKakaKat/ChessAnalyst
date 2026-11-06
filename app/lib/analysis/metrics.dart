@@ -3,9 +3,22 @@
 ///
 /// Accuracy of a move follows the common win-percentage formula: the drop of
 /// the expected result (W + D/2, in percent) from before to after the move,
-/// 103.17·e^(−0.0435·drop) − 3.17, clamped to 0…100. [простое решение] A side's
-/// accuracy is the plain mean over its moves; forced moves are left out (no
-/// choice), book moves count as played.
+/// 103.17·e^(−0.0435·drop) − 3.17, clamped to 0…100.
+///
+/// [авторское] A side's accuracy weighs three things (forced moves left out,
+/// book moves count as played):
+/// 1. **How much each move lost** — the move accuracies, averaged twice:
+///    weighted by how lively the game was around the move (the spread of the
+///    expected result over a few moves; quiet stretches count less), and as
+///    a harmonic mean, where one bad move drags the result down as it should
+///    (each move counted as at least 20). The base is 0.65 of the first and
+///    0.35 of the second.
+/// 2. **How often the engine's first choice was found** — the share of best
+///    moves scales the base from ×0.9 (none) to ×1 (all).
+/// 3. **The pattern** — serious mistakes in a row (laxity or worse) cost
+///    extra: 2 points for each that follows another one, at most 8.
+/// The plain mean of the first version was too kind: a game with a couple of
+/// blunders among quiet moves still scored in the nineties.
 ///
 /// [авторское] Difficulty asks how much the game demanded, from five parts,
 /// each 0…1:
@@ -35,10 +48,50 @@ double moveAccuracy(MoveRecord r) {
   return (103.1668 * math.exp(-0.04354 * drop) - 3.1669).clamp(0.0, 100.0);
 }
 
+bool _isBest(MoveRecord r) => r.step == 'best' || r.step == 'book';
+
+/// Mistakes that count for the pattern (inaccuracies in a row are normal).
+const _seriousSteps = {'laxity', 'mistake', 'blunder'};
+
+/// Accuracy of a side's moves [own] (see the library comment); null with
+/// no moves.
+double? sideAccuracy(List<MoveRecord> own) {
+  if (own.isEmpty) return null;
+  final acc = [for (final r in own) moveAccuracy(r)];
+  final win = [for (final r in own) r.wdl.e1 * 100];
+  // окно для живости игры: десятая часть ходов, от 2 до 8
+  final window = (own.length ~/ 10).clamp(2, 8);
+  double spread(int i) {
+    final from = math.max(0, i - window ~/ 2), to = math.min(own.length, from + window);
+    final xs = win.sublist(from, to);
+    final m = xs.reduce((a, b) => a + b) / xs.length;
+    final v = xs.map((x) => (x - m) * (x - m)).reduce((a, b) => a + b) / xs.length;
+    return math.sqrt(v).clamp(0.5, 12.0);
+  }
+
+  var sw = 0.0, swa = 0.0, inv = 0.0;
+  for (var i = 0; i < own.length; i++) {
+    final w = spread(i);
+    sw += w;
+    swa += w * acc[i];
+    inv += 1 / math.max(acc[i], 20);
+  }
+  final base = 0.65 * swa / sw + 0.35 * own.length / inv;
+  final best = own.where(_isBest).length / own.length;
+  var penalty = 0.0;
+  for (var i = 1; i < own.length; i++) {
+    if (_seriousSteps.contains(own[i].step) && _seriousSteps.contains(own[i - 1].step)) penalty += 2;
+  }
+  return (base * (0.9 + 0.1 * best) - math.min(8.0, penalty)).clamp(0.0, 100.0);
+}
+
 class SideAccuracy {
-  const SideAccuracy(this.overall, this.byStage, this.moves);
+  const SideAccuracy(this.overall, this.byStage, this.moves, {this.bestShare = 0});
 
   final double? overall;
+
+  /// Share of the moves that were the engine's first choice (0…1).
+  final double bestShare;
 
   /// Stage -> accuracy (null when the side made no move in that stage).
   final Map<String, double?> byStage;
@@ -77,15 +130,15 @@ class GameSummary {
 
 GameSummary summarize(GameAnalysis a) {
   final records = a.records;
-  double? mean(Iterable<double> xs) => xs.isEmpty ? null : xs.reduce((x, y) => x + y) / xs.length;
 
   final accuracy = <Side, SideAccuracy>{};
   for (final side in Side.values) {
     final own = records.where((r) => r.side == side && r.step != 'forced').toList();
     accuracy[side] = SideAccuracy(
-      mean(own.map(moveAccuracy)),
-      {for (final st in stages) st: mean(own.where((r) => r.stage == st).map(moveAccuracy))},
+      sideAccuracy(own),
+      {for (final st in stages) st: sideAccuracy([for (final r in own) if (r.stage == st) r])},
       own.length,
+      bestShare: own.isEmpty ? 0 : own.where(_isBest).length / own.length,
     );
   }
 

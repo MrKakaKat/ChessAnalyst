@@ -20,6 +20,7 @@ import '../engine/puzzle_rater.dart';
 import 'history_screen.dart';
 import 'history_store.dart';
 import 'job_screen.dart';
+import 'notices.dart';
 import 'player_stats.dart' show mistakeSnapshot;
 import 'puzzles.dart';
 
@@ -86,6 +87,8 @@ class AnalysisQueue extends ChangeNotifier {
     if (finished.isNotEmpty) _save();
     for (final j in finished) {
       _toRate.add(j);
+      // уведомление: партия разобрана (если пользователь согласился)
+      notifyAnalysisDone(j.id.hashCode & 0x7fffffff, j.title);
     }
     _rateNext();
     _pump();
@@ -109,7 +112,7 @@ class AnalysisQueue extends ChangeNotifier {
         // версия правил может убрать
         j.tagSnapshot = mistakeSnapshot(a);
         await history.save(j);
-        await ratePuzzles(puzzlesFrom(a), again: true);
+        if (j.puzzles) await ratePuzzles(puzzlesFrom(a), again: true);
       }
     } catch (_) {}
     ratingPuzzles = false;
@@ -166,8 +169,10 @@ class QueueBadges extends StatelessWidget {
         listenable: Listenable.merge([analysisQueue, ...analysisQueue.jobs]),
         builder: (context, _) {
           final jobs = analysisQueue.jobs;
-          // больше трёх — четвёртый кружок «+X» ведёт в историю
-          final shown = jobs.length > 3 ? jobs.take(3).toList() : jobs;
+          // [авторское] на экране — только идущий анализ и один кружок
+          // ожидания с числом остальных («+X», ведёт в историю)
+          final running = jobs.where((j) => j.state == JobState.running).toList();
+          final shown = running.isNotEmpty ? running.take(1).toList() : jobs.take(1).toList();
           final rest = jobs.length - shown.length;
           return Positioned(
             right: 12,
@@ -260,7 +265,8 @@ class JobRing extends StatelessWidget {
   }
 }
 
-/// "+X": the analyses beyond the three rings; opens the history.
+/// The waiting ring: the analyses in the queue besides the running one;
+/// opens the history.
 class _MoreRing extends StatelessWidget {
   const _MoreRing({required this.count});
 
@@ -280,7 +286,20 @@ class _MoreRing extends StatelessWidget {
           onTap: analysisQueue.openHistory,
           child: SizedBox.square(
             dimension: 46,
-            child: Center(child: Text('+$count', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800))),
+            // кружок ожидания: пустое кольцо, часы и число партий в очереди
+            child: Stack(alignment: Alignment.center, children: [
+              Padding(
+                padding: const EdgeInsets.all(4),
+                child: SizedBox.expand(
+                  child: CircularProgressIndicator(
+                      value: 0, strokeWidth: 3.5, backgroundColor: scheme.surfaceContainerHighest),
+                ),
+              ),
+              Column(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.hourglass_top_rounded, size: 12, color: scheme.outline),
+                Text('+$count', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, height: 1)),
+              ]),
+            ]),
           ),
         ),
       ),

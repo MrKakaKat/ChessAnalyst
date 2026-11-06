@@ -382,13 +382,19 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
   /// The branch count at the edge of the move's cell: a small chip with the
   /// number only; a tap folds or unfolds the branches under the row.
   Widget _branchCount(BuildContext context, int anchor, bool current, {double hitWidth = 0}) {
-    final n = c.variationsAt(anchor).length;
+    // у первого хода — и ветки от начальной позиции: без отдельной строки
+    final anchors = [if (anchor == 0) -1, anchor];
+    final n = anchors.fold(0, (x, a) => x + c.variationsAt(a).length);
     if (n == 0) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
-    final open = !_folded.contains(anchor);
+    final open = anchors.any((a) => c.variationsAt(a).isNotEmpty && !_folded.contains(a));
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => setState(() => open ? _folded.add(anchor) : _folded.remove(anchor)),
+      onTap: () => setState(() {
+        for (final a in anchors) {
+          open ? _folded.add(a) : _folded.remove(a);
+        }
+      }),
       child: Container(
         constraints: BoxConstraints(minWidth: hitWidth.clamp(0.0, 120.0), minHeight: 26),
         alignment: Alignment.centerRight,
@@ -435,8 +441,6 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ветки от начальной позиции — у них нет клетки хода, счётчик здесь
-          if (anchor == -1) _branchCount(context, -1, false),
           AnimatedSize(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeInOutCubic,

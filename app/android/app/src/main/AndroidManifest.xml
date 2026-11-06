@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- проверка обновлений на GitHub (update_check.dart) -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- уведомление о законченном анализе партии (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="ChessAnalyst"
         android:name="${applicationName}"

@@ -77,6 +77,7 @@ const kindLabels = {
   'offer_barter': 'Barter offer',
   'free': 'Free material',
   'retreat': 'Retreat from attack',
+  'missed_again': 'Missed again',
   'trade_choice': 'Choice of trade',
   'wrong_piece': 'Wrong piece',
   'development': 'Development',

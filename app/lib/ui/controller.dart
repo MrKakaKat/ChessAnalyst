@@ -11,6 +11,7 @@
 library;
 
 import 'dart:async';
+import 'dart:isolate';
 import 'dart:math' as math;
 
 import 'package:dartchess/dartchess.dart';
@@ -23,6 +24,7 @@ import '../analysis/character.dart';
 import '../analysis/kinds.dart';
 import '../analysis/classify.dart';
 import '../analysis/game.dart';
+import '../analysis/human.dart';
 import '../analysis/ideas.dart';
 import '../analysis/locks.dart';
 import '../analysis/openings.dart';
@@ -957,8 +959,21 @@ class AnalysisController extends ChangeNotifier {
             isNegativeAt(ply) && best.move != p.uci
                 ? kindsOf(board, Pos.move(best.move), best.pv, best.eval, s, lines: p.lines)
                 : <String>[];
-        return (played, missed);
+        // тот же лучший ход упущен и на прошлом своём ходу — «упущен снова»
+        final again = missed.isNotEmpty && missedAgain(_analysis, ply) > 0;
+        return (played, again ? ['missed_again', ...missed] : missed);
       });
+
+  final _weights = <(int, int), MoveWeight?>{};
+  final _intuitive = <(int, int), int>{};
+
+  /// How hard the punishment of the mistake at [ply] was to see (human.dart).
+  MoveWeight? weightAt(int ply) =>
+      _weights.putIfAbsent((ply, identityHashCode(game)), () => isNegativeAt(ply) ? moveWeight(game, ply) : null);
+
+  /// How intuitive the best move of the position before [ply] is.
+  int intuitivenessAt(int ply) =>
+      _intuitive.putIfAbsent((ply, identityHashCode(game)), () => intuitiveness(_analysis, ply));
 
   final _characters = <(int, int), PositionCharacter>{};
 
@@ -1005,14 +1020,32 @@ class AnalysisController extends ChangeNotifier {
   bool get updatingData => _updatingData;
 
   /// New engine data for the same moves (the device analysis went on).
-  void updateGame(GameData g) {
-    game = g;
-    _analysis = analyzeGame(game, Settings(unit: _unit, percentSteps: _percent), book: book);
-    _refresh();
-    _updatingData = true;
-    notifyListeners();
-    _updatingData = false;
+  ///
+  /// [авторское] The analysis is made in a background isolate (between
+  /// frames on the web): a long game re-analysed every few seconds while
+  /// the device analysis runs used to freeze the screen.
+  Future<void> updateGame(GameData g) async {
+    if (_updating) return;
+    _updating = true;
+    try {
+      final settings = Settings(unit: _unit, percentSteps: _percent);
+      final b = book;
+      final a = kIsWeb
+          ? await Future<GameAnalysis>.delayed(Duration.zero, () => analyzeGame(g, settings, book: b))
+          : await Isolate.run(() => analyzeGame(g, settings, book: b));
+      if (_disposed) return;
+      game = g;
+      _analysis = a;
+      _refresh();
+      _updatingData = true;
+      notifyListeners();
+      _updatingData = false;
+    } finally {
+      _updating = false;
+    }
   }
+
+  bool _updating = false;
 
   /// Derived data after a new analysis.
   void _refresh() {
@@ -1329,7 +1362,8 @@ class AnalysisController extends ChangeNotifier {
       }
       while (true) {
         // перемотка назад — быстро
-        final fast = at + 1 < _frames.length && _frames[at + 1].fast;
+        // перед перемоткой — обычная пауза на последнем ходе линии
+        final fast = at >= 0 && _frames[at].fast && at + 1 < _frames.length && _frames[at + 1].fast;
         await Future<void>.delayed(Duration(milliseconds: fast ? math.max(90, prefs.ideaStepMs ~/ 6) : prefs.ideaStepMs));
         if (token != _playToken || _disposed) return;
         // кадры линий ещё считаются — подождать их

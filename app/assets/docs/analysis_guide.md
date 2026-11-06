@@ -120,6 +120,7 @@ what you missed, then by what you were punished with.
 | Reroute | a piece starts a manoeuvre over several moves |
 | Poisoned material | a capture that loses: taking was the mistake |
 | Wrong piece | the right capture, made with the wrong piece |
+| Missed again | the same best move was there on the player's previous move as well, and was missed both times |
 
 **What a mistake cost** (shown for negative moves)
 - **Loss** — *worse from equal*: an equal position became worse. If there was
@@ -128,6 +129,15 @@ what you missed, then by what you were punished with.
   opponent is better now).
 - **Irreversibility** — how much there was to lose: low in an equal
   position, medium with an advantage, high in a winning one.
+- **Weight** — how hard the punishment was to see, 0–100. A piece simply
+  left hanging is 0; a one-move tactic (fork, pin) 20; two moves 35, three
+  50, four or five 60, six or more 70; a positional punishment 40. A quiet
+  first move of the punishment and a single good reply for the opponent
+  add 10 each. Harder and repeated misses weigh more in your weakness
+  profile.
+- **Intuitive** — how natural the best move is for a human, 0–100.
+  Captures, recaptures and checks are easy to see; sacrifices, quiet moves
+  in tactical positions, retreats and long forcing lines are not.
 - **Underline: not clear to me why** — mark a mistake you did not
   understand. It counts double in your weakness profile, so puzzles like it
   come up more often.
@@ -246,8 +256,14 @@ games.
 
 ## Game summary
 
-- **Accuracy** — 0–100% for each side, from how much each move lowered the
-  expected result. Next to it is a rough playing strength for this one game.
+- **Accuracy** — 0–100% for each side. It weighs how much each move lowered
+  the expected result (lively stretches of the game count more, and one bad
+  move pulls the result down), how often the engine's first choice was
+  found, and serious mistakes in a row. Next to it: a rough playing
+  strength for this one game, the share of best moves, and how many
+  hard-to-see best moves (intuitiveness under 30) were found. Finding
+  almost all of them is shown in red: unusual precision, though one game
+  proves nothing.
 - **Moves by kind** — how many best moves, inaccuracies, mistakes and so on
   each side made.
 - **Difficulty** — how much the game demanded: tactics, the depth of the
@@ -327,3 +343,7 @@ character, the kinds missed, the kinds you were punished by, and the cost.
   the favourites only. Analysing a game again keeps its star.
 - Once a day at start the app looks for a new version of ChessAnalyst on
   GitHub and offers it. Only that request is sent.
+- When a game is analysed, its puzzles can be switched off; the game still
+  counts for the weakness profile.
+- The app can notify you when an analysis is finished (it asks once, after
+  your first analysis).

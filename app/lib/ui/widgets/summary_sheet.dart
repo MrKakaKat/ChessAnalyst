@@ -14,6 +14,7 @@ import '../../analysis/metrics.dart';
 import '../../analysis/settings.dart';
 import '../controller.dart';
 import '../prefs.dart';
+import '../../analysis/human.dart';
 import '../../analysis/kinds.dart' show kindLabels;
 import '../labels.dart';
 import '../step_icons.dart';
@@ -75,9 +76,19 @@ void showSummary(BuildContext context, AnalysisController c) {
           Text('Accuracy', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(child: _SideColumn(name: c.game.white, acc: s.accuracy[Side.white]!, difficulty: s.difficulty)),
+            Expanded(
+                child: _SideColumn(
+                    name: c.game.white,
+                    acc: s.accuracy[Side.white]!,
+                    difficulty: s.difficulty,
+                    hard: hardMovesFound(c.analysis, Side.white))),
             const SizedBox(width: 16),
-            Expanded(child: _SideColumn(name: c.game.black, acc: s.accuracy[Side.black]!, difficulty: s.difficulty)),
+            Expanded(
+                child: _SideColumn(
+                    name: c.game.black,
+                    acc: s.accuracy[Side.black]!,
+                    difficulty: s.difficulty,
+                    hard: hardMovesFound(c.analysis, Side.black))),
           ]),
           const SizedBox(height: 20),
           _Difficulty(summary: s, sharpness: sharp),
@@ -90,11 +101,14 @@ void showSummary(BuildContext context, AnalysisController c) {
 }
 
 class _SideColumn extends StatelessWidget {
-  const _SideColumn({required this.name, required this.acc, required this.difficulty});
+  const _SideColumn({required this.name, required this.acc, required this.difficulty, required this.hard});
 
   final String name;
   final SideAccuracy acc;
   final double difficulty;
+
+  /// Hard-to-see best moves: (found, chances) — human.dart.
+  final (int, int) hard;
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +124,14 @@ class _SideColumn extends StatelessWidget {
       ),
       if (ratingEstimate(acc.overall, difficulty) case final r?)
         Text('$r rating', style: TextStyle(fontSize: 12, color: scheme.outline)),
+      Text('Best moves ${(acc.bestShare * 100).round()}%', style: TextStyle(fontSize: 12, color: scheme.outline)),
+      // трудные лучшие ходы (интуитивность ниже 30): сколько найдено
+      if (hard.$2 > 0)
+        Text('Hard moves found ${hard.$1} of ${hard.$2}',
+            style: TextStyle(
+                fontSize: 12,
+                // почти все трудные ходы найдены — необычная точность
+                color: hard.$2 >= 4 && hard.$1 / hard.$2 >= 0.75 ? scheme.error : scheme.outline)),
       const SizedBox(height: 6),
       for (final st in stages)
         Padding(

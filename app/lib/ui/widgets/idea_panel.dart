@@ -286,7 +286,7 @@ class _ChainTimeline extends StatelessWidget {
       if (p == idea.punishPly) return 'Error';
       if (p == idea.startPly - 1) return 'Start';
       if (c.onlySince(idea) case final s? when p == s - 1) return 'Only move since';
-      if (c.beganWith(idea) case final s? when p == s - 1) return 'Began with ${plyText(s)} ${c.game.plies[s].san}';
+      if (c.beganWith(idea) case final s? when p == s - 1) return 'Began with\n${plyText(s)} ${c.game.plies[s].san}';
       return '';
     }
 
@@ -298,8 +298,9 @@ class _ChainTimeline extends StatelessWidget {
       return scheme.primary;
     }
 
+    // подпись станции — до двух строк: высота под них, без наложения
     return SizedBox(
-      height: 74,
+      height: 92,
       child: LayoutBuilder(builder: (context, box) {
         final n = plies.length;
         final gap = n > 1 ? (box.maxWidth - 2 * _inset) / (n - 1) : 0.0;
@@ -318,10 +319,10 @@ class _ChainTimeline extends StatelessWidget {
           ),
           for (final (i, p) in plies.indexed)
             Positioned(
-              left: (n > 1 ? _inset + gap * i : box.maxWidth / 2) - 36,
+              left: (n > 1 ? _inset + gap * i : box.maxWidth / 2) - 42,
               top: 0,
-              width: 72,
-              height: 74,
+              width: 84,
+              height: 92,
               child: GestureDetector(
                 // вся область станции, а не только кружок и подпись
                 behavior: HitTestBehavior.opaque,
@@ -343,7 +344,11 @@ class _ChainTimeline extends StatelessWidget {
                     ),
                   ),
                   Text('${plyText(p)} ${c.game.plies[p].san}', style: const TextStyle(fontSize: 11), maxLines: 1),
-                  Text(role(p), style: TextStyle(fontSize: 10, color: nodeColor(p))),
+                  Text(role(p),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 10, height: 1.15, color: nodeColor(p))),
                 ]),
               ),
             ),

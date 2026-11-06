@@ -74,6 +74,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  /// The analysis window of a running analysis (its ring was tapped).
+  Future<void> _openJob(String id) async {
+    final job = await history.open(id);
+    if (job == null || !mounted) return;
+    if (job.stalled) analysisQueue.add(job);
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => JobScreen(job: job, book: widget.book, autoOpen: false),
+      ),
+    );
+  }
+
   void _toggle(String id) => setState(() => _selected.contains(id) ? _selected.remove(id) : _selected.add(id));
 
   /// Deletes the analyses and the puzzles made from them (with their ratings
@@ -154,7 +166,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       if (old == null) continue;
       old.pause();
       analysisQueue.remove(old);
-      final job = AnalysisJob(id: old.id, source: old.source, targetDepth: depth, multipv: lines, power: old.power);
+      final job = AnalysisJob(id: old.id, source: old.source, targetDepth: depth, multipv: lines, power: old.power, puzzles: old.puzzles);
       await PuzzleRatings.removeGame(id);
       jobs.add(job);
     }
@@ -229,12 +241,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: Text(
-                            'Long press to select several: analyze them again or delete them.',
-                            style: TextStyle(fontSize: 12, color: scheme.outline),
-                          ),
-                        ),
+                        const Spacer(),
                         FilterChip(
                           avatar: Icon(_favOnly ? Icons.star_rounded : Icons.star_border_rounded, size: 18),
                           label: const Text('Favourites'),
@@ -248,8 +255,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   if (entries.isEmpty)
                     Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text('No favourite games yet: tap the star of a finished analysis.',
-                          textAlign: TextAlign.center, style: TextStyle(color: scheme.outline)),
+                      child: Text(
+                        'No favourite games yet: tap the star of a finished analysis.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: scheme.outline),
+                      ),
                     ),
                   for (final e in entries)
                     ListTile(
@@ -288,36 +298,43 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       trailing: _selecting
                           ? null
                           : (e.progress < 1
-                                ? SizedBox(
-                                    width: 28,
-                                    height: 28,
-                                    child: switch (analysisQueue.jobs.where((j) => j.id == e.id).firstOrNull) {
-                                      final job? => ListenableBuilder(
-                                        listenable: job,
-                                        builder: (_, _) => JobRing(job: job, stroke: 3),
-                                      ),
-                                      null => CircularProgressIndicator(value: e.progress, strokeWidth: 3),
-                                    },
+                                // кружок загрузки — окно загрузки анализа
+                                ? InkResponse(
+                                    radius: 22,
+                                    onTap: () => _openJob(e.id),
+                                    child: SizedBox(
+                                      width: 28,
+                                      height: 28,
+                                      child: switch (analysisQueue.jobs.where((j) => j.id == e.id).firstOrNull) {
+                                        final job? => ListenableBuilder(
+                                          listenable: job,
+                                          builder: (_, _) => JobRing(job: job, stroke: 3),
+                                        ),
+                                        null => CircularProgressIndicator(value: e.progress, strokeWidth: 3),
+                                      },
+                                    ),
                                   )
                                 : Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      // избранное — только у законченного разбора
-                                      IconButton(
-                                        tooltip: history.isFavorite(e.id)
-                                            ? 'Remove from favourites'
-                                            : 'Add to favourites',
-                                        onPressed: () => history.toggleFavorite(e.id),
-                                        icon: Icon(
-                                          history.isFavorite(e.id) ? Icons.star_rounded : Icons.star_border_rounded,
-                                          color: history.isFavorite(e.id) ? const Color(0xFFF2B01E) : scheme.outline,
-                                        ),
-                                      ),
+                                      // звезда — только у избранной партии; переключение — в меню
+                                      if (history.isFavorite(e.id))
+                                        const Icon(Icons.star_rounded, color: Color(0xFFF2B01E)),
                                       PopupMenuButton<String>(
-                                        onSelected: (a) => a == 'again' ? _reanalyze({e.id}) : _delete({e.id}),
-                                        itemBuilder: (_) => const [
-                                          PopupMenuItem(value: 'again', child: Text('Analyze again')),
-                                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                                        onSelected: (a) => switch (a) {
+                                          'again' => _reanalyze({e.id}),
+                                          'fav' => history.toggleFavorite(e.id),
+                                          _ => _delete({e.id}),
+                                        },
+                                        itemBuilder: (_) => [
+                                          PopupMenuItem(
+                                            value: 'fav',
+                                            child: Text(
+                                              history.isFavorite(e.id) ? 'Remove from favourites' : 'Add to favourites',
+                                            ),
+                                          ),
+                                          const PopupMenuItem(value: 'again', child: Text('Analyze again')),
+                                          const PopupMenuItem(value: 'delete', child: Text('Delete')),
                                         ],
                                       ),
                                     ],

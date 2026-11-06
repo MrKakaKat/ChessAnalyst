@@ -71,6 +71,7 @@ class AnalysisJob extends ChangeNotifier {
     DateTime? created,
     this.finished,
     this.rules = analysisRules,
+    this.puzzles = true,
     this.tagSnapshot,
   })  : plies = plies ?? List.filled(source.ucis.length, null),
         depthAt = depthAt ?? List.filled(source.ucis.length, 0),
@@ -97,6 +98,9 @@ class AnalysisJob extends ChangeNotifier {
 
   /// Version of the analysis rules it was made with ([analysisRules]).
   final int rules;
+
+  /// Puzzles are made from this game.
+  final bool puzzles;
 
   /// The traits of each side's negative moves when the analysis ended
   /// (side → tag → count): the statistics keep kinds that a later version
@@ -287,6 +291,7 @@ class AnalysisJob extends ChangeNotifier {
         'created': created.toIso8601String(),
         if (finished != null) 'finished': finished!.toIso8601String(),
         'rules': rules,
+        'puzzles': puzzles,
         'tag_snapshot': ?tagSnapshot,
         'target': targetDepth,
         'multipv': multipv,
@@ -324,6 +329,7 @@ class AnalysisJob extends ChangeNotifier {
       finished: DateTime.tryParse(j['finished'] as String? ?? ''),
       // анализы до появления версии правил — версия 1
       rules: j['rules'] as int? ?? 1,
+      puzzles: j['puzzles'] as bool? ?? true,
       tagSnapshot: (j['tag_snapshot'] as Map?)?.map((k, v) => MapEntry(k as String, (v as Map).cast<String, int>())),
       targetDepth: j['target'] as int,
       multipv: j['multipv'] as int? ?? 10,
