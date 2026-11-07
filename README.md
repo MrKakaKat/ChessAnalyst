@@ -4,8 +4,8 @@ Chess game analysis that looks for where a mistake began. A unique system for se
 
 ## Download
 
-- [ChessAnalyst-1.3.1.apk](https://github.com/MrKakaKat/ChessAnalyst/releases/download/v1.3.1/ChessAnalyst-1.3.1.apk) (arm64-v8a)
-- [ChessAnalyst-1.3.1-web.zip](https://github.com/MrKakaKat/ChessAnalyst/releases/download/v1.3.1/ChessAnalyst-1.3.1-web.zip)
+- [ChessAnalyst-1.3.2.apk](https://github.com/MrKakaKat/ChessAnalyst/releases/download/v1.3.2/ChessAnalyst-1.3.2.apk) (arm64-v8a)
+- [ChessAnalyst-1.3.2-web.zip](https://github.com/MrKakaKat/ChessAnalyst/releases/download/v1.3.2/ChessAnalyst-1.3.2-web.zip)
 
 > Install only from this repository's Releases. The signing key is public (so anyone can build the app themselves), which means an APK from anywhere else could be a modified copy that still installs over yours. 
 

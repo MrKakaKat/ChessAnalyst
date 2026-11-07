@@ -289,14 +289,18 @@ puzzle when one move stands out:
 - the only defence that holds.
 
 The solution goes on while the tactic does. In attacking puzzles any move
-that keeps the goal counts as correct. In defensive puzzles only the one
-saving line counts.
+that keeps the goal counts as correct. In defensive puzzles the first move
+must be the one saving move; after it, another move counts too when it
+holds as well (within half a pawn of the solution).
 
 Puzzles do not overlap: when two puzzles share positions, the longer one
 is kept.
 
 The rating of a puzzle comes from the engine. It is computed when the
-game's analysis ends, and again when the analysis is sent deeper. It
+game's analysis ends, and again when the analysis is sent deeper. Each of
+your moves in the solution (up to three) is rated, and the hardest one
+counts most: a puzzle that starts with a plain recapture and needs a deep
+quiet move after it is as hard as that quiet move. A move's difficulty
 depends on how deep the engine must search before it keeps choosing the
 solution, how many other moves look as good at a glance, whether the key
 move is quiet, the length of the solution and a defensive goal. It also

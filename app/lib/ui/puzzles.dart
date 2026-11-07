@@ -81,13 +81,17 @@ class Puzzle {
   List<List<String>> get solutions => [solution, ...alternatives];
 
   /// Whether a solver move that left [after] (evaluated for the opponent,
-  /// who is to move) keeps the puzzle's goal.
-  bool keepsGoal(Eval after) {
+  /// who is to move) keeps the puzzle's goal. In a defence the first move
+  /// must be the one that holds; a later move ([step] > 0) counts when it
+  /// holds as well: within half a pawn of the solution and not below −1.
+  bool keepsGoal(Eval after, {int step = 0}) {
     const s = Settings();
-    if (goal == PuzzleGoal.defend) return false;
     final mates = after.mate != null && after.mate! < 0;
-    if (goal == PuzzleGoal.mate) return mates;
     final v = -after.pawns(s);
+    if (goal == PuzzleGoal.defend) {
+      return step > 0 && (mates || (after.mate == null && v >= math.max(-1.0, value - 0.5)));
+    }
+    if (goal == PuzzleGoal.mate) return mates;
     return mates || v >= math.max(goal == PuzzleGoal.win ? 3.0 : 1.0, s.excellentRatio * value);
   }
 
@@ -298,7 +302,7 @@ class PuzzleRatings {
 
   /// Version of the rating formula (puzzle_rater.dart): ratings of an older
   /// one are forgotten and the puzzles are rated again.
-  static const version = 2;
+  static const version = 3;
 
   static Future<Map<String, int>> load() async {
     try {

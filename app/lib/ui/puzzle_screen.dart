@@ -583,7 +583,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         return _accept();
       }
     }
-    if (p.goal == PuzzleGoal.defend) return _wrong(m);
+    // в защите первый ход единственный, дальше годится и другой, что держит
+    if (p.goal == PuzzleGoal.defend && _step == 0) return _wrong(m);
     _checkWithEngine(m);
   }
 
@@ -612,10 +613,12 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     _sync();
   }
 
-  /// A move off the line in an attack puzzle: the engine decides whether it
-  /// keeps the goal; if so the puzzle goes on along the engine's line.
+  /// A move off the line (in a defence, after the first move): the engine
+  /// decides whether it keeps the goal; if so the puzzle goes on along the
+  /// engine's line.
   Future<void> _checkWithEngine(NormalMove m) async {
     final puzzle = p;
+    final step = _step;
     final before = _pos;
     final after = before.push(m);
     setState(() {
@@ -631,7 +634,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       try {
         final bot = await EngineBot.shared();
         final lines = await bot.analyse(after.fen, depth: 14, multipv: 1);
-        if (lines.isNotEmpty && puzzle.keepsGoal(lines.first.eval)) tail = tacticTail(after, lines.first.pv);
+        if (lines.isNotEmpty && puzzle.keepsGoal(lines.first.eval, step: step)) tail = tacticTail(after, lines.first.pv);
       } catch (_) {}
     }
     if (!mounted || !identical(puzzle, p) || !_checking) return;
