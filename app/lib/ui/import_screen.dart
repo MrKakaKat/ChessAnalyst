@@ -36,6 +36,9 @@ class _ImportScreenState extends State<ImportScreen> {
 
   /// Puzzles are made from this game (on by default).
   bool _puzzles = true;
+
+  /// The difficulty analysis after the classic one (off by default: slow).
+  bool _difficulty = false;
   String? _error;
   ImportedGame? _preview;
 
@@ -143,6 +146,7 @@ class _ImportScreenState extends State<ImportScreen> {
       multipv: prefs.engineLines,
       power: _power,
       puzzles: _puzzles,
+      difficulty: _difficulty,
     );
     // в очередь: если движок занят другой партией, эта ждёт своей очереди
     analysisQueue.add(job);
@@ -274,6 +278,15 @@ class _ImportScreenState extends State<ImportScreen> {
                   label: const Text('Puzzles from this game: off'),
                 ),
         ),
+        const SizedBox(height: 10),
+        DifficultyToggle(on: _difficulty, onChanged: (v) => setState(() => _difficulty = v)),
+        if (g != null && _difficulty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+                'Adds about ${durationText(Duration(milliseconds: (g.sans.length * scanEstimateMs(_power) * 1.5).round()))}.',
+                style: TextStyle(fontSize: 12, color: scheme.outline)),
+          ),
         const SizedBox(height: 16),
         Align(
           alignment: Alignment.centerRight,
@@ -282,5 +295,45 @@ class _ImportScreenState extends State<ImportScreen> {
         ),
       ]),
     );
+  }
+}
+
+/// The switch of the difficulty analysis: a big button, off by default.
+class DifficultyToggle extends StatelessWidget {
+  const DifficultyToggle({super.key, required this.on, required this.onChanged});
+
+  final bool on;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final label = Column(mainAxisSize: MainAxisSize.min, children: [
+      Text('Position difficulty: ${on ? 'on' : 'off'}'),
+      Text('not recommended · much slower', style: TextStyle(fontSize: 11, color: on ? null : scheme.outline)),
+    ]);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SizedBox(
+        width: double.infinity,
+        child: on
+            ? FilledButton.tonalIcon(
+                onPressed: () => onChanged(false),
+                style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 10)),
+                icon: const Icon(Icons.psychology_alt_rounded, size: 18),
+                label: label)
+            : OutlinedButton.icon(
+                onPressed: () => onChanged(true),
+                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 10)),
+                icon: const Icon(Icons.psychology_alt_outlined, size: 18),
+                label: label),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Text(
+            'After the classic analysis the engine walks the best lines of every position and finds the only moves: '
+            'how hard each position is for each side, the practical evaluation and puzzles that count it.',
+            style: TextStyle(fontSize: 12, color: scheme.outline)),
+      ),
+    ]);
   }
 }

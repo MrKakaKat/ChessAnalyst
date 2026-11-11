@@ -411,7 +411,7 @@ class _GameScreenState extends State<GameScreen> {
       round(const Icon(Icons.tune_rounded, size: 20), 'Quick settings', _quickSettings),
       const SizedBox(width: 8),
       SegmentedButton<Unit>(
-        segments: [for (final u in Unit.values) ButtonSegment(value: u, label: Text(unitLabels[u]!))],
+        segments: [for (final u in Unit.values) ButtonSegment(value: u, label: Text(unitLabel(u, practical: c.hasDifficulty)))],
         selected: {c.unit},
         showSelectedIcon: false,
         style: ButtonStyle(

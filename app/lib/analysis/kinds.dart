@@ -6,8 +6,16 @@
 /// position after it and the engine line that follows; a move can have
 /// several kinds, the first is the main one:
 /// - mate, promotion;
-/// - fork: the moved piece attacks two pieces worth a knight or more (or the
-///   king and such a piece);
+/// - fork (positional): the moved piece attacks two pieces worth a knight or
+///   more (or the king and such a piece) here and now;
+/// - tactical fork: the move is forcing (check, capture, sacrifice) and the
+///   line leads in up to three more own forcing moves to a fork — it comes
+///   before the positional fork and the opponent's best play usually leads
+///   into it;
+/// - blocked king escape: a quiet move (no check, not in the opening) whose
+///   piece takes a square from the enemy king for its next move, leaving it
+///   two squares or fewer (often a bishop); in the endgame a king move that
+///   takes two squares from the other king (the start of a blockade);
 /// - pin: after the move a piece of the opponent is pinned that was not;
 /// - sacrifice: the moved piece can be taken and the line keeps the material
 ///   down for a while (as for brilliant);
@@ -66,7 +74,9 @@ import 'settings.dart';
 const kindLabels = {
   'mate': 'Mate',
   'promotion': 'Promotion',
-  'fork': 'Fork',
+  'fork': 'Positional fork',
+  'fork_tactical': 'Tactical fork',
+  'block_escape': 'Blocked king escape',
   'pin': 'Pin',
   'sacrifice': 'Sacrifice',
   'tempo': 'Tempo attack',
@@ -123,12 +133,18 @@ List<String> kindsOf(Pos board, NormalMove move, List<String> pv, Eval eval, Set
   if (after.p.isCheckmate) out.add('mate');
   if (move.promotion != null) out.add('promotion');
 
-  // вилка: сходившая фигура бьёт две ценные фигуры (или короля и ценную)
-  final targets = after.attacks(move.to).squares.where((sq) {
-    final p = after.pieceAt(sq);
-    return p != null && p.color != me && (p.role == Role.king || _value(p.role) >= 3);
-  }).length;
-  if (targets >= 2 && piece.role != Role.king) out.add('fork');
+  // вилка (позиционная): сходившая фигура бьёт две ценные фигуры (или
+  // короля и ценную) здесь и сейчас
+  final fork = _forks(after, move, me);
+  if (fork) out.add('fork');
+  // [авторское] тактическая вилка: ход начинает форсированную часть (шах,
+  // взятие, жертва), после которой по лучшей линии появляется вилка
+  if (!fork && _tacticalFork(board, after, move, pv, me)) out.add('fork_tactical');
+
+  // [авторское] перекрытое поле отхода: ход отнимает у короля соперника поле
+  // отхода на следующий ход (часто слоном); в эндшпиле король, не пускающий
+  // короля, — отсюда блокады
+  if (_blocksKingEscape(board, after, move, me, s)) out.add('block_escape');
 
   // связка: связанная фигура соперника, которой раньше не было
   for (final (sq, p) in after.pieces) {
@@ -269,6 +285,77 @@ List<String> playedKinds(Pos board, NormalMove move, List<String> pv, Eval eval,
     return ['poisoned', ...out.where((k) => k != 'capture' && k != 'free')];
   }
   return out;
+}
+
+/// The moved piece (not the king) attacks two valuable enemy pieces, or the
+/// king and one.
+bool _forks(Pos after, NormalMove move, Side me) {
+  final piece = after.pieceAt(move.to);
+  if (piece == null || piece.role == Role.king) return false;
+  final targets = after.attacks(move.to).squares.where((sq) {
+    final p = after.pieceAt(sq);
+    return p != null && p.color != me && (p.role == Role.king || _value(p.role) >= 3);
+  }).length;
+  return targets >= 2;
+}
+
+/// A move with check, a capture or a piece left to be taken: forcing.
+bool _forcing(Pos board, NormalMove m) =>
+    board.givesCheck(m) || board.isCapture(m) || features.leavesMaterialEnPrise(board, m);
+
+/// [авторское] Tactical fork: [move] is forcing, and within the next three
+/// own moves of the line [pv], each of them forcing too, an own move forks.
+bool _tacticalFork(Pos board, Pos after, NormalMove move, List<String> pv, Side me) {
+  if (!_forcing(board, move)) return false;
+  var b = after;
+  for (var i = 1; i < pv.length && i <= 6; i++) {
+    final m = NormalMove.fromUci(pv[i]);
+    if (!b.isLegal(m)) return false;
+    final next = b.push(m);
+    if (i.isEven) {
+      if (_forks(next, m, me)) return true;
+      if (!_forcing(b, m)) return false;
+    }
+    b = next;
+  }
+  return false;
+}
+
+/// Legal king moves of the side to move in [b].
+int _kingMoves(Pos b) {
+  final k = b.king(b.turn);
+  if (k == null) return 0;
+  return b.legalMoves.where((m) => m.from == k).length;
+}
+
+/// [авторское] Blocked king escape: after the move the enemy king has fewer
+/// squares to go to, the moved piece takes at least one of them (it attacks
+/// or stands on a square next to the king that no other own piece covers),
+/// and the king is left with two squares or fewer. A king move counts only
+/// in the endgame, when it takes two squares or more from the other king
+/// (opposition, the start of a blockade).
+bool _blocksKingEscape(Pos board, Pos after, NormalMove move, Side me, Settings s) {
+  // шах — не перекрытие поля на следующий ход; в дебюте королю ещё некуда
+  if (board.isCheck || after.isCheck || features.stage(board, s) == 'opening') return false;
+  final piece = board.pieceAt(move.from);
+  if (piece == null) return false;
+  final enemyKing = after.king(me.opposite);
+  if (enemyKing == null) return false;
+  final king = piece.role == Role.king;
+  if (king && features.stage(board, s) != 'endgame') return false;
+  final before = _kingMoves(board.nullMove());
+  final now = _kingMoves(after);
+  final taken = before - now;
+  if (taken < (king ? 2 : 1)) return false;
+  if (!king && now > 2) return false;
+  // поле у короля, которое держит именно сходившая фигура
+  final around = after.attacks(enemyKing);
+  return around.squares.any((sq) {
+    if (sq == move.to) return true;
+    if (!after.attacks(move.to).has(sq)) return false;
+    final own = after.attackers(me, sq);
+    return own.size == 1;
+  });
 }
 
 /// The strongest target newly attacked by a line the move opened: 'king',

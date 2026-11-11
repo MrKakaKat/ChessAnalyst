@@ -37,6 +37,14 @@ class AnalysisQueue extends ChangeNotifier {
   /// is free.
   void add(AnalysisJob job) {
     history.track(job);
+    // уже готов (анализ сложности снят, классический тот же): задачи и
+    // ошибки партии — заново, без движка
+    if (job.done) {
+      _toRate.add(job);
+      _rateNext();
+      notifyListeners();
+      return;
+    }
     if (!jobs.any((j) => j.id == job.id)) {
       jobs.add(job);
       job.addListener(_onJob);

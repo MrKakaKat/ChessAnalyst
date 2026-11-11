@@ -50,7 +50,7 @@ String irreversibilityOf(double before) => before >= 3.0 ? 'high' : (before >= 1
 /// tempo attack, a promotion, poisoned material or a barter. Not always the
 /// next move: the punishment can come after a quiet preparation.
 List<String> punishKinds(Pos after, Line reply, {Settings s = const Settings()}) {
-  const sharp = {'mate', 'promotion', 'fork', 'pin', 'overload', 'sacrifice', 'tempo', 'free', 'barter', 'simplification'};
+  const sharp = {'mate', 'promotion', 'fork', 'fork_tactical', 'block_escape', 'pin', 'overload', 'sacrifice', 'tempo', 'free', 'barter', 'simplification'};
   var pos = after;
   final pv = reply.pv;
   for (var i = 0; i < pv.length && i < 8; i++) {

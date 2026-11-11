@@ -144,6 +144,9 @@ def _verdict(unit: str, e0: Eval | None, e1: Eval, ep: Eval, lines: list[Line], 
     # > 0,1 — неточность, колебания до 0,1 — нейтральный ход
     if (c1 == WIN and cp <= EQUAL) or (c1 == LOSS and mated_now) or (c1 - cp >= 2):
         step = "blunder"
+    elif e1.mate == 1 and ep.mate != 1:
+        # [авторское] пропущенный мат в один ход («позиционный» мат) — всегда зевок
+        step = "blunder"
     elif e1.mate is not None and e1.mate > 0 and ep.mate is not None and ep.mate > e1.mate:
         step = "excellent"  # более медленный мат (6.7)
     elif v.l > p.mistake_loss + _TOL:

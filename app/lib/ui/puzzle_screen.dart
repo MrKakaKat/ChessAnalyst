@@ -14,6 +14,10 @@ import 'package:chessground/chessground.dart' hide GameData;
 import 'package:dartchess/dartchess.dart' hide Board;
 import 'package:flutter/material.dart';
 
+import '../analysis/settings.dart';
+import '../analysis/difficulty.dart' show matePawns, positionDifficulty, winBoundary;
+import '../analysis/difficulty_scan.dart' show scanPosition;
+import '../analysis/eval.dart';
 import '../analysis/game.dart';
 import '../analysis/openings.dart';
 import '../analysis/pgn_import.dart' show normalizeCastling;
@@ -31,6 +35,7 @@ import 'puzzle_store.dart';
 import 'stats_screen.dart' show askPlayerNames;
 import 'puzzles.dart';
 import 'step_icons.dart' show StepIcon;
+import 'theme.dart' show onlyBlue;
 import 'widgets/board_background.dart';
 import 'widgets/board_view.dart' show FlyOutPainter;
 
@@ -758,9 +763,37 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     } else {
       try {
         final bot = await EngineBot.shared();
-        // проверка хода важнее фонового анализа партии: он ждёт
-        final lines = await analysisQueue.priority(() => bot.analyse(after.fen, depth: 14, multipv: 1));
-        if (lines.isNotEmpty && puzzle.keepsGoal(lines.first.eval, step: step)) tail = tacticTail(after, lines.first.pv);
+        // [авторское] ход сравнивается и с целью задачи, и с ходом решения на
+        // той же глубине: если он не хуже хода решения (до 0,3 пешки), он
+        // верный — даже когда на этом шаге решение само ниже порога цели
+        // (Qxd7 / Bxd7 за −4,2 / −4,5 при решении Nxd7 за −3,3 отклонялись);
+        // проверка важнее фонового анализа партии: он ждёт
+        const s = Settings();
+        final expected = step < _line.length ? NormalMove.fromUci(_line[step]) : null;
+        // задача из анализа сложности — и проверка по нему: практическая
+        // оценка после хода (с поправкой на сложность) от +3 или не хуже хода
+        // решения; защита — как обычно
+        if (puzzle.practical && puzzle.goalAt(step) != PuzzleGoal.defend) {
+          final (mine, ref, pv) = await analysisQueue.priority(() async {
+            final m = await _practicalAfter(bot, after);
+            final r = expected != null && before.isLegal(expected) ? await _practicalAfter(bot, before.push(expected)) : null;
+            return (m.$1, r?.$1, m.$2);
+          });
+          if (mine >= winBoundary || (ref != null && mine >= ref - 0.3)) tail = tacticTail(after, pv);
+        } else {
+          final (lines, sol) = await analysisQueue.priority(() async {
+            final mine = await bot.analyse(after.fen, depth: 16, multipv: 1);
+            final ref = expected != null && before.isLegal(expected)
+                ? await bot.analyse(before.push(expected).fen, depth: 16, multipv: 1)
+                : const <Line>[];
+            return (mine, ref);
+          });
+          if (lines.isNotEmpty) {
+            final mine = -lines.first.eval.pawns(s);
+            final asGood = sol.isNotEmpty && mine >= -sol.first.eval.pawns(s) - 0.3;
+            if (asGood || puzzle.keepsGoal(lines.first.eval, step: step)) tail = tacticTail(after, lines.first.pv);
+          }
+        }
       } catch (_) {}
     }
     if (!mounted || !identical(puzzle, p) || !_checking) return;
@@ -771,6 +804,21 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     if (tail == null) return _wrong(m);
     _line = [..._line.take(_step), m.uci, ...tail];
     _accept();
+  }
+
+  final _practicalCache = <String, (double, List<String>)>{};
+
+  /// Practical evaluation of [pos] for the side that just moved (pawns) and
+  /// the engine's line from it: the difficulty pass on one position.
+  Future<(double, List<String>)> _practicalAfter(EngineBot bot, Pos pos) async {
+    final key = pos.fen;
+    if (_practicalCache[key] case final v?) return v;
+    final lines = await bot.analyse(pos.fen, depth: 14, multipv: 5);
+    if (lines.isEmpty) return (pos.p.isCheckmate ? matePawns : 0.0, const <String>[]);
+    final scan = await scanPosition(pos.fen, lines, (f, n) => bot.analyse(f, depth: 10, multipv: n), depth: 10);
+    final v = (-positionDifficulty(pos.fen, lines, scan).practical, lines.first.pv);
+    _practicalCache[key] = v;
+    return v;
   }
 
   void _accept() {
@@ -1081,6 +1129,10 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           ),
         ),
       ),
+      // чем выбрана и проверяется задача: оценкой движка или с учётом
+      // сложности позиции (анализ сложности партии)
+      Text(p.practical ? 'With position difficulty' : 'Engine evaluation',
+          style: TextStyle(fontSize: 11, color: p.practical ? onlyBlue : scheme.outline)),
       // открыта из записанных попыток — какие ошибки были тогда
       if (widget.review case final r? when r.wrong.isNotEmpty)
         Container(

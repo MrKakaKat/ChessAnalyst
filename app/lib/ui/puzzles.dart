@@ -26,6 +26,7 @@ import 'package:dartchess/dartchess.dart' show NormalMove, Side;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../analysis/character.dart' show Sharpness, characterOf;
+import '../analysis/difficulty.dart' show positionDifficulty, practicalAfterKey, winBoundary;
 import '../analysis/eval.dart';
 import '../analysis/game.dart';
 import '../analysis/pos.dart';
@@ -58,7 +59,17 @@ class Puzzle {
     this.goal2,
     this.value2 = 0,
     this.switchAt,
+    this.practical = false,
+    this.difficulty,
   });
+
+  /// Difficulty of the start position for the solver (0..1, difficulty
+  /// analysis): it raises the rating.
+  final double? difficulty;
+
+  /// Made from a game with the difficulty analysis: chosen and checked by
+  /// the practical evaluation (difficulty.dart); otherwise by the engine's.
+  final bool practical;
 
   /// The least value that still counts as the goal in an advantage puzzle
   /// (+3, or +2 early in the game in a calm position); null: by the goal.
@@ -141,6 +152,8 @@ class Puzzle {
         if (goal2 != null) 'goal2': goal2!.name,
         if (goal2 != null) 'value2': value2,
         'switchAt': ?switchAt,
+        if (practical) 'practical': true,
+        'difficulty': ?difficulty,
       };
 
   factory Puzzle.fromJson(Map<String, dynamic> j) => Puzzle(
@@ -159,6 +172,8 @@ class Puzzle {
         goal2: j['goal2'] == null ? null : PuzzleGoal.values.byName(j['goal2'] as String),
         value2: (j['value2'] as num?)?.toDouble() ?? 0,
         switchAt: j['switchAt'] as int?,
+        practical: j['practical'] as bool? ?? false,
+        difficulty: (j['difficulty'] as num?)?.toDouble(),
       );
 
   /// This puzzle followed by [next] (a combined puzzle): [reply] is the
@@ -179,6 +194,8 @@ class Puzzle {
         goal2: next.goal,
         value2: next.value,
         switchAt: solution.length + 1,
+        practical: practical,
+        difficulty: difficulty,
       );
 
   Side get solver => Pos.fromFen(fen).turn;
@@ -216,6 +233,13 @@ List<Puzzle> puzzlesFrom(GameAnalysis a) {
       goal = PuzzleGoal.defend;
     }
     if (goal == null) continue;
+    // [авторское] партия с анализом сложности: задача на атаку — только если
+    // практическая оценка после ключевого хода (удержать найденное) от +3;
+    // ниже позиция спорная. Трудность до хода — трудность самой задачи: она
+    // поднимает рейтинг, а не отсеивает
+    final scan = a.game.hasDifficulty ? a.game.scans![r.ply] : null;
+    if (scan != null && goal != PuzzleGoal.defend && practicalAfterKey(p.fenBefore, lines, scan) < winBoundary) continue;
+    final hardness = scan == null ? null : positionDifficulty(p.fenBefore, lines, scan).mover;
     final start = Pos.fromFen(p.fenBefore);
     final solution = tacticLine(start, best.pv);
     if (solution.isEmpty) continue;
@@ -245,6 +269,8 @@ List<Puzzle> puzzlesFrom(GameAnalysis a) {
       prevMove: r.ply > 0 ? a.game.plies[r.ply - 1].uci : null,
       tags: puzzleTags(r, start, best, lines: lines),
       minValue: goal == PuzzleGoal.advantage ? advantageFrom : null,
+      practical: scan != null,
+      difficulty: hardness,
     ));
   }
   return withoutOverlaps(combine(out, a.game));
@@ -349,6 +375,15 @@ List<String> tacticTail(Pos after, List<String> pv) {
 }
 
 /// Rating guess without the engine (until it has rated the puzzle).
+/// [авторское] Rating for the difficulty of the start position (difficulty
+/// analysis): −150 for the easiest, 0 for a usual position (50%), +300 for
+/// the hardest.
+int difficultyBonus(Puzzle p) {
+  final d = p.difficulty;
+  if (d == null) return 0;
+  return (d >= 0.5 ? 600 * (d - 0.5) : 300 * (d - 0.5)).round();
+}
+
 int quickRating(Puzzle p) {
   final pos = Pos.fromFen(p.fen);
   final m = NormalMove.fromUci(p.solution.first);
@@ -358,7 +393,8 @@ int quickRating(Puzzle p) {
       (quiet ? 250 : 0) +
       (p.defends ? 200 : 0) +
       (p.combined ? 200 : 0) +
-      (p.gap < 1.5 ? 150 : 0);
+      (p.gap < 1.5 ? 150 : 0) +
+      difficultyBonus(p);
   return r.clamp(400, 3500);
 }
 

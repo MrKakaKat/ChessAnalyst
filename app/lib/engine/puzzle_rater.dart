@@ -23,7 +23,9 @@
 ///   step is not a single narrow path.
 /// rating = 700 + the hardest step + 0.35·(the other steps) + 90·(moves − 1)
 /// + 100 (a defence or a defensive part) + 150 (a combined puzzle: the goal
-/// changes on the way), within 400…3000.
+/// changes on the way) + the difficulty of the start position from the
+/// difficulty analysis (−150 … +300, 0 for a usual position), within
+/// 400…3000.
 /// The first version looked only at the main line and rated a four-move
 /// tactic with a discovered check in the defence at about 1200; the second
 /// rated only the first move, so a defence that starts with a plain
@@ -127,7 +129,9 @@ Future<int> estimateRating(Puzzle p, {bool Function()? cancelled}) async {
       90 * (p.solverMoves - 1) +
       (p.defends ? 100 : 0) +
       // комбинированная: цель меняется по ходу решения
-      (p.combined ? 150 : 0);
+      (p.combined ? 150 : 0) +
+      // анализ сложности: трудность стартовой позиции
+      difficultyBonus(p);
   return rating.clamp(400, 3000).toInt();
 }
 

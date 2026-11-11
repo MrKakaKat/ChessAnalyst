@@ -12,6 +12,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
+import '../analysis/difficulty.dart';
+import '../analysis/difficulty_scan.dart';
 import '../analysis/eval.dart';
 import '../analysis/game.dart';
 import '../analysis/pgn_import.dart';
@@ -56,6 +58,11 @@ String durationText(Duration d) {
 const depthPresets = {'Quick': 10, 'Standard': 14, 'Deep': 18, 'Maximum': 22};
 
 const quickDepth = 8;
+
+/// Rough time of the difficulty pass for one position before it is measured
+/// (about 3 s on a phone at medium power).
+double scanEstimateMs(EnginePower power) =>
+    3000 * (power == EnginePower.low ? 1.6 : (power == EnginePower.medium ? 1.0 : 0.7));
 const maxDepth = 26;
 
 class AnalysisJob extends ChangeNotifier {
@@ -72,8 +79,11 @@ class AnalysisJob extends ChangeNotifier {
     this.finished,
     this.rules = analysisRules,
     this.puzzles = true,
+    this.difficulty = false,
+    List<PlyScan?>? scans,
     this.tagSnapshot,
   })  : plies = plies ?? List.filled(source.ucis.length, null),
+        scans = scans ?? List.filled(source.ucis.length, null),
         depthAt = depthAt ?? List.filled(source.ucis.length, 0),
         created = created ?? DateTime.now();
 
@@ -101,6 +111,15 @@ class AnalysisJob extends ChangeNotifier {
 
   /// Puzzles are made from this game.
   final bool puzzles;
+
+  /// The difficulty analysis (difficulty.dart) runs after the classic one.
+  final bool difficulty;
+
+  /// Its scan of each position (null: not yet).
+  final List<PlyScan?> scans;
+
+  /// The difficulty pass has looked at every position.
+  bool get scanned => scans.every((x) => x != null);
 
   /// The traits of each side's negative moves when the analysis ended
   /// (side → tag → count): the statistics keep kinds that a later version
@@ -135,15 +154,16 @@ class AnalysisJob extends ChangeNotifier {
   /// Depth reached everywhere.
   int get depth => depthAt.isEmpty ? 0 : depthAt.reduce(math.min);
 
-  bool get done => depthAt.every((d) => d >= targetDepth);
+  bool get done => depthAt.every((d) => d >= targetDepth) && (!difficulty || scanned);
 
   /// 0..1 over both passes.
   double get progress {
     if (length == 0) return 1;
     final quick = depthAt.where((d) => d >= math.min(quickDepth, targetDepth)).length / length;
     final full = depthAt.where((d) => d >= targetDepth).length / length;
-    if (!quickFirst) return full;
-    return targetDepth <= quickDepth ? quick : 0.3 * quick + 0.7 * full;
+    final classic = !quickFirst ? full : (targetDepth <= quickDepth ? quick : 0.3 * quick + 0.7 * full);
+    if (!difficulty) return classic;
+    return 0.5 * classic + 0.5 * scans.where((x) => x != null).length / length;
   }
 
   String get title => source.title;
@@ -154,6 +174,7 @@ class AnalysisJob extends ChangeNotifier {
         startFen: source.startFen,
         engine: {'name': 'Stockfish 19 (light)', 'depth': depth, 'multipv': multipv, 'trivial_depth': 0},
         plies: [for (final p in plies) p!],
+        scans: difficulty && scanned ? List.of(scans) : null,
       );
 
   int _threads(int cores) => switch (power) {
@@ -182,8 +203,12 @@ class AnalysisJob extends ChangeNotifier {
           (base != null ? base.value * math.pow(_depthFactor, d - base.key) : _estimateMs(d, multipv, power));
       ms += left * per * (1 + _rest);
     }
+    if (difficulty) ms += scans.where((x) => x == null).length * (_scanMs ?? scanEstimateMs(power)) * (1 + _rest);
     return Duration(milliseconds: ms.round());
   }
+
+  /// Mean milliseconds per position of the difficulty pass, measured.
+  double? _scanMs;
 
   double get _rest => switch (power) { EnginePower.low => 1.5, EnginePower.medium => 0.5, EnginePower.high => 0.0 };
 
@@ -229,6 +254,8 @@ class AnalysisJob extends ChangeNotifier {
         }
         onSave?.call(this);
       }
+      if (difficulty) await _scanAll(bot);
+      if (state != JobState.running) return;
       state = JobState.done;
       finished = DateTime.now();
     } catch (e) {
@@ -238,6 +265,36 @@ class AnalysisJob extends ChangeNotifier {
     }
     onSave?.call(this);
     notifyListeners();
+  }
+
+  /// The difficulty pass: the nodes of the best lines of every position.
+  Future<void> _scanAll(EngineBot bot) async {
+    final cache = <String, List<int>>{};
+    final threads = _threads(bot.cores);
+    final nd = nodeDepth(depth);
+    for (var i = 0; i < length; i++) {
+      if (state != JobState.running) return;
+      if (scans[i] != null) continue;
+      final watch = Stopwatch()..start();
+      thinking = true;
+      notifyListeners();
+      final p = plies[i]!;
+      final scan = await scanPosition(
+          p.fenBefore, p.lines, (fen, n) => bot.analyse(fen, depth: nd, multipv: n, threads: threads),
+          depth: nd, cache: cache, stopped: () => state != JobState.running);
+      if (state != JobState.running) return;
+      scans[i] = scan;
+      watch.stop();
+      thinking = false;
+      final prev = _scanMs;
+      _scanMs = prev == null ? watch.elapsedMilliseconds.toDouble() : 0.8 * prev + 0.2 * watch.elapsedMilliseconds;
+      revision++;
+      notifyListeners();
+      if (i % 2 == 1) onSave?.call(this);
+      final rest = watch.elapsedMilliseconds * _rest;
+      if (rest > 0) await Future<void>.delayed(Duration(milliseconds: rest.round()));
+    }
+    onSave?.call(this);
   }
 
   Future<void> _analyse(EngineBot bot, int i, int depth) async {
@@ -292,6 +349,8 @@ class AnalysisJob extends ChangeNotifier {
         if (finished != null) 'finished': finished!.toIso8601String(),
         'rules': rules,
         'puzzles': puzzles,
+        if (difficulty) 'difficulty': true,
+        if (difficulty) 'scans': [for (final x in scans) x?.toJson()],
         'tag_snapshot': ?tagSnapshot,
         'target': targetDepth,
         'multipv': multipv,
@@ -330,6 +389,10 @@ class AnalysisJob extends ChangeNotifier {
       // анализы до появления версии правил — версия 1
       rules: j['rules'] as int? ?? 1,
       puzzles: j['puzzles'] as bool? ?? true,
+      difficulty: j['difficulty'] as bool? ?? false,
+      scans: j['scans'] == null
+          ? null
+          : [for (final x in j['scans'] as List) x == null ? null : PlyScan.fromJson(x as Map<String, dynamic>)],
       tagSnapshot: (j['tag_snapshot'] as Map?)?.map((k, v) => MapEntry(k as String, (v as Map).cast<String, int>())),
       targetDepth: j['target'] as int,
       multipv: j['multipv'] as int? ?? 10,

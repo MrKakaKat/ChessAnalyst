@@ -24,7 +24,7 @@ much the move gives away against the best one.
 | Inaccuracy | loss over 0.1 pawn |
 | Laxity | loss over 0.5 pawn: a real weakness |
 | Mistake | loss over 1 pawn |
-| Blunder | a won position thrown away, a mate allowed, or a drop of two categories |
+| Blunder | a won position thrown away, a mate allowed, a missed mate in one, or a drop of two categories |
 | Pass | the opponent offered a chance and it was missed, but the position is no worse than before |
 
 **Steps in percent** (quick settings). Moves are graded by how much of the
@@ -99,7 +99,9 @@ what you missed, then by what you were punished with.
 | Kind | What it is |
 |---|---|
 | Mate, Promotion | mates, or promotes a pawn |
-| Fork | the piece attacks two valuable pieces at once |
+| Positional fork | the piece attacks two valuable pieces at once, here and now (often after a blunder, or after the tactical part of a fork was played) |
+| Tactical fork | a forcing move (check, capture or sacrifice) whose line leads in up to three more forcing own moves to a fork; it comes before the positional fork, and the opponent's best play usually leads into it (otherwise it wins some other way) |
+| Blocked king escape | a quiet move (no check, not in the opening) whose piece, often a bishop, takes a square from the enemy king for its next move and leaves it two squares or fewer; in the endgame also a king move that takes two squares from the other king — the start of a blockade, where neither king gets into the other's zone |
 | Discovered check | a piece steps away and opens a line of another piece onto the king |
 | Discovered attack on the queen | the same, the opened line hits the queen |
 | Discovered attack | the same, the opened line hits another piece |
@@ -294,6 +296,66 @@ games.
 - **Sharpness** — how sharp the game was: a low chance of a draw, many sharp
   positions, many tactical attacks.
 
+## Position difficulty
+
+An optional second analysis, after the classic one: the **Position
+difficulty** button in the analysis window (off by default, not recommended:
+it takes much longer). It can also be added to an analysed game from the
+history (Analyze again with the same depth and lines adds only this part).
+
+The engine says how big an advantage is, not how hard it is to keep. This
+analysis measures that:
+
+- **Classes.** A position is a win from +3 (a mate counts as +8), a loss
+  from −3, a draw between. Only the boundary 3 matters.
+- **Only moves.** Along the best lines of each position the engine looks
+  at every move with three candidates of its own. A move is good when it
+  keeps the class and, in a position that is not won, loses no more than a
+  pawn. When one move is good, it is an only move: tactical (check, capture,
+  promotion) or positional (a quiet move; a forced draw is often a row of
+  them). An only move weighs more the further it is: 0.15 on the first move
+  of the line, +0.085 for each further own move, up to 1 — on the second
+  move it is little, on the tenth a lot. An obvious only move — a recapture,
+  or a piece taken away from an attack by a cheaper piece (or from an
+  attack when it is not defended) — weighs 0.3 of that and is not marked
+  blue.
+- **Mates.** A mate line counts as one only move at the distance of the
+  mate: a mate in 2 is easy, in 10 hard. A mate in one is a positional mate,
+  the lightest only move — and missing it is always a blunder and the worst
+  move of the game (the first one when there are several).
+- **A line** is 0% hard when every move has several ways on and up to 100%
+  with one far tactical only move.
+- **A position** for the side to move: the mean difficulty of its good lines
+  — the more of them, the easier — and its first move when it is the only
+  good one. For the other side: its moves in the best line.
+- **Percent** against the middle standard: the share of positions of
+  reference games (masters, engines and our own, 1103 positions) that are
+  easier, for each side separately. 50% is a usual position.
+- **Practical evaluation**: E′ = E · (1.5 − difficulty of the side ahead).
+  +6 at 80% gives +4.2, at 30% +7.2. A mate counts as +8. With the analysis
+  it takes AAC's place on the unit switch (**Practical**); AAC stays in More
+  graphs.
+
+Where it shows:
+- a line whose evaluation is **blue** needs an only move of the side to
+  move (the first move from the classic analysis, the later ones from this
+  one; on the free board — the first move);
+- the move card: **Difficulty** for both sides and the practical evaluation
+  next to the engine's;
+- the accuracy window: how difficult each side's positions were and the
+  accuracy **with difficulty** — a miss in a hard position costs less, in an
+  easy one more;
+- puzzles: from a game with this analysis an attacking puzzle is made only
+  when the practical evaluation **after the key move** is +3 or more — the
+  advantage holds once the move is found (below it the position is
+  disputed). The difficulty before the move is the puzzle's own difficulty:
+  it raises the rating (−150 for the easiest position, 0 for a usual one,
+  up to +300 for the hardest) instead of dropping the puzzle. Your moves are
+  checked by the practical evaluation too: a move counts when it keeps +3 or
+  is no worse than the solution's.
+  Such puzzles are marked **With position difficulty**, the others **Engine
+  evaluation**.
+
 ---
 
 ## Puzzles
@@ -334,8 +396,10 @@ were not rated yet are rated in the background while the Puzzles screen is
 open.
 
 A puzzle's best line is not the only one: a deeper search often finds a
-second good move. A move off the line is checked by the engine and counts
-when it keeps the goal: another mate or a crushing line (+5) in a mate
+second good move. A move off the line is checked by the engine (depth 16,
+the analysis of a game pauses meanwhile). It counts when it is no worse
+than the solution's move at the same depth (within 0.3 pawn), or when it
+keeps the goal: another mate or a crushing line (+5) in a mate
 puzzle, a line at least 60% as strong in the others; in a defence, a move
 that holds as well (within 0.3 pawn of the solution on the first move, 0.5
 later).

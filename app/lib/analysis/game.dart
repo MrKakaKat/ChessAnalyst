@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:dartchess/dartchess.dart' show Side, Square, kInitialFEN;
 
 import 'classify.dart';
+import 'difficulty.dart';
 import 'eval.dart';
 import 'ideas.dart';
 import 'openings.dart';
@@ -39,6 +40,7 @@ class GameData {
     required this.startFen,
     required this.engine,
     required this.plies,
+    this.scans,
   });
 
   factory GameData.fromJson(Map<String, dynamic> j) {
@@ -59,6 +61,9 @@ class GameData {
             allLines: p['all_lines'] == null ? null : lines(p['all_lines']),
           ),
       ],
+      scans: j['scans'] == null
+          ? null
+          : [for (final x in j['scans'] as List) x == null ? null : PlyScan.fromJson(x as Map<String, dynamic>)],
     );
   }
 
@@ -87,6 +92,12 @@ class GameData {
   final String startFen;
   final Map<String, dynamic> engine;
   final List<GamePly> plies;
+
+  /// The difficulty analysis of each position (null: the game had only the
+  /// classic analysis).
+  final List<PlyScan?>? scans;
+
+  bool get hasDifficulty => scans != null && scans!.length == plies.length && scans!.every((x) => x != null);
 
   String get white => headers['white'] ?? '?';
   String get black => headers['black'] ?? '?';

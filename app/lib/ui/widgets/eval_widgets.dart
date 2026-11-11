@@ -63,6 +63,16 @@ double _whiteShareOf(Eval e, Side root, Unit unit) {
   return white ? e.expected : 1 - e.expected;
 }
 
+/// Practical evaluation after [ply] for White, pawns; the engine's where the
+/// difficulty is not known (the last move).
+double practicalWhiteAt(AnalysisController c, int ply) {
+  final v = ply < c.practicalWhite.length ? c.practicalWhite[ply] : null;
+  if (v != null) return v;
+  final r = c.analysis.records[ply];
+  final p = r.ep.pawns(const Settings()).clamp(-8.0, 8.0);
+  return r.side == Side.white ? p : -p;
+}
+
 class EvalBar extends StatelessWidget {
   const EvalBar({super.key, required this.controller, required this.height});
 
@@ -76,7 +86,12 @@ class EvalBar extends StatelessWidget {
     final barUnit = c.unit == Unit.pawns ? Unit.pawns : Unit.wdl;
     var target = whiteShare(r, barUnit);
     var text = whiteLabel(r, c.unit);
-    if (c.unit == Unit.both) {
+    if (c.unit == Unit.both && c.hasDifficulty) {
+      // практическая оценка: оценка движка с поправкой на сложность
+      final p = c.atStart ? 0.0 : practicalWhiteAt(c, c.recordPly);
+      target = 0.5 + 0.5 * (p / 8).clamp(-1.0, 1.0);
+      text = '${p >= 0 ? '+' : ''}${p.toStringAsFixed(1)}';
+    } else if (c.unit == Unit.both) {
       // AAC: контригра вместо оценки движка
       final v = c.atStart ? 0.0 : c.aac[c.recordPly].value;
       target = 0.5 + 0.5 * v;
@@ -205,6 +220,11 @@ class _EvalGraphState extends State<EvalGraph> with TickerProviderStateMixin {
   }
 
   List<double> _values() {
+    if (c.unit == Unit.both && c.hasDifficulty) {
+      return [
+        for (var i = 0; i < c.analysis.records.length; i++) 0.5 + 0.5 * (practicalWhiteAt(c, i) / 8).clamp(-1.0, 1.0),
+      ];
+    }
     if (c.unit == Unit.both) return [for (final p in c.aac) 0.5 + 0.5 * p.value];
     final unit = c.unit == Unit.pawns ? Unit.pawns : Unit.wdl;
     return [for (final r in c.analysis.records) whiteShare(r, unit)];

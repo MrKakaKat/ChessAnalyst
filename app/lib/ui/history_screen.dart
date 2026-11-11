@@ -121,6 +121,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _reanalyze(Set<String> ids) async {
     var depth = depthPresets['Standard']!;
     var lines = prefs.engineLines;
+    var difficulty = false;
+    // одна партия — с её глубиной и линиями: тогда анализ сложности можно
+    // добавить, не повторяя классический
+    if (ids.length == 1) {
+      final old = await history.open(ids.first);
+      if (old != null) {
+        depth = old.targetDepth;
+        lines = old.multipv;
+        difficulty = old.difficulty;
+      }
+      if (!mounted) return;
+    }
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -148,8 +160,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 label: '$lines',
                 onChanged: (v) => set(() => lines = v.round()),
               ),
+              const SizedBox(height: 8),
+              DifficultyToggle(on: difficulty, onChanged: (v) => set(() => difficulty = v)),
+              const SizedBox(height: 8),
               const Text(
-                'The old analysis is replaced; the puzzles follow the new one.',
+                'The old analysis is replaced; the puzzles follow the new one. With the same depth and lines only '
+                'the difficulty analysis is added.',
                 style: TextStyle(fontSize: 12),
               ),
             ],
@@ -168,7 +184,34 @@ class _HistoryScreenState extends State<HistoryScreen> {
       if (old == null) continue;
       old.pause();
       analysisQueue.remove(old);
-      final job = AnalysisJob(id: old.id, source: old.source, targetDepth: depth, multipv: lines, power: old.power, puzzles: old.puzzles);
+      // та же глубина и линии, классический анализ готов — добавить только
+      // анализ сложности (или убрать его), не считая заново
+      final keep = old.depth >= depth && old.multipv == lines && old.plies.every((p) => p != null);
+      final job = keep
+          ? AnalysisJob(
+              id: old.id,
+              source: old.source,
+              targetDepth: depth,
+              multipv: lines,
+              power: old.power,
+              puzzles: old.puzzles,
+              quickFirst: old.quickFirst,
+              plies: old.plies,
+              depthAt: old.depthAt,
+              created: old.created,
+              finished: difficulty && !old.scanned ? null : old.finished,
+              difficulty: difficulty,
+              scans: difficulty ? old.scans : null,
+              tagSnapshot: old.tagSnapshot,
+            )
+          : AnalysisJob(
+              id: old.id,
+              source: old.source,
+              targetDepth: depth,
+              multipv: lines,
+              power: old.power,
+              puzzles: old.puzzles,
+              difficulty: difficulty);
       await PuzzleRatings.removeGame(id);
       await PuzzleStore.remove(id);
       jobs.add(job);
@@ -298,7 +341,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           // число линий и задачи
                           '${e.finished != null ? '${_when(e.finished!)} · ' : ''}'
                           'depth ${e.depth}${e.progress < 1 ? ' of ${e.target}, ${(e.progress * 100).round()}%' : ''}'
-                          ' · ${e.multipv} line${e.multipv == 1 ? '' : 's'} · puzzles ${e.puzzles ? 'on' : 'off'}',
+                          ' · ${e.multipv} line${e.multipv == 1 ? '' : 's'} · puzzles ${e.puzzles ? 'on' : 'off'}'
+                          '${e.difficulty ? ' · difficulty' : ''}',
                         ),
                       ),
                       trailing: _selecting

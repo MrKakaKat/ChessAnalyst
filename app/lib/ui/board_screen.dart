@@ -10,10 +10,12 @@ import 'package:dartchess/dartchess.dart' hide Board;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../analysis/difficulty.dart' show lineHasOnly;
 import '../analysis/eval.dart';
 import '../analysis/pos.dart';
 import '../engine/game_job.dart' show EnginePower;
 import 'analysis_queue.dart';
+import 'theme.dart' show onlyBlue;
 import 'board_session.dart';
 import 'prefs.dart';
 import 'widgets/arrows.dart';
@@ -521,7 +523,8 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
                     child: Text(_eval(l.eval, start.turn),
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            color: i == 0 ? scheme.primary : null,
+                            // синяя: первый ход линии — единственный хороший
+                            color: lineHasOnly(start.fen, lines, i, null) ? onlyBlue : (i == 0 ? scheme.primary : null),
                             fontFeatures: const [FontFeature.tabularFigures()])),
                   ),
                 ),

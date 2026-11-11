@@ -81,6 +81,10 @@ const typeLabels = {
 
 const unitLabels = {Unit.pawns: 'Pawns', Unit.wdl: 'WDL', Unit.both: 'AAC'};
 
+/// The third unit is the practical evaluation in a game with the difficulty
+/// analysis (AAC stays in More graphs).
+String unitLabel(Unit u, {bool practical = false}) => u == Unit.both && practical ? 'Practical' : unitLabels[u]!;
+
 /// Move type: the base (tactical / positional), then its directions
 /// (attack, counterattack, defence), e.g. "Tactical · Attack + Defence".
 String typeText(String type, List<String> extra) {

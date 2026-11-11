@@ -175,7 +175,7 @@ int intuitiveness(GameAnalysis a, int ply) {
   if (kinds.contains('sacrifice')) v -= 35;
   if (kinds.contains('retreat')) v -= 15;
   final tactical = r.bestMoves.isNotEmpty && r.bestMoves.first.type == 'tactical';
-  if (tactical && !capture && !board.givesCheck(m) && !kinds.contains('fork') && !kinds.contains('tempo')) v -= 20;
+  if (tactical && !capture && !board.givesCheck(m) && !kinds.contains('fork') && !kinds.contains('fork_tactical') && !kinds.contains('tempo')) v -= 20;
   v -= 4 * math.max(0, features.forcingCount(board, line.pv, 10) - 2);
   if (r.bestMoves.isNotEmpty && r.bestMoves.first.onlyMove) {
     v += features.obviousCapture(board, m) ? 5 : -10;

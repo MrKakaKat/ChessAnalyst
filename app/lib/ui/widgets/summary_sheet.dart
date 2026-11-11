@@ -9,6 +9,7 @@ import 'package:dartchess/dartchess.dart' show Side;
 import 'package:flutter/material.dart';
 
 import '../../analysis/character.dart' show Sharpness;
+import '../../analysis/difficulty.dart' show accuracyWithDifficulty;
 import '../../analysis/game.dart';
 import '../../analysis/metrics.dart';
 import '../../analysis/settings.dart';
@@ -18,6 +19,7 @@ import '../../analysis/human.dart';
 import '../../analysis/kinds.dart' show kindLabels;
 import '../labels.dart';
 import '../step_icons.dart';
+import '../theme.dart' show onlyBlue;
 
 /// Button for the last cards of the game.
 class AccuracyButton extends StatelessWidget {
@@ -81,6 +83,7 @@ void showSummary(BuildContext context, AnalysisController c) {
                     name: c.game.white,
                     acc: s.accuracy[Side.white]!,
                     difficulty: s.difficulty,
+                    positions: _positions(c, Side.white),
                     hard: hardMovesFound(c.analysis, Side.white))),
             const SizedBox(width: 16),
             Expanded(
@@ -88,6 +91,7 @@ void showSummary(BuildContext context, AnalysisController c) {
                     name: c.game.black,
                     acc: s.accuracy[Side.black]!,
                     difficulty: s.difficulty,
+                    positions: _positions(c, Side.black),
                     hard: hardMovesFound(c.analysis, Side.black))),
           ]),
           const SizedBox(height: 20),
@@ -100,8 +104,28 @@ void showSummary(BuildContext context, AnalysisController c) {
   );
 }
 
+/// The difficulty analysis for a side: mean difficulty of the positions
+/// where it moved and its accuracy with the difficulty (null without it).
+(double, double)? _positions(AnalysisController c, Side side) {
+  if (!c.hasDifficulty) return null;
+  var d = 0.0, a = 0.0, n = 0;
+  for (final r in c.analysis.records.where((r) => r.side == side && r.step != 'forced')) {
+    final p = c.difficulty[r.ply];
+    if (p == null) continue;
+    d += p.mover;
+    a += accuracyWithDifficulty(moveAccuracy(r), p.mover);
+    n++;
+  }
+  return n == 0 ? null : (d / n, a / n);
+}
+
 class _SideColumn extends StatelessWidget {
-  const _SideColumn({required this.name, required this.acc, required this.difficulty, required this.hard});
+  const _SideColumn(
+      {required this.name, required this.acc, required this.difficulty, required this.hard, this.positions});
+
+  /// Difficulty analysis: mean difficulty of the side's positions and its
+  /// accuracy with the difficulty.
+  final (double, double)? positions;
 
   final String name;
   final SideAccuracy acc;
@@ -126,6 +150,13 @@ class _SideColumn extends StatelessWidget {
       if (ratingEstimate(acc.stageMean, difficulty) case final r?)
         Text('$r rating', style: TextStyle(fontSize: 12, color: scheme.outline)),
       Text('Best moves ${(acc.bestShare * 100).round()}%', style: TextStyle(fontSize: 12, color: scheme.outline)),
+      // анализ сложности: средняя трудность своих позиций и точность с ней
+      // (промах в трудной позиции стоит меньше, в лёгкой — больше)
+      if (positions case (final d, final a)) ...[
+        Text('Positions ${(d * 100).round()}% difficult', style: TextStyle(fontSize: 12, color: scheme.outline)),
+        Text('With difficulty ${a.toStringAsFixed(1)}%',
+            style: const TextStyle(fontSize: 12, color: onlyBlue, fontWeight: FontWeight.w700)),
+      ],
       // трудные лучшие ходы (интуитивность ниже 30): сколько найдено
       if (hard.$2 > 0)
         Text('Hard moves found ${hard.$1} of ${hard.$2}',

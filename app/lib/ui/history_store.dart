@@ -15,11 +15,14 @@ import '../engine/game_job.dart';
 
 class HistoryEntry {
   const HistoryEntry(this.id, this.title, this.date, this.created, this.depth, this.target, this.progress,
-      {this.finished, this.rules = analysisRules, this.multipv = 5, this.puzzles = true});
+      {this.finished, this.rules = analysisRules, this.multipv = 5, this.puzzles = true, this.difficulty = false});
 
   /// Lines per position, and whether the game gives puzzles.
   final int multipv;
   final bool puzzles;
+
+  /// The difficulty analysis was asked for.
+  final bool difficulty;
 
   final String id, title, date;
   final DateTime created;
@@ -114,7 +117,7 @@ class HistoryStore extends ChangeNotifier {
 
   HistoryEntry _entry(AnalysisJob j) => HistoryEntry(
       j.id, j.title, j.source.headers['date'] ?? '', j.created, j.depth, j.targetDepth, j.progress,
-      finished: j.finished, rules: j.rules, multipv: j.multipv, puzzles: j.puzzles);
+      finished: j.finished, rules: j.rules, multipv: j.multipv, puzzles: j.puzzles, difficulty: j.difficulty);
 
   /// Registers a job: it is saved as it goes.
   void track(AnalysisJob job) {

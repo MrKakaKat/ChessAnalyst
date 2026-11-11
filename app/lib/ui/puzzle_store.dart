@@ -100,7 +100,9 @@ class StoredGame {
 class PuzzleStore {
   /// Version of the record; with the analysis rules and the depth it decides
   /// whether a record is still good.
-  static const version = 2;
+  /// 3 — new kinds (tactical fork, blocked king escape), the puzzle
+  /// threshold after the key move.
+  static const version = 3;
   static const _prefix = 'pstore.';
 
   /// The record of [key] if it is up to date for [depth] and [plies].

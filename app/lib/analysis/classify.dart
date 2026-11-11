@@ -159,6 +159,9 @@ _UnitVerdict _verdict(Unit unit, Eval? e0, Eval e1, Eval ep, List<Line> lines, L
   String step;
   if ((c1 == win && cp <= equal) || (c1 == loss && matedNow) || (c1 - cp >= 2)) {
     step = 'blunder';
+  } else if (e1.mate == 1 && ep.mate != 1) {
+    // [авторское] пропущенный мат в один ход («позиционный» мат) — всегда зевок
+    step = 'blunder';
   } else if (e1.mate != null && e1.mate! > 0 && ep.mate != null && ep.mate! > e1.mate!) {
     step = 'excellent'; // более медленный мат
   } else if (v.l > p.mistakeLoss + _tol) {

@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import '../../analysis/aac.dart' show Trick;
 import '../../analysis/character.dart' show Sharpness;
 import '../../analysis/classify.dart';
+import '../../analysis/difficulty.dart' show lineHasOnly;
 import '../../analysis/human.dart' show humanAim, significance;
 import '../../analysis/ideas.dart';
 import '../../analysis/kinds.dart' show kindLabels;
@@ -21,6 +22,7 @@ import '../../analysis/weakness.dart';
 import '../../analysis/pos.dart';
 import '../../analysis/settings.dart';
 import '../controller.dart';
+import '../theme.dart' show onlyBlue;
 import '../improve_screen.dart';
 import '../underlines.dart';
 import '../labels.dart';
@@ -429,6 +431,26 @@ class _Card extends StatelessWidget {
                   ' · ${c.before[c.ply].san(Pos.move(h.uci))}${h.engineBest ? '' : ' (human)'}'
                   ' · W ${(h.wdl.$1 / 10).round()} D ${(h.wdl.$2 / 10).round()} L ${(h.wdl.$3 / 10).round()}',
                   style: _valueStyle)),
+      // анализ сложности: трудность позиции до хода для каждой стороны и
+      // практическая оценка (оценка движка с поправкой на сложность стороны,
+      // которая впереди)
+      if (!variation && c.ply >= 0 && c.ply < c.difficulty.length && c.difficulty[c.ply] != null)
+        () {
+          final d = c.difficulty[c.ply]!;
+          String side(bool mover) => (r.side == Side.white) == mover ? 'White' : 'Black';
+          // оценки — за белых, как везде
+          String pawns(double v) {
+            final w = r.side == Side.white ? v : -v;
+            return '${w >= 0 ? '+' : ''}${w.toStringAsFixed(1)}';
+          }
+          return _kv(
+              context,
+              'Difficulty',
+              Text(
+                  '${side(true)} ${(d.mover * 100).round()}% · ${side(false)} ${(d.other * 100).round()}%'
+                  ' · practical ${pawns(d.practical)} (engine ${pawns(d.engine)})',
+                  style: _valueStyle));
+        }(),
       if (!variation && negativeSteps.contains(r.step)) ...[
         if (lossKind(r.pawns.e1, r.pawns.ep) case final l?) _kv(context, 'Loss', Text(lossLabels[l]!, style: _valueStyle)),
         _kv(context, 'Irreversibility', Text(irreversibilityLabels[irreversibilityOf(r.pawns.e1)]!, style: _valueStyle)),
@@ -737,7 +759,9 @@ class LinesTable extends StatelessWidget {
         key: ValueKey(next),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$where: Stockfish, depth ${c.game.engine['depth']}, ${p.lines.length} lines',
+          Text(
+              '$where: Stockfish, depth ${c.game.engine['depth']}, ${p.lines.length} lines'
+              ' · blue: the line needs an only move',
               style: TextStyle(color: scheme.outline, fontSize: 12)),
           const SizedBox(height: 6),
           for (final (i, ln) in p.lines.indexed)
@@ -751,7 +775,10 @@ class LinesTable extends StatelessWidget {
                     child: Text(whiteEvalText(ln.eval, pos.turn, c.unit == Unit.wdl ? Unit.wdl : Unit.pawns),
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            color: i == 0 ? scheme.primary : scheme.onSurface,
+                            // синяя оценка: линия требует only move
+                            color: lineHasOnly(p.fenBefore, p.lines, i, c.game.scans?[next])
+                                ? onlyBlue
+                                : (i == 0 ? scheme.primary : scheme.onSurface),
                             fontFeatures: const [FontFeature.tabularFigures()])),
                   ),
                   Expanded(

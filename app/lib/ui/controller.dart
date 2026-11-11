@@ -23,6 +23,7 @@ import '../analysis/aac.dart';
 import '../analysis/character.dart';
 import '../analysis/kinds.dart';
 import '../analysis/classify.dart';
+import '../analysis/difficulty.dart';
 import '../analysis/game.dart';
 import '../analysis/human.dart';
 import '../analysis/ideas.dart';
@@ -946,6 +947,41 @@ class AnalysisController extends ChangeNotifier {
     return _aac!;
   }
 
+  List<PositionDifficulty?>? _difficulty;
+  Object? _difficultyOf;
+
+  /// Difficulty of the position before each ply (the difficulty analysis;
+  /// all null without it).
+  List<PositionDifficulty?> get difficulty {
+    if (_difficulty == null || !identical(_difficultyOf, game)) {
+      final scans = game.scans;
+      _difficulty = [
+        for (var i = 0; i < game.plies.length; i++)
+          scans != null && i < scans.length && scans[i] != null
+              ? positionDifficulty(game.plies[i].fenBefore, game.plies[i].lines, scans[i]!)
+              : null,
+      ];
+      _difficultyOf = game;
+    }
+    return _difficulty!;
+  }
+
+  bool get hasDifficulty => game.hasDifficulty;
+
+  /// Practical evaluation after each ply, pawns for White (null where it is
+  /// not known).
+  List<double?> get practicalWhite => [
+        for (var i = 0; i < game.plies.length; i++)
+          () {
+            if (i + 1 >= game.plies.length) return null;
+            final d = difficulty[i + 1];
+            if (d == null) return null;
+            // после хода i ходит сторона хода i+1
+            final whiteToMove = before[i + 1].turn == Side.white;
+            return whiteToMove ? d.practical : -d.practical;
+          }(),
+      ];
+
   /// The trick of the game move at [ply]: in a lost position, the
   /// winner's moves that let the game slip to a draw after it.
   Trick? trickAt(int ply) => ply >= 0 && ply + 1 < game.plies.length ? trickOf(game.plies[ply + 1]) : null;
@@ -955,7 +991,13 @@ class AnalysisController extends ChangeNotifier {
   /// The side's worst move: the largest drop of the expected result (WDL),
   /// after which the game is most often lost. Null when no move dropped it
   /// by 10% or more.
+  /// [авторское] A missed mate in one is always the worst move (the first
+  /// one when there are several).
   int? worstPly(Side side) => _worst.putIfAbsent((side, identityHashCode(_analysis)), () {
+        for (final r in _analysis.records.where((r) => r.side == side)) {
+          final p = game.plies[r.ply];
+          if (p.lines.first.eval.mate == 1 && p.played.eval.mate != 1) return r.ply;
+        }
         int? best;
         var drop = 0.10;
         for (final r in _analysis.records.where((r) => r.side == side)) {
