@@ -122,7 +122,8 @@ class _SideColumn extends StatelessWidget {
         builder: (context, v, _) => Text(acc.overall == null ? '–' : '${v.toStringAsFixed(1)}%',
             style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
       ),
-      if (ratingEstimate(acc.overall, difficulty) case final r?)
+      // рейтинг — по среднему аккуратности трёх этапов партии
+      if (ratingEstimate(acc.stageMean, difficulty) case final r?)
         Text('$r rating', style: TextStyle(fontSize: 12, color: scheme.outline)),
       Text('Best moves ${(acc.bestShare * 100).round()}%', style: TextStyle(fontSize: 12, color: scheme.outline)),
       // трудные лучшие ходы (интуитивность ниже 30): сколько найдено
@@ -498,18 +499,19 @@ class _GameMistakes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    List<MapEntry<String, (double, int, String)>> rowsOf(Side side) {
-      final groups = <String, (double, int, String)>{}; // kind → (weight, count, worst step)
+    // [авторское] значимость вместо распределения по падению оценки: по
+    // трём равным частям — падение (D), интуитивность лучшего хода (I),
+    // сложность позиции (C); значимость = (D + I + (100 − C)) / 3
+    List<MapEntry<String, _Group>> rowsOf(Side side) {
+      final groups = <String, _Group>{};
       for (final r in c.analysis.records.where((r) => r.side == side)) {
-        final w = _weight[r.step];
-        if (w == null) continue;
-        final missed = c.kindsAt(r.ply).$2;
+        if (_weight[r.step] == null) continue;
+        // «упущен снова» — признак, а не вид хода: группа по самому виду
+        final missed = [for (final k in c.kindsAt(r.ply).$2) if (k != 'missed_again') k];
         final k = missed.isEmpty ? 'other' : missed.first;
-        final g = groups[k];
-        final worst = g == null || w > (_weight[g.$3] ?? 0) ? r.step : g.$3;
-        groups[k] = ((g?.$1 ?? 0) + w, (g?.$2 ?? 0) + 1, worst);
+        (groups[k] ??= _Group()).add(significance(c.analysis, r.ply));
       }
-      return groups.entries.toList()..sort((a, b) => b.value.$1.compareTo(a.value.$1));
+      return groups.entries.toList()..sort((a, b) => b.value.total.compareTo(a.value.total));
     }
 
     final bySide = {for (final side in Side.values) side: rowsOf(side)};
@@ -521,15 +523,24 @@ class _GameMistakes extends StatelessWidget {
                 c.analysis.records[best].wdl.e1 - c.analysis.records[best].wdl.ep
             ? p
             : best);
-    Widget row(MapEntry<String, (double, int, String)> e) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(children: [
-            SizedBox(width: 30, child: Text('${e.value.$2}×', style: const TextStyle(fontWeight: FontWeight.w700))),
-            Expanded(child: Text(e.key == 'other' ? 'Other' : 'Missed ${kindLabels[e.key] ?? e.key}')),
-            Text(stepLabels[e.value.$3] ?? e.value.$3,
-                style: TextStyle(fontSize: 12, color: stepColor(e.value.$3, Theme.of(context).brightness))),
-          ]),
-        );
+    const tab = TextStyle(fontSize: 12, fontFeatures: [FontFeature.tabularFigures()]);
+    Widget row(MapEntry<String, _Group> e) {
+      final g = e.value;
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(children: [
+          SizedBox(width: 30, child: Text('${g.n}×', style: const TextStyle(fontWeight: FontWeight.w700))),
+          Expanded(
+              child: Text(e.key == 'other' ? 'Other' : 'Missed ${kindLabels[e.key] ?? e.key}',
+                  maxLines: 1, overflow: TextOverflow.ellipsis)),
+          // значимость и её три части — в правом краю
+          Text('${g.mean((x) => x.value)}%', style: tab.copyWith(fontWeight: FontWeight.w800)),
+          const SizedBox(width: 8),
+          Text('D ${g.mean((x) => x.drop)} · I ${g.mean((x) => x.intuitive)} · C ${g.mean((x) => x.complexity)}',
+              style: tab.copyWith(color: scheme.outline)),
+        ]),
+      );
+    }
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
@@ -578,12 +589,27 @@ class _GameMistakes extends StatelessWidget {
               for (final e in bySide[side]!) row(e),
             ],
           const SizedBox(height: 4),
-          Text('Sorted by how often and how costly; the worst grade of each is on the right.',
+          Text(
+              'On the right: the significance of the mistakes (mean, %) and its three parts. '
+              'D — drop of the evaluation (6 pawns or an allowed mate = 100). '
+              'I — how intuitive the best move was (a natural move missed weighs more). '
+              'C — how complex the position was (a mistake in a simple one weighs more). '
+              'Significance = (D + I + (100 − C)) / 3; sorted by the total.',
               style: TextStyle(fontSize: 11, color: scheme.outline)),
         ],
       ),
     );
   }
+}
+
+/// Significance of a group of mistakes (one missed kind).
+class _Group {
+  final _items = <Significance>[];
+
+  void add(Significance s) => _items.add(s);
+  int get n => _items.length;
+  int get total => _items.fold(0, (a, s) => a + s.value);
+  int mean(int Function(Significance) f) => (_items.fold(0, (a, s) => a + f(s)) / n).round();
 }
 
 /// Donut of coloured parts (small gaps between them), drawn up to [t].

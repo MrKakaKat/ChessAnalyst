@@ -30,10 +30,9 @@ much the move gives away against the best one.
 **Steps in percent** (quick settings). Moves are graded by how much of the
 expected result they lose instead: best up to 1%, excellent 1–2%, good
 2–5%, inaccuracy 5–10%, laxity 10–15%, mistake 15–25%, blunder over 25%.
-In a decided position the percent barely moves, so the stricter of this
-grade and the grade by pawns lost (0.1 / 0.5 / 1) is taken; a lost win or
-an allowed mate stays a blunder. A move is neutral only when it loses up to
-1% and up to 0.1 pawn.
+Only the percent counts: in a decided position (−7 → −6) the result does
+not change, and the move is not a mistake. A lost win or an allowed mate
+stays a blunder. A move off the best lines that loses up to 1% is neutral.
 
 **Special marks**
 - **Brilliant** — a best move that gives up material, and the material does
@@ -145,6 +144,19 @@ what you missed, then by what you were punished with.
 - **Intuitive** — how natural the best move is for a human, 0–100.
   Captures, recaptures and checks are easy to see; sacrifices, quiet moves
   in tactical positions, retreats and long forcing lines are not.
+- **Significance** — how much the mistake says about the player, 0–100,
+  from three equal parts: D, the drop of the evaluation (6 pawns or an
+  allowed mate = 100); I, how intuitive the best move was (a natural move
+  missed weighs more); C, how complex the position was (a mistake in a
+  simple one weighs more). Significance = (D + I + (100 − C)) / 3. The
+  accuracy window lists the mistakes of the game by what they missed, with
+  the significance and its parts on the right.
+- **Aim** — where it is more sensible to go from the position by WDL: play
+  for the win (at least 30% to win and twice the chance to lose), aim for a
+  draw (the other way round), or keep the balance. With it the human move:
+  the engine line that serves the aim best (for a win the most chances with
+  little risk, for a draw the fewest losing chances), marked "human" when
+  it is not the engine's first. "More graphs" shows the aim of every move.
 - **Underline: not clear to me why** — mark a mistake you did not
   understand. It counts double in your weakness profile, so puzzles like it
   come up more often.
@@ -246,8 +258,12 @@ began and ends with the move that wins material or mates.
 ## Statistics
 
 The Statistics screen sums up your own analysed games:
-- results and negative moves for each colour;
+- rings of results (won, drawn, lost) for all games and each colour, the
+  number of games in the middle and the negative moves under the ring;
 - mistakes by stage;
+- accuracy by kind of move: how many of your moves had the kind, their
+  mean accuracy, and how often that kind was the best move and you missed
+  it;
 - the kinds of best moves you miss most;
 - what the mistakes cost.
 
@@ -285,8 +301,13 @@ games.
 Puzzles come from analysed games, your own included. A position becomes a
 puzzle when one move stands out:
 - a mate;
-- a winning or advantage-gaining blow;
-- the only defence that holds.
+- a winning blow (the best line reaches +4) or an advantage-gaining one
+  (+3; +2 only in the opening and early middlegame when the position stays
+  calm);
+- the only defence that holds;
+- combined: an attack whose line leads straight into a position where only
+  a precise defence holds (or the other way round) — take the advantage,
+  then hold it. The goal changes on the way.
 
 The solution goes on while the tactic does. In attacking puzzles any move
 that keeps the goal counts as correct. In defensive puzzles the first move
@@ -305,22 +326,51 @@ depends on how deep the engine must search before it keeps choosing the
 solution, how many other moves look as good at a glance, whether the key
 move is quiet, the length of the solution and a defensive goal. It also
 counts the opponent's counter-chances: replies with check or capture that
-nearly hold and have to be calculated, and how long the forcing play lasts. Puzzles
-that were not rated yet (the showcase games) are rated in the background
-while the Puzzles screen is open.
+nearly hold and have to be calculated, and how long the forcing play lasts.
+Two things make a move easier: a check that leaves the opponent one or two
+replies (a long mate by checks alone is found by just giving checks), and,
+in an attack, several moves that reach the goal at that step. Puzzles that
+were not rated yet are rated in the background while the Puzzles screen is
+open.
+
+A puzzle's best line is not the only one: a deeper search often finds a
+second good move. A move off the line is checked by the engine and counts
+when it keeps the goal: another mate or a crushing line (+5) in a mate
+puzzle, a line at least 60% as strong in the others; in a defence, a move
+that holds as well (within 0.3 pawn of the solution on the first move, 0.5
+later).
+
+Each game's puzzles and mistakes are saved once, when its analysis ends;
+the Puzzles screen only reads them, so it opens fast however many games
+there are. By default the puzzles come only from your own games; the
+showcase games (masters, engines) can be switched on. New puzzles come
+first, then the ones already opened, the ones solved cleanly last.
 
 A solved puzzle is recorded as a hit by itself. After a wrong move,
-"Show the consequences" plays the engine's punishment of it, and "Record"
-saves the attempt with the number of mistakes; such puzzles go to the
-Positions screen. The list of attempts is clickable: a puzzle opens again
-with your mistakes from last time and the solution button.
+"Show the consequences" plays the engine's punishment of it (the arrows go
+through it move by move; it is kept for this puzzle), and "Record" saves
+the attempt with the number of mistakes; such puzzles go to the Positions
+screen. "Record mistakes automatically" does it without the button. The same
+mistake is recorded only once, also after "Again". The list of attempts is
+clickable: a puzzle opens again with your mistakes from last time and the
+solution button. While a move is being checked, the analysis of a game
+pauses.
+
+**Weakness profile.** Puzzles like your mistakes come first. The mistakes
+weigh, from the heaviest: the moves you underlined in your games (×2), the
+other mistakes in your games by how serious they are (inaccuracy 1 …
+blunder 4), mistakes in puzzles (1.25 for a try with a mistake, +0.25 for
+each further one, up to 2), and mistakes when correcting your own games
+(Start to improve) with the same weight as in puzzles. Enter your names in
+the games (Statistics) so that the profile follows your own moves.
 
 ---
 
 ## Positions
 
-The Positions screen keeps the positions you missed in puzzles and the
-moves you underlined. Search by game, player or trait, and filter by trait
+The Positions screen keeps the positions you missed in puzzles (with the
+number of mistakes and their weight in the profile) and the moves you
+underlined. Search by game, player or trait, and filter by trait
 chips and a rating range. "By trait" sums the positions up from the most
 general traits to the most particular: colour, stage, type, direction,
 character, the kinds missed, the kinds you were punished by, and the cost.
@@ -353,7 +403,19 @@ character, the kinds missed, the kinds you were punished by, and the cost.
   changed while the analysis runs. A finished analysis offers to open the
   game or to close the window.
 - On the free analysis board, hold a move to select it: the round buttons
-  copy the line up to it or delete it with every move after it.
+  copy the line up to it, make its branch the main line (or a side one), or
+  delete it with every move after it. "Copy PGN" takes the whole tree with
+  every branch. Tap the evaluation of an engine line to walk along it
+  without a new analysis: the arrows step through it, the move on the board
+  is blue. A session reopens where you stopped, from the same side.
+- Sessions: openings (a clean board from the start; named by you, shown with
+  the opening's name) and positions (opened with the analysis icon, from a
+  puzzle or elsewhere), switched at the top of the list. Pin a session to
+  the top or star it.
+- A drawn game ends with a ½ badge: threefold repetition, stalemate,
+  insufficient material, the fifty-move rule or agreement.
+- The rating estimate in the accuracy window comes from the mean accuracy
+  of the three stages of the game.
 - While a game is being analysed, only the Game tab with the move list
   works; the other tabs and the graphs open when the analysis is done.
 - The rings at the bottom right show the analyses in the queue; the inner

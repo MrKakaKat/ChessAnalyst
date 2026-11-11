@@ -22,7 +22,7 @@ import 'history_store.dart';
 import 'job_screen.dart';
 import 'notices.dart';
 import 'player_stats.dart' show mistakeSnapshot;
-import 'puzzles.dart';
+import 'puzzle_store.dart';
 
 class AnalysisQueue extends ChangeNotifier {
   static const _key = 'analysis.queue';
@@ -69,7 +69,7 @@ class AnalysisQueue extends ChangeNotifier {
   /// Starts the first waiting analysis when none is running; one the user
   /// paused waits for them.
   void _pump() {
-    if (ratingPuzzles || jobs.any((j) => j.state == JobState.running)) return;
+    if (_holds > 0 || ratingPuzzles || jobs.any((j) => j.state == JobState.running)) return;
     for (final j in jobs) {
       if (!j.done && !j.pausedByUser && j.state != JobState.failed) {
         j.start();
@@ -95,6 +95,29 @@ class AnalysisQueue extends ChangeNotifier {
     notifyListeners();
   }
 
+  int _holds = 0;
+
+  /// Runs [work] first: the running analysis pauses while it needs the
+  /// engine (a move checked in a puzzle, its consequences) and goes on after.
+  Future<T> priority<T>(Future<T> Function() work) async {
+    _holds++;
+    for (final j in [...jobs.where((j) => j.state == JobState.running)]) {
+      j.pause();
+      // не пауза пользователя: очередь продолжит сама
+      j.pausedByUser = false;
+      j.onSave?.call(j);
+    }
+    try {
+      return await work();
+    } finally {
+      _holds--;
+      if (_holds == 0) {
+        _pump();
+        notifyListeners();
+      }
+    }
+  }
+
   /// Puzzles of finished analyses are rated by the engine before the next
   /// analysis starts (again after a deeper analysis: the ratings change).
   bool ratingPuzzles = false;
@@ -112,7 +135,9 @@ class AnalysisQueue extends ChangeNotifier {
         // версия правил может убрать
         j.tagSnapshot = mistakeSnapshot(a);
         await history.save(j);
-        if (j.puzzles) await ratePuzzles(puzzlesFrom(a), again: true);
+        // задачи и ошибки партии — один раз, экран задач их только читает
+        final stored = await PuzzleStore.build(j.id, a, puzzles: j.puzzles);
+        if (j.puzzles) await ratePuzzles(stored.puzzles, again: true);
       }
     } catch (_) {}
     ratingPuzzles = false;

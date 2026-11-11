@@ -27,7 +27,8 @@ import 'analysis_cache.dart';
 import 'analysis_queue.dart';
 import 'history_store.dart';
 import 'prefs.dart';
-import 'player_stats.dart' show collectStats;
+import 'puzzle_store.dart';
+import 'stats_screen.dart' show askPlayerNames;
 import 'puzzles.dart';
 import 'step_icons.dart' show StepIcon;
 import 'widgets/board_background.dart';
@@ -50,6 +51,12 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
   Map<String, int> _ratings = {};
   Map<String, double> _profile = {};
 
+  /// Puzzles already opened (they come after the new ones).
+  Set<String> _seen = {};
+
+  /// Own analysed games (for the hint to enter your name).
+  int _ownGames = 0;
+
   @override
   void initState() {
     super.initState();
@@ -66,34 +73,58 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
   void _rebuild() => setState(() {});
 
   Future<void> _load() async {
-    // тяжёлый разбор партий — после анимации перехода, чтобы она не дёргалась
+    // после анимации перехода, чтобы она не дёргалась
     await Future<void>.delayed(const Duration(milliseconds: 350));
     final list = <Puzzle>[];
-    for (final g in widget.games) {
-      list.addAll(puzzlesFrom(await analysisOf(g, widget.book)));
+    // [авторское] задачи и ошибки каждой партии сохраняются один раз, когда
+    // её анализ закончен (puzzle_store.dart); здесь они только читаются, а
+    // заново делаются лишь устаревшие записи
+    if (prefs.showcasePuzzles) {
+      for (final g in widget.games) {
+        final key = 'showcase:${g.id}';
+        final depth = (g.engine['depth'] as num?)?.toInt() ?? 0;
+        final st = await PuzzleStore.read(key, depth: depth, plies: g.plies.length) ??
+            await PuzzleStore.build(key, await analysisOf(g, widget.book));
+        list.addAll(st.puzzles);
+      }
     }
-    // разборы своих партий из истории (законченные)
     await history.load();
-    // свои партии дают задачи сразу после быстрого прохода
-    final own = <GameAnalysis>[];
+    final own = <StoredGame>[];
     for (final e in history.entries) {
-      final job = await history.open(e.id);
-      if (job == null || !job.ready) continue;
-      own.add(await analysisOf(job.snapshot(), widget.book));
+      var st = e.finished != null ? await PuzzleStore.read(e.id, depth: e.depth) : null;
+      if (st == null) {
+        final job = await history.open(e.id);
+        // свои партии дают задачи уже после быстрого прохода
+        if (job == null || !job.ready) continue;
+        final a = await analysisOf(job.snapshot(), widget.book);
+        st = job.done
+            ? await PuzzleStore.build(e.id, a, puzzles: job.puzzles)
+            : StoredGame(
+                gameId: a.game.id,
+                white: a.game.white,
+                black: a.game.black,
+                depth: job.depth,
+                plies: a.game.plies.length,
+                puzzlesOn: job.puzzles,
+                puzzles: job.puzzles ? puzzlesFrom(a) : const [],
+                mistakes: mistakesOf(a));
+      }
+      own.add(st);
       // партия без задач — только для профиля слабостей
-      if (job.puzzles) list.addAll(puzzlesFrom(own.last));
+      if (st.puzzlesOn) list.addAll(st.puzzles);
     }
-    // профиль слабостей — по своим ошибкам (для «Consider weaknesses»)
-    final stats = await collectStats(own, puzzles: list);
-    _profile = stats.profile;
     final attempts = await PuzzleHistory.load();
     final ratings = await PuzzleRatings.load();
+    _seen = await PuzzleSeen.load();
+    // профиль слабостей: свои ошибки в партиях, в задачах и в исправлении
+    _profile = await profileFrom(own, attempts: attempts, puzzles: {for (final p in list) p.id: p});
     list.shuffle(math.Random(DateTime.now().day));
     if (!mounted) return;
     setState(() {
       _puzzles = list;
       _attempts = attempts;
       _ratings = ratings;
+      _ownGames = own.length;
     });
     _rateRest(list);
   }
@@ -162,18 +193,23 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
   }
 
   /// Puzzles of the chosen rating (its hundred) first, then the nearest
-  /// easier ones, the harder ones last; solved ones after all the rest.
+  /// easier ones, the harder ones last; the ones already opened after the
+  /// new ones, and the ones solved cleanly after all the rest.
   List<Puzzle> _ordered() {
     final target = prefs.puzzleAutoRating ? autoRating(_attempts) : prefs.puzzleTarget;
     final top = target ~/ 100 * 100 + 99;
-    final solved = {for (final a in _attempts) if (a.solved) a.id};
+    final solved = {for (final a in _attempts) if (a.solved && a.errors == 0) a.id};
+    final tried = {..._seen, for (final a in _attempts) a.id};
     final weak = prefs.weaknessPuzzles && _profile.isNotEmpty;
     int key(Puzzle p) {
       final r = _ratingOf(p);
       final band = r <= top ? (top - r) ~/ 100 : 100 + r ~/ 100;
       // в пределах сотни рейтинга — сначала похожие на свои ошибки
       final like = weak ? (similarity(p.tags, _profile) * 10).round().clamp(0, 999) : 0;
-      return (solved.contains(p.id) ? 1000000 : 0) + band * 1000 + (999 - like);
+      // [авторское] сначала новые, затем уже открытые и не решённые чисто,
+      // решённые без ошибок — в самом конце: задачи не повторяются
+      final seen = solved.contains(p.id) ? 2 : (tried.contains(p.id) ? 1 : 0);
+      return seen * 1000000 + band * 1000 + (999 - like);
     }
 
     return [..._puzzles!]..sort((a, b) => key(a) - key(b));
@@ -306,6 +342,53 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
             label: Text(list == null ? 'Loading…' : (list.isEmpty ? 'No puzzles yet' : 'Start to solve')),
           ),
         ),
+        // автоматический учёт ошибок — без кнопки после каждой задачи
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: prefs.autoRecordPuzzles
+              ? FilledButton.tonalIcon(
+                  onPressed: () => prefs.update(autoRecord: false),
+                  icon: const Icon(Icons.bookmark_added_rounded, size: 18),
+                  label: const Text('Mistakes are recorded automatically'),
+                )
+              : OutlinedButton.icon(
+                  onPressed: () => prefs.update(autoRecord: true),
+                  icon: const Icon(Icons.bookmark_add_outlined, size: 18),
+                  label: const Text('Record mistakes automatically'),
+                ),
+        ),
+        // без своего имени профиль слабостей смешивает свои ошибки с чужими
+        if (prefs.playerName.trim().isEmpty && _ownGames > 0)
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+            decoration: BoxDecoration(
+                color: scheme.secondaryContainer.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(12)),
+            child: Row(children: [
+              Expanded(
+                child: Text('Enter your name in the games first: then the puzzles follow your own mistakes.',
+                    style: TextStyle(fontSize: 13, color: scheme.onSecondaryContainer)),
+              ),
+              TextButton(
+                onPressed: () async {
+                  if (await askPlayerNames(context, '') != null) _load();
+                },
+                child: const Text('Enter'),
+              ),
+            ]),
+          ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Puzzles from the showcase games'),
+          subtitle: const Text('Masters and engine games; off: only your own games'),
+          value: prefs.showcasePuzzles,
+          onChanged: (v) {
+            prefs.update(showcase: v);
+            setState(() => _puzzles = null);
+            _load();
+          },
+        ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Consider weaknesses'),
@@ -387,6 +470,24 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
   /// Wrong moves of this try ("step:uci").
   final _wrongs = <String>[];
+
+  /// Wrong moves of this puzzle already recorded (kept through "Again", so
+  /// that the same mistake is not recorded twice); cleared on the next puzzle.
+  final _recordedWrongs = <String>{};
+
+  /// Start of this try: an attempt is recorded once per try.
+  DateTime _tryStart = DateTime.now();
+
+  /// Moves played past the line: the wrong move and its consequences, so
+  /// that the arrows go through them move by move.
+  final _tail = <NormalMove>[];
+
+  /// The consequences found for a position ("index:fen" → UCI moves), kept
+  /// for this puzzle (again after "Try again" or "Again").
+  final _consCache = <String, List<String>>{};
+
+  /// The rating shown while the panel fades (not yet the next puzzle's).
+  int? _shownRating;
   bool _showSource = false;
   int? _rating;
   bool _ratingBusy = false;
@@ -462,6 +563,12 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       pos = pos.push(m);
       out.add((pos, m));
     }
+    // неверный ход и его последствия — по одному ходу
+    for (final m in _tail) {
+      if (!pos.isLegal(m)) break;
+      pos = pos.push(m);
+      out.add((pos, m));
+    }
     if (_pos.fen != pos.fen) out.add((_pos, _last));
     return out;
   }
@@ -526,7 +633,14 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       _peek = false;
       _view = null;
       _bestAt = null;
-      _index = i % _puzzles.length;
+      final next = i % _puzzles.length;
+      if (next != _index) {
+        _recordedWrongs.clear();
+        _consCache.clear();
+      }
+      _index = next;
+      _tryStart = DateTime.now();
+      _tail.clear();
       _step = 0;
       _state = _State.solving;
       _recorded = false;
@@ -534,6 +648,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       _errStep = null;
       _errFen = null;
       _wrongs.clear();
+      _thisTryRecorded.clear();
       _showSource = false;
       _pos = Pos.fromFen(p.fen);
       _last = null;
@@ -551,6 +666,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     } else {
       _sync(animate: false);
     }
+    PuzzleSeen.add(p.id);
     _estimate();
   }
 
@@ -583,8 +699,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         return _accept();
       }
     }
-    // в защите первый ход единственный, дальше годится и другой, что держит
-    if (p.goal == PuzzleGoal.defend && _step == 0) return _wrong(m);
+    // [авторское] лучшая линия анализа не единственная: глубже движок часто
+    // находит второй хороший ход — его проверяет движок (в защите строже)
     _checkWithEngine(m);
   }
 
@@ -604,14 +720,23 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         _errStep = _step;
         _errFen = _pos.fen;
       }
-      _wrongs.add('$_step:${m.uci}');
+      // повтор той же ошибки (после «Try again» или «Again») не считается
+      final w = '$_step:${m.uci}';
+      if (!_wrongs.contains(w)) _wrongs.add(w);
+      _tail
+        ..clear()
+        ..add(m);
       _last = m;
       _pos = _pos.push(m);
       _state = _State.wrong;
       _checking = false;
     });
     _sync();
+    if (prefs.autoRecordPuzzles && _newWrongs.isNotEmpty) _record(false);
   }
+
+  /// Mistakes of this try not recorded yet.
+  List<String> get _newWrongs => [for (final w in _wrongs) if (!_recordedWrongs.contains(w)) w];
 
   /// A move off the line (in a defence, after the first move): the engine
   /// decides whether it keeps the goal; if so the puzzle goes on along the
@@ -633,7 +758,8 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     } else {
       try {
         final bot = await EngineBot.shared();
-        final lines = await bot.analyse(after.fen, depth: 14, multipv: 1);
+        // проверка хода важнее фонового анализа партии: он ждёт
+        final lines = await analysisQueue.priority(() => bot.analyse(after.fen, depth: 14, multipv: 1));
         if (lines.isNotEmpty && puzzle.keepsGoal(lines.first.eval, step: step)) tail = tacticTail(after, lines.first.pv);
       } catch (_) {}
     }
@@ -655,8 +781,10 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         _showSource = true;
       });
       _sync();
-      // решено с первой попытки — попадание записывается само
+      // решено чисто — попадание записывается само; с ошибками — при
+      // автоматическом учёте (только новые ошибки)
       if (!_erred && !_recorded) _record(true);
+      if (_erred && prefs.autoRecordPuzzles && _newWrongs.isNotEmpty) _record(true);
       return;
     }
     _sync();
@@ -706,14 +834,21 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     final puzzle = p;
     setState(() => _consequencesBusy = true);
     try {
-      final bot = await EngineBot.shared();
-      final lines = await bot.analyse(_pos.fen, depth: 14, multipv: 1);
-      if (!mounted || !identical(puzzle, p) || lines.isEmpty) return;
-      for (final uci in lines.first.pv.take(6)) {
+      // уже найденные для этой позиции — без нового счёта
+      final key = '$_index:${_pos.fen}';
+      var pv = _consCache[key];
+      if (pv == null) {
+        final bot = await EngineBot.shared();
+        final lines = await analysisQueue.priority(() => bot.analyse(_pos.fen, depth: 14, multipv: 1));
+        if (!mounted || !identical(puzzle, p) || lines.isEmpty) return;
+        pv = _consCache[key] = lines.first.pv.take(6).toList();
+      }
+      for (final uci in pv) {
         if (!mounted || !identical(puzzle, p) || _state != _State.wrong) return;
         final m = NormalMove.fromUci(uci);
         if (!_pos.isLegal(m)) break;
         setState(() {
+          _tail.add(m);
           _last = m;
           _pos = _pos.push(m);
         });
@@ -736,6 +871,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       }
       _last = _step > 0 ? NormalMove.fromUci(_line[_step - 1]) : null;
       _state = _State.solving;
+      _tail.clear();
     });
     _sync();
   }
@@ -754,11 +890,33 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     }
   }
 
+  /// Records this try (once: a later call updates it) with the mistakes
+  /// not recorded before for this puzzle.
   Future<void> _record(bool solved) async {
-    await PuzzleHistory.add(PuzzleAttempt(p.id, p.source, solved, DateTime.now(),
-        rating: _rating, goal: goalLabels[p.goal], step: _errStep, fen: _errFen, wrong: List.of(_wrongs)));
+    final fresh = _newWrongs;
+    // все ошибки этой попытки уже записаны раньше — повтор не пишется
+    if (_erred && fresh.isEmpty) {
+      if (mounted) setState(() => _recorded = true);
+      return;
+    }
+    final wrong = [
+      for (final w in _wrongs)
+        if (fresh.contains(w) || _thisTryRecorded.contains(w)) w
+    ];
+    _thisTryRecorded.addAll(fresh);
+    _recordedWrongs.addAll(fresh);
+    await PuzzleHistory.add(PuzzleAttempt(p.id, p.source, solved, _tryStart,
+        rating: _rating,
+        goal: goalLabels[p.goal],
+        step: _errStep,
+        fen: _errFen,
+        wrong: wrong,
+        tags: p.tags.toList()));
     if (mounted) setState(() => _recorded = true);
   }
+
+  /// Mistakes recorded in this try (the record is updated with new ones).
+  final _thisTryRecorded = <String>{};
 
   @override
   Widget build(BuildContext context) {
@@ -889,7 +1047,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     };
     final finished = _state == _State.solved || _state == _State.shown;
     // рейтинг — только в конце: до этого он подсказка
-    final rating = _rating ?? (prefs.estimatePuzzleRating ? null : quickRating(p));
+    // пока панель гаснет, виден рейтинг прошлой задачи, а не следующей
+    if (finished) _shownRating = _rating ?? (prefs.estimatePuzzleRating ? null : quickRating(p));
+    final rating = _shownRating;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
         Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700))),
@@ -942,7 +1102,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
               onPressed: _showSolution, icon: const Icon(Icons.visibility_outlined), label: const Text('Show solution')),
           // что даёт неверный ход: лучшая линия соперника после него
           OutlinedButton.icon(
-              onPressed: _consequencesBusy ? null : _consequences,
+              onPressed: _consequencesBusy || _tail.length > 1 ? null : _consequences,
               icon: const Icon(Icons.play_arrow_rounded),
               label: const Text('Show the consequences')),
         ]),
@@ -952,14 +1112,14 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
         transitionBuilder: (w, a) => FadeTransition(opacity: a, child: SizeTransition(sizeFactor: a, child: w)),
         // позиция сохраняется только после ошибки — та, где был неверный ход
         // запись попытки с ошибками: решена ли и сколько было ошибок
-        child: _erred && !_recorded && (finished || _state == _State.wrong)
+        child: _newWrongs.isNotEmpty && !prefs.autoRecordPuzzles && (finished || _state == _State.wrong)
             ? Padding(
                 key: const ValueKey('record'),
                 padding: const EdgeInsets.only(top: 8, bottom: 12),
                 child: OutlinedButton.icon(
                   onPressed: () => _record(_state == _State.solved),
                   icon: const Icon(Icons.bookmark_add_outlined),
-                  label: Text('Record · ${_wrongs.length} mistake${_wrongs.length == 1 ? '' : 's'}'),
+                  label: Text('Record · ${_newWrongs.length} mistake${_newWrongs.length == 1 ? '' : 's'}'),
                 ),
               )
             : const SizedBox(width: double.infinity, key: ValueKey('none')),

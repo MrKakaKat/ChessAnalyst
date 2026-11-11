@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import '../../analysis/aac.dart' show Trick;
 import '../../analysis/character.dart' show Sharpness;
 import '../../analysis/classify.dart';
+import '../../analysis/human.dart' show humanAim, significance;
 import '../../analysis/ideas.dart';
 import '../../analysis/kinds.dart' show kindLabels;
 import '../../analysis/weakness.dart';
@@ -140,15 +141,17 @@ class _EndCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final e = c.end!;
     final theme = Theme.of(context);
-    final who = e.loser.name == 'white' ? 'White' : 'Black';
-    final text = e.kind == 'resign'
-        ? '$who resigned in ${_article(categoryLabels[e.category]!)} position.'
-        : '$who lost on time.';
+    final who = e.loser?.name == 'white' ? 'White' : 'Black';
+    final text = switch (e.kind) {
+      'resign' => '$who resigned in ${_article(categoryLabels[e.category]!)} position.',
+      'draw' => 'Draw: ${e.reason!.toLowerCase()}.',
+      _ => '$who lost on time.',
+    };
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(e.label, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
       const SizedBox(height: 10),
       Wrap(spacing: 10, runSpacing: 8, children: [
-        StepBadge(kind: e.kind, color: markColor(e.step ?? 'forced')),
+        StepBadge(kind: e.kind, color: markColor(e.step ?? (e.kind == 'draw' ? 'neutral' : 'forced'))),
         AccuracyButton(controller: c),
       ]),
       const SizedBox(height: 10),
@@ -408,6 +411,24 @@ class _Card extends StatelessWidget {
                 '${c.intuitivenessAt(c.ply)} · ${switch (c.intuitivenessAt(c.ply)) { < 30 => 'hard to see', < 60 => 'takes a look', _ => 'natural' }} '
                 '(${r.bestMoves.first.san})',
                 style: _valueStyle)),
+      // значимость ошибки: падение, интуитивность, сложность позиции
+      if (!variation && negativeSteps.contains(r.step))
+        if (significance(c.analysis, c.ply) case final sg)
+          _kv(
+              context,
+              'Significance',
+              Text('${sg.value} · D ${sg.drop} · I ${sg.intuitive} · C ${sg.complexity}', style: _valueStyle)),
+      // куда рациональнее идти по WDL: к победе, к ничьей или держать баланс
+      if (!variation && r.step != 'book' && r.step != 'forced')
+        if (humanAim(c.game, c.ply) case final h?)
+          _kv(
+              context,
+              'Aim',
+              Text(
+                  '${switch (h.aim) { 'win' => 'Play for the win', 'draw' => 'Aim for a draw', _ => 'Keep the balance' }}'
+                  ' · ${c.before[c.ply].san(Pos.move(h.uci))}${h.engineBest ? '' : ' (human)'}'
+                  ' · W ${(h.wdl.$1 / 10).round()} D ${(h.wdl.$2 / 10).round()} L ${(h.wdl.$3 / 10).round()}',
+                  style: _valueStyle)),
       if (!variation && negativeSteps.contains(r.step)) ...[
         if (lossKind(r.pawns.e1, r.pawns.ep) case final l?) _kv(context, 'Loss', Text(lossLabels[l]!, style: _valueStyle)),
         _kv(context, 'Irreversibility', Text(irreversibilityLabels[irreversibilityOf(r.pawns.e1)]!, style: _valueStyle)),

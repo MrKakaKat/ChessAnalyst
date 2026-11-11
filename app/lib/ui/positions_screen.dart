@@ -20,6 +20,7 @@ import 'controller.dart';
 import 'game_screen.dart';
 import 'labels.dart';
 import 'player_stats.dart';
+import 'puzzle_store.dart' show puzzleMistakeWeight;
 import 'puzzles.dart';
 import 'underlines.dart';
 
@@ -31,7 +32,14 @@ class PositionEntry {
     required this.tags,
     required this.rating,
     required this.title,
+    this.mistakes = 0,
+    this.weight = 0,
   });
+
+  /// A puzzle: the mistakes made in it over all recorded attempts, and their
+  /// weight in the weakness profile (puzzle_store.dart).
+  final int mistakes;
+  final double weight;
 
   final GameData game;
   final int ply;
@@ -67,9 +75,15 @@ Future<List<PositionEntry>> collectPositions(List<GameData> showcase, OpeningBoo
   ];
   // из задач — только сохранённые промахи (позиция, где был неверный ход)
   final missed = <String, PuzzleAttempt>{};
+  final mistakes = <String, int>{};
+  final weights = <String, double>{};
   for (final a in await PuzzleHistory.load()) {
     // попытки с ошибками (решённые потом или нет) — позиция ошибки
-    if (a.fen != null && (!a.solved || a.errors > 0)) missed.putIfAbsent(a.id, () => a);
+    if (a.fen != null && (!a.solved || a.errors > 0)) {
+      missed.putIfAbsent(a.id, () => a);
+      mistakes[a.id] = (mistakes[a.id] ?? 0) + (a.errors == 0 ? 1 : a.errors);
+      weights[a.id] = (weights[a.id] ?? 0) + puzzleMistakeWeight(a.errors, solved: a.solved);
+    }
   }
   final ratings = await PuzzleRatings.load();
   final out = <PositionEntry>[];
@@ -102,6 +116,8 @@ Future<List<PositionEntry>> collectPositions(List<GameData> showcase, OpeningBoo
         rating: miss?.rating ?? ratings[key] ?? findRating(board, best.move, best.pv, type, ch.sharpness),
         title: '${a.game.title}, ${plyText(r.ply)} ${r.san}'
             '${!isUnderlined && step > 0 ? ' · solution move ${step ~/ 2 + 1}' : ''}',
+        mistakes: mistakes[key] ?? 0,
+        weight: weights[key] ?? 0,
       ));
     }
   }
@@ -208,7 +224,7 @@ class _PositionsScreenState extends State<PositionsScreen> {
               SegmentedButton<String>(
                 segments: const [
                   ButtonSegment(value: 'all', label: Text('All')),
-                  ButtonSegment(value: 'missed', label: Text('Puzzle misses')),
+                  ButtonSegment(value: 'missed', label: Text('Puzzle mistakes')),
                   ButtonSegment(value: 'underlined', label: Text('Underlined')),
                 ],
                 selected: {_filter},
@@ -330,6 +346,14 @@ class _PositionsScreenState extends State<PositionsScreen> {
                           Expanded(child: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w600))),
                           Text('${e.rating}', style: TextStyle(color: scheme.outline, fontWeight: FontWeight.w700)),
                         ]),
+                        if (e.mistakes > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                                '${e.mistakes} mistake${e.mistakes == 1 ? '' : 's'} in the puzzle · '
+                                'weight ${e.weight.toStringAsFixed(2)} in the weakness profile',
+                                style: TextStyle(fontSize: 12, color: scheme.outline)),
+                          ),
                         const SizedBox(height: 6),
                         Wrap(spacing: 6, runSpacing: 4, children: [
                           for (final (g, _) in traitGroups)

@@ -29,12 +29,36 @@
 /// obvious one +5. Within one game, best moves found that score under 30 hint
 /// at unusual precision (a first step towards spotting engine help; no
 /// verdict from a single game).
+///
+/// **Significance of a mistake (0…100)** — three equal parts:
+/// - D, the drop of the evaluation: the pawns lost over 6 (6 pawns or an
+///   allowed mate = 100);
+/// - I, how intuitive the best move was (above): a natural move missed is
+///   worse;
+/// - C, how complex the position was: a mistake in a simple position is
+///   worse. C = 60% narrowness (how few lines stay within half a pawn of the
+///   best) + 40% the forcing length of the best line (six plies = full).
+/// Significance = (D + I + (100 − C)) / 3.
+///
+/// **Rational aim (WDL)** — where it is more sensible to go from a
+/// position, for the side to move, from the WDL of the best line:
+/// - win: the chance to win is at least 30% and at least twice the chance
+///   to lose — play for the win;
+/// - draw: the chance to lose is at least 30% and at least twice the chance
+///   to win — save the game, aim for a draw;
+/// - balance: otherwise — keep the balance.
+/// The human move is the engine line that serves the aim best, not always
+/// the engine's first: for a win the most winning chances with little risk
+/// (W − 1.5·L), for a draw the fewest losing chances (W + D), in balance
+/// the best expected score. A first step towards the human path to a win or
+/// a draw instead of the engine's risky single road.
 library;
 
 import 'dart:math' as math;
 
 import 'package:dartchess/dartchess.dart' show Side;
 
+import 'eval.dart';
 import 'features.dart' as features;
 import 'game.dart';
 import 'kinds.dart';
@@ -172,3 +196,66 @@ int intuitiveness(GameAnalysis a, int ply) {
   return (found, chances);
 }
 
+
+/// Complexity of the position at [ply] (0…100), see the library comment.
+int positionComplexity(GameData g, int ply) {
+  final p = g.plies[ply];
+  if (p.lines.isEmpty) return 50;
+  const s = Settings();
+  final best = p.lines.first.eval.pawns(s);
+  final near = p.lines.where((l) => best - l.eval.pawns(s) <= 0.5).length;
+  final narrow = p.lines.length < 2 ? 1.0 : 1 - (near - 1) / (p.lines.length - 1);
+  final forcing = features.forcingCount(Pos.fromFen(p.fenBefore), p.lines.first.pv, 10);
+  return (100 * (0.6 * narrow + 0.4 * math.min(1.0, forcing / 6))).round().clamp(0, 100);
+}
+
+class Significance {
+  const Significance(this.drop, this.intuitive, this.complexity);
+
+  /// D, I and C, each 0…100.
+  final int drop, intuitive, complexity;
+
+  int get value => ((drop + intuitive + (100 - complexity)) / 3).round();
+}
+
+/// Significance of the move at [ply] (see the library comment).
+Significance significance(GameAnalysis a, int ply) {
+  final r = a.records[ply];
+  final mated = r.ep.mate != null && r.ep.mate! < 0 && !(r.e1.mate != null && r.e1.mate! < 0);
+  final lost = math.max(0.0, r.pawns.e1 - r.pawns.ep);
+  final drop = mated ? 100 : (lost / 6 * 100).round().clamp(0, 100);
+  return Significance(drop, intuitiveness(a, ply), positionComplexity(a.game, ply));
+}
+
+class HumanAim {
+  const HumanAim(this.aim, this.uci, this.wdl, {required this.engineBest});
+
+  /// 'win', 'draw' or 'balance'.
+  final String aim;
+
+  /// The human move (UCI) and its WDL (per mille, side to move).
+  final String uci;
+  final (int, int, int) wdl;
+
+  /// The human move is the engine's first line.
+  final bool engineBest;
+}
+
+/// The rational aim and the human move at [ply] (see the library comment);
+/// null without engine lines.
+HumanAim? humanAim(GameData g, int ply) {
+  final lines = g.plies[ply].lines;
+  if (lines.isEmpty) return null;
+  final (w, _, l) = lines.first.eval.wdl;
+  final aim = w >= 300 && w >= 2 * l ? 'win' : (l >= 300 && l >= 2 * w ? 'draw' : 'balance');
+  double score(Line x) {
+    final (lw, ld, ll) = x.eval.wdl;
+    return switch (aim) { 'win' => lw - 1.5 * ll, 'draw' => (lw + ld).toDouble(), _ => lw + ld / 2 };
+  }
+
+  var best = lines.first;
+  for (final x in lines.skip(1)) {
+    if (score(x) > score(best) + 1e-9) best = x;
+  }
+  return HumanAim(aim, best.move, best.eval.wdl, engineBest: identical(best, lines.first));
+}

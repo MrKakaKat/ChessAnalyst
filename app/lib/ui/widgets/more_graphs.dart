@@ -1,4 +1,5 @@
 /// Extra graphs of the Game tab, under the evaluation (folded by default):
+/// - the rational aim by WDL (win, draw or balance) for each side;
 /// - position character along the game: sharp, middle, trivial (and quiet
 ///   positions as dots);
 /// - the AAC parts for each player: Abilities, Activity (free squares
@@ -11,6 +12,7 @@ import 'package:dartchess/dartchess.dart' show Side;
 import 'package:flutter/material.dart';
 
 import '../../analysis/character.dart';
+import '../../analysis/human.dart' show humanAim;
 import '../controller.dart';
 
 class MoreGraphs extends StatelessWidget {
@@ -50,6 +52,20 @@ class MoreGraphs extends StatelessWidget {
                     ]),
                   );
               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                // куда рациональнее идти по WDL: верхний ряд — ходы белых, нижний — чёрных
+                titled(
+                  'Rational aim (WDL)',
+                  _Seek(
+                      c,
+                      n,
+                      CustomPaint(
+                          size: const Size(double.infinity, 26),
+                          painter: _AimPainter([
+                            for (var i = 0; i < n; i++)
+                              (c.analysis.records[i].side, humanAim(c.game, i)?.aim ?? 'balance'),
+                          ], c.recordPly, scheme))),
+                  legend: 'win · draw · balance; top White, bottom Black',
+                ),
                 titled(
                   'Position character',
                   _Seek(c, n, CustomPaint(size: const Size(double.infinity, 22), painter: _CharacterPainter(chars, c.recordPly, scheme))),
@@ -146,6 +162,48 @@ class _CharacterPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_CharacterPainter old) => old.cursor != cursor || old.chars != chars;
+}
+
+/// The rational aim of each move by WDL: White's moves in the top row,
+/// Black's in the bottom one; green — play for the win, amber — aim for a
+/// draw, grey — keep the balance.
+class _AimPainter extends CustomPainter {
+  _AimPainter(this.aims, this.cursor, this.scheme);
+
+  final List<(Side, String)> aims;
+  final int cursor;
+  final ColorScheme scheme;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final n = aims.length;
+    if (n == 0) return;
+    final rect = Offset.zero & size;
+    canvas.save();
+    canvas.clipRRect(RRect.fromRectAndRadius(rect, const Radius.circular(4)));
+    canvas.drawRect(rect, Paint()..color = scheme.surfaceContainerHighest);
+    final w = size.width / n;
+    final h = size.height / 2;
+    for (var i = 0; i < n; i++) {
+      final (side, aim) = aims[i];
+      final color = switch (aim) {
+        'win' => const Color(0xFF4CAF50),
+        'draw' => const Color(0xFFF0B414),
+        _ => const Color(0xFF959595),
+      };
+      // ход стороны занимает и соседнюю клетку, чтобы ряд был сплошным
+      canvas.drawRect(Rect.fromLTWH(i * w, side == Side.white ? 0 : h, 2 * w + 0.5, h - 0.5),
+          Paint()..color = color.withValues(alpha: 0.85));
+    }
+    canvas.restore();
+    final x = (cursor.clamp(0, n - 1) + 0.5) * w;
+    canvas.drawLine(Offset(x, -2), Offset(x, size.height + 2), Paint()
+      ..color = scheme.onSurface
+      ..strokeWidth = 1.5);
+  }
+
+  @override
+  bool shouldRepaint(_AimPainter old) => old.cursor != cursor || old.aims != aims;
 }
 
 /// Two lines (White light, Black dark) on a shared scale.

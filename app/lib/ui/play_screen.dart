@@ -68,10 +68,41 @@ class _PlayScreenState extends State<PlayScreen> {
     setState(() {});
   }
 
+  void _settings() => showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (context) => ListenableBuilder(
+          listenable: prefs,
+          builder: (context, _) => Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              SwitchListTile(
+                title: const Text('Engine arrows'),
+                subtitle: const Text('The best move as an arrow on your turn'),
+                value: prefs.playArrows,
+                onChanged: (v) {
+                  prefs.update(playArrowsOn: v);
+                  setState(() {});
+                },
+              ),
+              SwitchListTile(
+                title: const Text('Engine lines'),
+                subtitle: const Text('The evaluation and the best line under the board'),
+                value: prefs.playLines,
+                onChanged: (v) {
+                  prefs.update(playLinesOn: v);
+                  setState(() {});
+                },
+              ),
+            ]),
+          ),
+        ),
+      );
+
   /// Friendly mode: best continuation as an arrow on the player's turn.
   List<BoardArrow> _arrows() {
     final e = c.shownEval;
-    final hint = c.friendly && e != null && e.pv.isNotEmpty && c.myTurn;
+    final hint = c.friendly && prefs.playArrows && e != null && e.pv.isNotEmpty && c.myTurn;
     return [
       if (hint) BoardArrow(NormalMove.fromUci(e.pv.first).from, NormalMove.fromUci(e.pv.first).to, const Color(0xB015781B)),
       ...c.arrowsShown,
@@ -92,6 +123,9 @@ class _PlayScreenState extends State<PlayScreen> {
           ),
         if (c.status != PlayStatus.setup)
           IconButton(tooltip: 'New game', onPressed: c.newGame, icon: const Icon(Icons.restart_alt_rounded)),
+        // дружеская игра: скрыть стрелки и линии движка
+        if (c.friendly)
+          IconButton(tooltip: 'Friendly game settings', onPressed: _settings, icon: const Icon(Icons.tune_rounded)),
       ]),
       body: LayoutBuilder(builder: (context, box) {
         final size = math.min(box.maxWidth - 24, math.min(520.0, box.maxHeight * 0.6));
@@ -231,7 +265,7 @@ class _PlayScreenState extends State<PlayScreen> {
         Expanded(child: Text(status, style: const TextStyle(fontWeight: FontWeight.w700))),
         Text('Level ${c.level.number}${c.friendly ? ' · Friendly' : ''}', style: TextStyle(color: scheme.outline)),
       ]),
-      if (c.friendly && e != null) ...[
+      if (c.friendly && prefs.playLines && e != null) ...[
         const SizedBox(height: 6),
         Row(children: [
           Container(

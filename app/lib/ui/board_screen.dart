@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import '../analysis/eval.dart';
 import '../analysis/pos.dart';
 import '../engine/game_job.dart' show EnginePower;
+import 'analysis_queue.dart';
 import 'board_session.dart';
 import 'prefs.dart';
 import 'widgets/arrows.dart';
@@ -38,6 +39,68 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
   late final ChessboardController _board;
   bool _pen = false;
   MoveNode? _shown;
+
+  /// [авторское] Walking along an engine line without analysing: the lines
+  /// as they were, the walked line's index and how many of its moves are on
+  /// the board. Nothing is added to the tree; the board is not playable.
+  ({List<Line> lines, int line, int at, Pos start})? _walk;
+  final _walkKeys = <int, GlobalKey>{};
+
+  List<String> get _walkPv => _walk!.lines[_walk!.line].pv;
+
+  /// Starts (or leaves, for the same line) a walk along line [i].
+  void _toggleWalk(SessionController s, int i) {
+    final w = _walk;
+    if (w != null && w.line == i) return _leaveWalk(s);
+    final lines = w?.lines ?? s.lines;
+    if (lines == null || i >= lines.length || lines[i].pv.isEmpty) return;
+    _walkKeys.clear();
+    setState(() => _walk = (lines: lines, line: i, at: 1, start: w?.start ?? s.position));
+    _showWalk();
+  }
+
+  void _leaveWalk(SessionController s) {
+    setState(() => _walk = null);
+    _board.updatePosition(_gameData(s.position, s.current.move), animate: true);
+    syncCheck(_board, inCheck: s.position.isCheck, king: s.position.king(s.position.turn));
+  }
+
+  void _stepWalk(int d) {
+    final w = _walk!;
+    final at = (w.at + d).clamp(0, _walkPv.length);
+    setState(() => _walk = (lines: w.lines, line: w.line, at: at, start: w.start));
+    _showWalk();
+  }
+
+  void _showWalk() {
+    final w = _walk!;
+    var pos = w.start;
+    NormalMove? last;
+    for (final uci in _walkPv.take(w.at)) {
+      final m = NormalMove.fromUci(uci);
+      if (!pos.isLegal(m)) break;
+      pos = pos.push(m);
+      last = m;
+    }
+    _board.updatePosition(
+        GameData(
+          fen: pos.fen,
+          lastMove: last,
+          playerSide: PlayerSide.none,
+          sideToMove: pos.turn,
+          kingSquareInCheck: null,
+          validMoves: makeLegalMoves(pos.p),
+        ),
+        animate: true);
+    syncCheck(_board, inCheck: pos.isCheck, king: pos.king(pos.turn));
+    // текущий ход линии — в видимой части (линия сдвигается у края)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _walkKeys[w.at]?.currentContext;
+      if (ctx != null && ctx.mounted) {
+        Scrollable.ensureVisible(ctx, alignment: 0.5, duration: const Duration(milliseconds: 200));
+      }
+    });
+  }
 
   static BoardSession _newSession({String? fen, String? title}) => BoardSession(
         id: 'board_${DateTime.now().millisecondsSinceEpoch}',
@@ -92,6 +155,7 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
     final s = c;
     if (s == null) return;
     if (!identical(_shown, s.current)) {
+      _walk = null;
       final near = _shown != null && (identical(s.current.parent, _shown) || identical(_shown!.parent, s.current));
       _board.updatePosition(_gameData(s.position, s.current.move), animate: near);
       syncCheck(_board, inCheck: s.position.isCheck, king: s.position.king(s.position.turn));
@@ -100,37 +164,139 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
     setState(() {});
   }
 
+  /// Which sessions the list shows: opening (clean board) or position.
+  String _listKind = 'opening';
+
   Future<void> _sessions() async {
     final list = await BoardSessions.load();
     if (!mounted) return;
+    _listKind = c?.session.kind ?? 'opening';
+    final book = analysisQueue.book;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setSheet) => ListView(children: [
-          for (final s in list)
-            Dismissible(
-              key: ValueKey(s.id),
-              direction: DismissDirection.endToStart,
-              onDismissed: (_) {
-                BoardSessions.remove(s.id);
-                setSheet(() => list.remove(s));
-              },
-              background: Container(color: Theme.of(context).colorScheme.errorContainer),
-              child: ListTile(
-                selected: s.id == c?.session.id,
-                title: Text(s.name),
-                subtitle: Text('${s.moveCount} moves'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  c?.open(s);
-                },
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(builder: (context, setSheet) {
+        final scheme = Theme.of(context).colorScheme;
+        // закреплённые — в самом верху, затем избранные, затем по порядку
+        final shown = [for (final x in list) if (x.kind == _listKind) x]
+          ..sort((a, b) {
+            int rank(BoardSession x) => x.pinned ? 0 : (x.favourite ? 1 : 2);
+            return rank(a) - rank(b);
+          });
+        void changed(BoardSession x) {
+          BoardSessions.save(x);
+          if (x.id == c?.session.id) {
+            c!.session
+              ..pinned = x.pinned
+              ..favourite = x.favourite
+              ..name = x.name;
+            setState(() {});
+          }
+          setSheet(() {});
+        }
+
+        return SizedBox(
+          height: MediaQuery.sizeOf(context).height * 0.7,
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<String>(
+                  segments: const [
+                    ButtonSegment(value: 'opening', label: Text('Openings'), icon: Icon(Icons.flag_outlined)),
+                    ButtonSegment(value: 'position', label: Text('Positions'), icon: Icon(Icons.biotech_outlined)),
+                  ],
+                  selected: {_listKind},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (v) => setSheet(() => _listKind = v.first),
+                ),
               ),
             ),
-          if (list.isEmpty) const ListTile(title: Text('No sessions yet')),
-        ]),
+            const SizedBox(height: 8),
+            Expanded(
+              child: ListView(children: [
+                for (final x in shown)
+                  Dismissible(
+                    key: ValueKey(x.id),
+                    direction: DismissDirection.endToStart,
+                    onDismissed: (_) {
+                      BoardSessions.remove(x.id);
+                      setSheet(() => list.remove(x));
+                    },
+                    background: Container(color: scheme.errorContainer),
+                    child: ListTile(
+                      selected: x.id == c?.session.id,
+                      leading: x.pinned ? const Icon(Icons.push_pin_rounded, size: 20) : null,
+                      title: Text(x.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      // у дебютных — название дебюта, если он в книге
+                      subtitle: Text(x.openingName(book) ?? '${x.moveCount} moves',
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                        if (x.isOpening)
+                          IconButton(
+                            tooltip: 'Rename',
+                            icon: const Icon(Icons.edit_outlined, size: 20),
+                            onPressed: () async {
+                              final name = await _askName(x.name);
+                              if (name == null || name.isEmpty) return;
+                              x.name = name;
+                              changed(x);
+                            },
+                          ),
+                        IconButton(
+                          tooltip: x.pinned ? 'Unpin' : 'Pin to the top',
+                          icon: Icon(x.pinned ? Icons.push_pin_rounded : Icons.push_pin_outlined, size: 20),
+                          onPressed: () {
+                            x.pinned = !x.pinned;
+                            changed(x);
+                          },
+                        ),
+                        IconButton(
+                          tooltip: x.favourite ? 'Remove from favourites' : 'Add to favourites',
+                          icon: Icon(x.favourite ? Icons.star_rounded : Icons.star_outline_rounded,
+                              size: 20, color: x.favourite ? Colors.amber : null),
+                          onPressed: () {
+                            x.favourite = !x.favourite;
+                            changed(x);
+                          },
+                        ),
+                      ]),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        c?.open(x);
+                      },
+                    ),
+                  ),
+                if (shown.isEmpty)
+                  ListTile(
+                      title: Text(_listKind == 'opening'
+                          ? 'No opening sessions yet: start one with +'
+                          : 'No position sessions yet: open a position with the analysis icon')),
+              ]),
+            ),
+          ]),
+        );
+      }),
+    );
+  }
+
+  Future<String?> _askName(String initial) async {
+    final field = TextEditingController(text: initial);
+    final v = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Session name'),
+        content: TextField(controller: field, autofocus: true),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(context, field.text.trim()), child: const Text('OK')),
+        ],
       ),
     );
+    field.dispose();
+    return v;
   }
 
   void _new() {
@@ -163,6 +329,18 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
               },
               icon: const Icon(Icons.bookmark_add_outlined),
             ),
+          // PGN со всеми ветками — поделиться линиями дебюта
+          IconButton(
+            tooltip: 'Copy PGN with all branches',
+            onPressed: s == null || s.session.root.children.isEmpty
+                ? null
+                : () {
+                    Clipboard.setData(ClipboardData(text: s.session.pgn()));
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(const SnackBar(content: Text('PGN with all branches copied')));
+                  },
+            icon: const Icon(Icons.content_copy_rounded),
+          ),
           IconButton(tooltip: 'Sessions', onPressed: _sessions, icon: const Icon(Icons.folder_open_rounded)),
           IconButton(tooltip: 'New session', onPressed: s == null ? null : _new, icon: const Icon(Icons.add_rounded)),
         ],
@@ -188,7 +366,7 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
   }
 
   Widget _boardStack(SessionController s, double size) {
-    final best = s.lines?.firstOrNull;
+    final best = _walk == null ? s.lines?.firstOrNull : null;
     final arrows = [
       if (best != null)
         BoardArrow(NormalMove.fromUci(best.move).from, NormalMove.fromUci(best.move).to, const Color(0xB015781B)),
@@ -223,7 +401,19 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
     );
   }
 
-  Widget _nav(SessionController s) => Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+  Widget _nav(SessionController s) => _walk != null
+      ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          IconButton(tooltip: 'Start of the line', onPressed: () => _stepWalk(-999), icon: const Icon(Icons.first_page)),
+          IconButton(
+              tooltip: 'Back', onPressed: _walk!.at > 0 ? () => _stepWalk(-1) : null, icon: const Icon(Icons.chevron_left)),
+          IconButton(
+              tooltip: 'Forward',
+              onPressed: _walk!.at < _walkPv.length ? () => _stepWalk(1) : null,
+              icon: const Icon(Icons.chevron_right)),
+          IconButton(tooltip: 'End of the line', onPressed: () => _stepWalk(999), icon: const Icon(Icons.last_page)),
+          IconButton(tooltip: 'Leave the line', onPressed: () => _leaveWalk(s), icon: const Icon(Icons.close_rounded)),
+        ])
+      : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         IconButton(tooltip: 'Start', onPressed: s.current.parent != null ? s.toStart : null, icon: const Icon(Icons.first_page)),
         IconButton(tooltip: 'Back', onPressed: s.current.parent != null ? s.back : null, icon: const Icon(Icons.chevron_left)),
         IconButton(
@@ -232,6 +422,31 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
             tooltip: 'End of line', onPressed: s.current.children.isNotEmpty ? s.toEnd : null, icon: const Icon(Icons.last_page)),
         IconButton(tooltip: 'Flip board', onPressed: s.flip, icon: const Icon(Icons.swap_vert)),
       ]);
+
+  /// The walked line: its moves in a row that scrolls, the move on the
+  /// board in blue; a tap on a move goes to it.
+  Widget _walkLine(Pos start, List<String> pv, int at, ColorScheme scheme) {
+    var b = start;
+    final items = <Widget>[];
+    for (final (i, uci) in pv.take(30).indexed) {
+      final m = NormalMove.fromUci(uci);
+      if (!b.isLegal(m)) break;
+      final no = b.turn == Side.white ? '${b.fullmoves}. ' : (i == 0 ? '${b.fullmoves}... ' : '');
+      final on = i + 1 == at;
+      items.add(InkWell(
+        key: _walkKeys.putIfAbsent(i + 1, GlobalKey.new),
+        borderRadius: BorderRadius.circular(5),
+        onTap: () => _stepWalk(i + 1 - _walk!.at),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+          decoration: BoxDecoration(color: on ? scheme.primary : null, borderRadius: BorderRadius.circular(5)),
+          child: Text('$no${b.san(m)}', style: TextStyle(fontSize: 13, color: on ? scheme.onPrimary : null)),
+        ),
+      ));
+      b = b.push(m);
+    }
+    return SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: items));
+  }
 
   String _eval(Eval e, Side toMove) {
     final white = toMove == Side.white;
@@ -255,7 +470,9 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
 
   Widget _engine(BuildContext context, SessionController s) {
     final scheme = Theme.of(context).colorScheme;
-    final lines = s.lines;
+    final walk = _walk;
+    final lines = walk?.lines ?? s.lines;
+    final start = walk?.start ?? s.position;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
         Switch(value: s.engineOn, onChanged: s.setEngine),
@@ -283,21 +500,36 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
             Text('Thinking…', style: TextStyle(color: scheme.outline)),
           ]),
         ),
-      if (s.engineOn && lines != null)
+      if ((s.engineOn || walk != null) && lines != null)
         for (final (i, l) in lines.indexed)
           InkWell(
-            onTap: () => s.play(NormalMove.fromUci(l.move)),
+            onTap: walk != null ? null : () => s.play(NormalMove.fromUci(l.move)),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 3),
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                SizedBox(
-                  width: 56,
-                  child: Text(_eval(l.eval, s.position.turn),
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700, color: i == 0 ? scheme.primary : null,
-                          fontFeatures: const [FontFeature.tabularFigures()])),
+                // нажатие на оценку — пройти по линии без нового анализа
+                InkWell(
+                  borderRadius: BorderRadius.circular(6),
+                  onTap: () => _toggleWalk(s, i),
+                  child: Container(
+                    width: 56,
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: walk?.line == i ? scheme.primaryContainer : null,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(_eval(l.eval, start.turn),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: i == 0 ? scheme.primary : null,
+                            fontFeatures: const [FontFeature.tabularFigures()])),
+                  ),
                 ),
-                Expanded(child: FadedLine(_sanLine(s.position, l.pv), style: const TextStyle(fontSize: 13))),
+                Expanded(
+                  child: walk?.line == i
+                      ? _walkLine(start, l.pv, walk!.at, scheme)
+                      : FadedLine(_sanLine(start, l.pv), style: const TextStyle(fontSize: 13)),
+                ),
               ]),
             ),
           ),
@@ -365,6 +597,14 @@ class _MoveTreeState extends State<_MoveTree> {
           ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(content: Text('Moves copied')));
           setState(() => _sel = null);
         }),
+        // ветка: сделать главной линией или второстепенной
+        if ((n.parent?.children.length ?? 0) > 1)
+          round(
+              Icons.call_split_rounded,
+              identical(n.parent!.children.first, n) ? 'Make it a side branch' : 'Make it the main line', () {
+            c.toggleMain(n);
+            setState(() => _sel = null);
+          }),
         round(Icons.delete_outline_rounded, 'Delete this move and all after it', () {
           c.delete(n);
           setState(() => _sel = null);

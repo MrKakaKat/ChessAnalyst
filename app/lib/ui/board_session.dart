@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../analysis/eval.dart';
+import '../analysis/openings.dart';
 import '../analysis/pgn_import.dart' show normalizeCastling;
 import '../analysis/pos.dart';
 import '../engine/bot.dart';
@@ -39,8 +40,16 @@ class MoveNode {
 }
 
 class BoardSession {
-  BoardSession({required this.id, required this.name, required this.startFen, DateTime? created})
+  BoardSession(
+      {required this.id,
+      required this.name,
+      required this.startFen,
+      DateTime? created,
+      String? kind,
+      this.pinned = false,
+      this.favourite = false})
       : created = created ?? DateTime.now(),
+        kind = kind ?? (startFen == Chess.initial.fen ? 'opening' : 'position'),
         root = MoveNode(pos: Pos.fromFen(startFen));
 
   final String id;
@@ -48,6 +57,85 @@ class BoardSession {
   final String startFen;
   final DateTime created;
   final MoveNode root;
+
+  /// 'opening': a clean board from the start (named by the user, shown with
+  /// the opening's name); 'position': opened from a puzzle or another place
+  /// with the analysis icon.
+  final String kind;
+  bool pinned, favourite;
+
+  /// Where the analysis stopped: the child index at each step from the root,
+  /// and the side the board was seen from.
+  List<int> lastPath = const [];
+  bool flipped = false;
+
+  bool get isOpening => kind == 'opening';
+
+  /// The node at [lastPath] (the root if it no longer exists).
+  MoveNode get lastNode {
+    var n = root;
+    for (final i in lastPath) {
+      if (i < 0 || i >= n.children.length) break;
+      n = n.children[i];
+    }
+    return n;
+  }
+
+  static List<int> pathOf(MoveNode n) {
+    final out = <int>[];
+    for (MoveNode? x = n; x != null && x.parent != null; x = x.parent) {
+      out.insert(0, x.parent!.children.indexOf(x));
+    }
+    return out;
+  }
+
+  /// The opening of the main line (the first branch at each move), from
+  /// [book]; null outside the book or from another position.
+  String? openingName(OpeningBook? book) {
+    if (book == null || !isOpening) return null;
+    final ucis = <String>[];
+    for (var n = root; n.children.isNotEmpty; n = n.children.first) {
+      ucis.add(n.children.first.move!.uci);
+      if (ucis.length >= 30) break;
+    }
+    String? name;
+    for (final x in book.names(startFen, ucis)) {
+      if (x != null && x.isNotEmpty) name = x;
+    }
+    return name;
+  }
+
+  /// The whole tree as PGN: the main line with every branch in brackets.
+  String pgn() {
+    final b = StringBuffer();
+    if (startFen != Chess.initial.fen) b.write('[SetUp "1"]\n[FEN "$startFen"]\n\n');
+    String no(MoveNode n, bool force) {
+      final pos = n.parent!.pos;
+      if (pos.turn == Side.white) return '${pos.fullmoves}. ';
+      return force ? '${pos.fullmoves}... ' : '';
+    }
+
+    void line(MoveNode from, bool forceFirst) {
+      var n = from;
+      var force = forceFirst;
+      while (n.children.isNotEmpty) {
+        final main = n.children.first;
+        b.write('${no(main, force)}${main.san} ');
+        // ветки — в скобках сразу после главного хода
+        for (final v in n.children.skip(1)) {
+          b.write('(${no(v, true)}${v.san} ');
+          line(v, false);
+          b.write(') ');
+        }
+        force = n.children.length > 1;
+        n = main;
+      }
+    }
+
+    line(root, true);
+    b.write('*');
+    return b.toString().replaceAll(' )', ')').trim();
+  }
 
   int get moveCount {
     var n = 0;
@@ -60,8 +148,18 @@ class BoardSession {
     return n;
   }
 
-  Map<String, dynamic> toJson() =>
-      {'id': id, 'name': name, 'start': startFen, 'created': created.toIso8601String(), 'tree': root.toJson()};
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'start': startFen,
+        'created': created.toIso8601String(),
+        'kind': kind,
+        if (pinned) 'pinned': true,
+        if (favourite) 'favourite': true,
+        if (lastPath.isNotEmpty) 'path': lastPath,
+        if (flipped) 'flipped': true,
+        'tree': root.toJson(),
+      };
 
   factory BoardSession.fromJson(Map<String, dynamic> j) {
     final s = BoardSession(
@@ -69,7 +167,13 @@ class BoardSession {
       name: j['name'] as String,
       startFen: j['start'] as String,
       created: DateTime.tryParse(j['created'] as String? ?? ''),
-    );
+      // старые сессии: с начальной позиции — дебютные
+      kind: j['kind'] as String?,
+      pinned: j['pinned'] as bool? ?? false,
+      favourite: j['favourite'] as bool? ?? false,
+    )
+      ..lastPath = (j['path'] as List?)?.cast<int>() ?? const []
+      ..flipped = j['flipped'] as bool? ?? false;
     void grow(MoveNode node, Map<String, dynamic> data) {
       for (final c in (data['children'] as List).cast<Map<String, dynamic>>()) {
         final m = NormalMove.fromUci(c['uci'] as String);
@@ -120,7 +224,9 @@ class BoardSessions {
 }
 
 class SessionController extends ChangeNotifier {
-  SessionController(this.session) : current = session.root {
+  SessionController(this.session)
+      : current = session.lastNode,
+        flipped = session.flipped {
     _analyse();
   }
 
@@ -129,7 +235,7 @@ class SessionController extends ChangeNotifier {
 
   /// A temporary session (opened from a puzzle) is not saved until [keep].
   bool temporary = false;
-  bool flipped = false;
+  bool flipped;
   bool engineOn = true;
 
   /// [простое решение] Low by default: one thread, depth 14 — a quick check
@@ -158,7 +264,9 @@ class SessionController extends ChangeNotifier {
   void open(BoardSession s) {
     temporary = false;
     session = s;
-    current = s.root;
+    // там, где остановились, и тем же цветом
+    current = s.lastNode;
+    flipped = s.flipped;
     lines = null;
     notifyListeners();
     _analyse();
@@ -182,6 +290,8 @@ class SessionController extends ChangeNotifier {
 
   void go(MoveNode node) {
     current = node;
+    session.lastPath = BoardSession.pathOf(node);
+    _scheduleSave();
     lines = null;
     notifyListeners();
     _analyse();
@@ -224,8 +334,29 @@ class SessionController extends ChangeNotifier {
 
   void flip() {
     flipped = !flipped;
+    session.flipped = flipped;
+    _scheduleSave();
     notifyListeners();
   }
+
+  /// Makes the branch of [node] the main line at its move, or (when it is
+  /// already the main one) a side branch.
+  void toggleMain(MoveNode node) {
+    final parent = node.parent;
+    if (parent == null || parent.children.length < 2) return;
+    final i = parent.children.indexOf(node);
+    parent.children.removeAt(i);
+    if (i == 0) {
+      parent.children.add(node);
+    } else {
+      parent.children.insert(0, node);
+    }
+    session.lastPath = BoardSession.pathOf(current);
+    _scheduleSave();
+    notifyListeners();
+  }
+
+  void save() => _scheduleSave();
 
   void setEngine(bool on) {
     engineOn = on;

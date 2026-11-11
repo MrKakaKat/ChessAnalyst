@@ -11,7 +11,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// (dots at both ends), bold.
 enum ArrowStyle { classic, blunt, slim, bold }
 
-enum LegalMoves { outline, dots, none }
+/// How the legal moves of a touched piece are shown: rounded inset
+/// outlines, the same outlines with square corners, the board's translucent
+/// dots, small dots in the colour opposite to the square, or nothing.
+enum LegalMoves { outline, squares, dots, contrastDots, none }
 
 /// Board colour themes with plain square colours (the board layer paints the
 /// squares itself, so image themes are left out).
@@ -113,6 +116,18 @@ class AppPrefs extends ChangeNotifier {
   /// Puzzles: prefer ones like the player's mistakes.
   bool weaknessPuzzles = true;
 
+  /// Puzzles also from the showcase games (masters, engines); off: only from your own games.
+  bool showcasePuzzles = false;
+
+  /// Puzzle attempts with mistakes are recorded by themselves.
+  bool autoRecordPuzzles = false;
+
+  /// Friendly game: the engine's arrows on the board.
+  bool playArrows = true;
+
+  /// Friendly game: the engine's lines under the board.
+  bool playLines = true;
+
   /// The hint about background work was shown.
   bool batteryHintShown = false;
 
@@ -150,6 +165,10 @@ class AppPrefs extends ChangeNotifier {
       analyzeOwnMoves = p.getBool('analyzeOwnMoves') ?? analyzeOwnMoves;
       whiteIdeas = p.getBool('whiteIdeas') ?? whiteIdeas;
       blackIdeas = p.getBool('blackIdeas') ?? blackIdeas;
+      playLines = p.getBool('playLines') ?? playLines;
+      playArrows = p.getBool('playArrows') ?? playArrows;
+      autoRecordPuzzles = p.getBool('autoRecordPuzzles') ?? autoRecordPuzzles;
+      showcasePuzzles = p.getBool('showcasePuzzles') ?? showcasePuzzles;
       final mc = p.getString('markColor');
       if (mc != null && markColors.containsKey(mc)) markColor = mc;
       final ac = p.getString('arrowColor');
@@ -193,6 +212,10 @@ class AppPrefs extends ChangeNotifier {
       await p.setBool('analyzeOwnMoves', analyzeOwnMoves);
       await p.setBool('whiteIdeas', whiteIdeas);
       await p.setBool('blackIdeas', blackIdeas);
+      await p.setBool('playLines', playLines);
+      await p.setBool('playArrows', playArrows);
+      await p.setBool('autoRecordPuzzles', autoRecordPuzzles);
+      await p.setBool('showcasePuzzles', showcasePuzzles);
     } catch (_) {}
   }
 
@@ -225,6 +248,10 @@ class AppPrefs extends ChangeNotifier {
     bool? ownMoves,
     bool? white,
     bool? black,
+    bool? showcase,
+    bool? autoRecord,
+    bool? playArrowsOn,
+    bool? playLinesOn,
   }) {
     showBestArrow = bestArrow ?? showBestArrow;
     puzzleTarget = target ?? puzzleTarget;
@@ -246,6 +273,10 @@ class AppPrefs extends ChangeNotifier {
     analyzeOwnMoves = ownMoves ?? analyzeOwnMoves;
     whiteIdeas = white ?? whiteIdeas;
     blackIdeas = black ?? blackIdeas;
+    playLines = playLinesOn ?? playLines;
+    playArrows = playArrowsOn ?? playArrows;
+    autoRecordPuzzles = autoRecord ?? autoRecordPuzzles;
+    showcasePuzzles = showcase ?? showcasePuzzles;
     estimatePuzzleRating = puzzleRating ?? estimatePuzzleRating;
     markColor = mark ?? markColor;
     arrowStyle = arrow ?? arrowStyle;

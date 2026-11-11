@@ -179,20 +179,12 @@ _UnitVerdict _verdict(Unit unit, Eval? e0, Eval e1, Eval ep, List<Line> lines, L
     step = 'neutral';
   }
   if (s.percentSteps && !(e1.mate != null && e1.mate! > 0 && ep.mate != null && ep.mate! > e1.mate!)) {
-    // [авторское] проценты ожидаемого результата почти не меняются в решённой
-    // позиции (+6 → +2,3 или мат, допущенный при −7), поэтому берётся более
-    // строгий из двух шагов: по процентам и по потере в пешках (0,1 / 0,5 / 1);
-    // зевок по категориям (мат, потерянный выигрыш) остаётся зевком
+    // [авторское] шаг — только по процентам ожидаемого результата, без
+    // примеси потери в пешках: в решённой позиции (−7 → −6 или +6 → +5)
+    // результат не меняется, и ход не ошибка; зевок по категориям
+    // (мат, потерянный выигрыш) остаётся зевком
     final byPercent = percentStep(math.max(0.0, e1.expected - ep.expected) * 100, playedZone != null);
-    final pawnLoss = e1.pawns(s) - ep.pawns(s);
-    final byPawns = pawnLoss > 1.0 + _tol
-        ? 'mistake'
-        : (pawnLoss > 0.5 + _tol ? 'laxity' : (pawnLoss > 0.1 + _tol ? 'inaccuracy' : null));
-    const order = ['best', 'excellent', 'good', 'neutral', 'inaccuracy', 'laxity', 'mistake', 'blunder'];
-    var worst = byPercent;
-    if (byPawns != null && order.indexOf(byPawns) > order.indexOf(worst)) worst = byPawns;
-    if (step == 'blunder') worst = 'blunder';
-    step = worst;
+    step = step == 'blunder' ? 'blunder' : byPercent;
   }
   if (playedZone == 'B') flags.add('near_best');
 

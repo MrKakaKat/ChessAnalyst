@@ -13,9 +13,17 @@
 ///   to be calculated through (a discovered check, a counter-sacrifice…);
 /// - the length of the forcing line after the move, beyond two plies.
 /// step = 75·(depth − 1) + 80·traps + 120 (quiet) + 70·resources (up to 3)
-/// + 25·forcing plies beyond 2 (up to 8).
+/// + 25·forcing plies beyond 2 (up to 8), then two discounts:
+/// - a check that leaves the opponent one or two replies: the depth and the
+///   forcing length count 40% — a long mate by checks alone is found by
+///   just giving checks (a queen mating a bare king in ten moves is not
+///   hard either);
+/// - in an attack, several moves reach the goal at this step (a second or third line of
+///   a depth-12 search keeps it): ×0.6 with two, ×0.45 with three — the
+///   step is not a single narrow path.
 /// rating = 700 + the hardest step + 0.35·(the other steps) + 90·(moves − 1)
-/// + 100 (defence), within 400…3000.
+/// + 100 (a defence or a defensive part) + 150 (a combined puzzle: the goal
+/// changes on the way), within 400…3000.
 /// The first version looked only at the main line and rated a four-move
 /// tactic with a discovered check in the defence at about 1200; the second
 /// rated only the first move, so a defence that starts with a plain
@@ -65,6 +73,12 @@ Future<int> estimateRating(Puzzle p, {bool Function()? cancelled}) async {
     final found = since ?? _maxDepth + 1;
     check();
     const s = Settings();
+    // сколько ходов на этом шаге ведут к цели
+    final wide = p.goalAt(step) == PuzzleGoal.defend
+        ? const <Line>[]
+        : await bot.analyse(pos.fen, depth: _maxDepth, multipv: 3);
+    // в защите не применяется: второй держащий ход не делает точный легче
+    final winners = math.max(1, wide.where((l) => p.keepsGoal(l.eval.negate(), step: step)).length);
     final shallow = await bot.analyse(pos.fen, depth: 2, multipv: 5);
     final key = shallow.where((l) => keys.contains(l.move)).firstOrNull;
     final keyValue = key?.eval.pawns(s) ?? (shallow.isEmpty ? 0.0 : shallow.first.eval.pawns(s));
@@ -72,6 +86,8 @@ Future<int> estimateRating(Puzzle p, {bool Function()? cancelled}) async {
         math.min(3, shallow.where((l) => !keys.contains(l.move) && l.eval.pawns(s) >= keyValue - 0.3).length);
     final m = NormalMove.fromUci(p.solution[step]);
     final quiet = !pos.isCapture(m) && !pos.givesCheck(m) && m.promotion == null;
+    // шах, после которого у соперника 1–2 ответа, находится и без счёта
+    final narrowCheck = pos.givesCheck(m) && pos.push(m).legalCount <= 2;
     // контрудары соперника после хода, которые надо просчитать
     var resources = 0;
     var forcing = 0;
@@ -89,12 +105,10 @@ Future<int> estimateRating(Puzzle p, {bool Function()? cancelled}) async {
       }
       forcing = features.forcingCount(after, replies.first.pv, 12);
     }
-    final score = 75 * (found - 1) +
-        80 * traps +
-        (quiet ? 120 : 0) +
-        70 * math.min(3, resources) +
-        25 * math.min(8, math.max(0, forcing - 2));
-    return score.toInt();
+    final calc = (75 * (found - 1) + 25 * math.min(8, math.max(0, forcing - 2))) * (narrowCheck ? 0.4 : 1.0);
+    final score = (calc + 80 * traps + (quiet ? 120 : 0) + 70 * math.min(3, resources)) *
+        (winners >= 3 ? 0.45 : (winners == 2 ? 0.6 : 1.0));
+    return score.round();
   }
 
   final steps = <int>[];
@@ -111,7 +125,9 @@ Future<int> estimateRating(Puzzle p, {bool Function()? cancelled}) async {
       hardest +
       (0.35 * others).round() +
       90 * (p.solverMoves - 1) +
-      (p.goal == PuzzleGoal.defend ? 100 : 0);
+      (p.defends ? 100 : 0) +
+      // комбинированная: цель меняется по ходу решения
+      (p.combined ? 150 : 0);
   return rating.clamp(400, 3000).toInt();
 }
 

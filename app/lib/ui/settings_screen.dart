@@ -158,16 +158,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 12),
         Text('Legal moves of a piece', style: title),
         const SizedBox(height: 8),
-        SegmentedButton<LegalMoves>(
-          segments: const [
-            ButtonSegment(value: LegalMoves.outline, label: Text('Outline')),
-            ButtonSegment(value: LegalMoves.dots, label: Text('Dots')),
-            ButtonSegment(value: LegalMoves.none, label: Text('Hidden')),
-          ],
-          selected: {prefs.legalMoves},
-          showSelectedIcon: false,
-          onSelectionChanged: (s) => prefs.update(legal: s.first),
-        ),
+        Wrap(spacing: 8, runSpacing: 8, children: [
+          for (final (v, label) in const [
+            (LegalMoves.outline, 'Rounded outline'),
+            (LegalMoves.squares, 'Square outline'),
+            (LegalMoves.dots, 'Dots'),
+            (LegalMoves.contrastDots, 'Contrast dots'),
+            (LegalMoves.none, 'Hidden'),
+          ])
+            ChoiceChip(
+              label: Text(label),
+              selected: prefs.legalMoves == v,
+              showCheckmark: false,
+              onSelected: (_) => prefs.update(legal: v),
+            ),
+        ]),
         const SizedBox(height: 20),
         Text('Board', style: title),
         const SizedBox(height: 8),

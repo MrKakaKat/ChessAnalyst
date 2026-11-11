@@ -10,6 +10,8 @@ import 'package:dartchess/dartchess.dart' show Side;
 
 import '../analysis/game.dart';
 import '../analysis/human.dart';
+import '../analysis/metrics.dart' show moveAccuracy;
+import '../analysis/settings.dart';
 import '../analysis/kinds.dart';
 import '../analysis/openings.dart';
 import '../analysis/pos.dart';
@@ -18,6 +20,7 @@ import 'analysis_cache.dart';
 import 'history_store.dart';
 import 'labels.dart' show typeLabels;
 import 'prefs.dart';
+import 'puzzle_store.dart' show addTrainingMistakes;
 import 'puzzles.dart';
 import 'underlines.dart';
 
@@ -45,6 +48,10 @@ class PlayerStats {
   /// For the strongest weakness tags: puzzles solved with that tag and their
   /// mean rating ("chunks": the more and the harder, the better learnt).
   final chunks = <String, (int solved, double rating)>{};
+
+  /// For each kind of move: how many of the player's moves had it and the
+  /// sum of their accuracy (the misses are in [missed]).
+  final kindMoves = <String, (int, double)>{};
 
   int get games => colours[Side.white]!.games + colours[Side.black]!.games;
 }
@@ -126,6 +133,19 @@ Future<PlayerStats> collectStats(List<GameAnalysis> games, {List<Puzzle> puzzles
     if (won) c.wins++;
     if (lost) c.losses++;
     if (result == '1/2-1/2') c.draws++;
+    // аккуратность по видам сыгранных ходов
+    for (final r in a.records.where((r) => r.side == side && r.step != 'book' && r.step != 'forced')) {
+      final p = a.game.plies[r.ply];
+      if (p.lines.isEmpty) continue;
+      final board = Pos.fromFen(p.fenBefore);
+      final kinds = playedKinds(board, Pos.move(p.uci), p.played.pv.isEmpty ? [p.uci] : p.played.pv, p.played.eval,
+          Pos.move(p.lines.first.move), const Settings());
+      final acc = moveAccuracy(r);
+      for (final k in kinds) {
+        final v = st.kindMoves[k] ?? (0, 0.0);
+        st.kindMoves[k] = (v.$1 + 1, v.$2 + acc);
+      }
+    }
     for (final r in a.records.where((r) => r.side == side && negativeSteps.contains(r.step))) {
       c.steps[r.step] = (c.steps[r.step] ?? 0) + 1;
       st.stages[r.stage] = (st.stages[r.stage] ?? 0) + 1;
@@ -162,8 +182,21 @@ Future<PlayerStats> collectStats(List<GameAnalysis> games, {List<Puzzle> puzzles
       }
     }
   }
-  // чанки: решённые задачи по сильнейшим признакам слабости
+  // ошибки в задачах и при исправлении своих партий — чуть легче
   final attempts = await PuzzleHistory.load();
+  final byGame = {for (final a in games) a.game.id: a};
+  await addTrainingMistakes(st.profile, attempts: attempts, puzzles: {for (final p in puzzles) p.id: p},
+      tagsAt: (id, ply) {
+    final a = byGame[id];
+    if (a == null || ply >= a.game.plies.length) return null;
+    final r = a.records.where((r) => r.ply == ply).firstOrNull;
+    if (r == null) return null;
+    final p = a.game.plies[ply];
+    final next = ply + 1 < a.game.plies.length ? a.game.plies[ply + 1] : null;
+    return mistakeTags(r, Pos.fromFen(p.fenBefore), p.lines.first,
+        after: next == null ? null : Pos.fromFen(next.fenBefore), reply: next?.lines.firstOrNull, lines: p.lines);
+  });
+  // чанки: решённые задачи по сильнейшим признакам слабости
   final ratings = await PuzzleRatings.load();
   final byId = {for (final p in puzzles) p.id: p};
   final top = (st.profile.entries.toList()..sort((a, b) => b.value.compareTo(a.value))).take(6);

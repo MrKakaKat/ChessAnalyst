@@ -31,6 +31,7 @@ import '../analysis/pgn_import.dart' show normalizeCastling;
 import '../analysis/pos.dart';
 import '../analysis/settings.dart';
 import '../engine/bot.dart';
+import 'analysis_queue.dart';
 import 'controller.dart';
 import 'improve_history.dart';
 import 'labels.dart';
@@ -377,15 +378,26 @@ class _ImproveScreenState extends State<ImproveScreen> {
     try {
       final bot = await EngineBot.shared();
       final after = from.push(m);
-      final lines = await bot.analyse(after.fen, depth: 14, multipv: 1);
+      // анализ партии в фоне ждёт: движок нужен здесь
+      final lines = await analysisQueue
+          .priority(() => bot.analyse(after.fen, depth: 14, multipv: 1))
+          .timeout(const Duration(seconds: 20));
       final pv = lines.isEmpty ? <NormalMove>[] : [for (final u in lines.first.pv.take(6)) Pos.move(u)];
       if (!mounted) return;
       setState(() => _busy = false);
+      if (pv.isEmpty) return _engineBusy();
       await _playLine(after, pv, lastBefore: m);
     } catch (_) {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+        _engineBusy();
+      }
     }
   }
+
+  void _engineBusy() => ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(
+      content: Text('The consequences could not be computed: the engine did not answer. '
+          'If a game is being analysed, try again in a moment.')));
 
   /// Why the game move was a mistake: the move, then the opponent's best
   /// line after it (from the analysis).

@@ -71,8 +71,11 @@ class AppBoardBackground extends ChessboardBackground {
             painter: _CoordsPainter(orientation, lightSquare, darkSquare, t),
           ),
         ),
-        if (prefs.legalMoves == LegalMoves.outline)
-          CustomPaint(painter: _DestsPainter(board, orientation == Side.black, lightSquare, darkSquare)),
+        if (prefs.legalMoves == LegalMoves.outline ||
+            prefs.legalMoves == LegalMoves.squares ||
+            prefs.legalMoves == LegalMoves.contrastDots)
+          CustomPaint(
+              painter: _DestsPainter(board, orientation == Side.black, lightSquare, darkSquare, prefs.legalMoves)),
       ]);
 }
 
@@ -144,11 +147,12 @@ class _CoordsPainter extends CustomPainter {
 /// Inset outlines on the legal destinations of the touched piece.
 class _DestsPainter extends CustomPainter {
   // ignore: invalid_use_of_internal_member
-  _DestsPainter(this.board, this.flipped, this.light, this.dark) : super(repaint: board.highlightNotifier);
+  _DestsPainter(this.board, this.flipped, this.light, this.dark, this.mode) : super(repaint: board.highlightNotifier);
 
   final ChessboardController board;
   final bool flipped;
   final Color light, dark;
+  final LegalMoves mode;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -162,9 +166,16 @@ class _DestsPainter extends CustomPainter {
       final x = flipped ? 7 - d.file : d.file;
       final y = flipped ? d.rank : 7 - d.rank;
       final darkSquare = (d.file + d.rank).isEven;
-      final rect = Rect.fromLTWH(x * sq, y * sq, sq, sq).deflate(inset + width / 2);
+      final cell = Rect.fromLTWH(x * sq, y * sq, sq, sq);
+      if (mode == LegalMoves.contrastDots) {
+        // маленький круг цвета, противоположного клетке
+        canvas.drawCircle(cell.center, sq * 0.13, Paint()..color = darkSquare ? light : dark);
+        continue;
+      }
+      final rect = cell.deflate(inset + width / 2);
       canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, Radius.circular(sq * 0.07)),
+        // те же рамки, без скругления углов — на том же месте
+        RRect.fromRectAndRadius(rect, Radius.circular(mode == LegalMoves.squares ? 0 : sq * 0.07)),
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = width
@@ -174,5 +185,6 @@ class _DestsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_DestsPainter old) => old.flipped != flipped || old.board != board || old.light != light;
+  bool shouldRepaint(_DestsPainter old) =>
+      old.flipped != flipped || old.board != board || old.light != light || old.mode != mode;
 }

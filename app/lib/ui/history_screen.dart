@@ -15,6 +15,7 @@ import 'history_store.dart';
 import 'import_screen.dart';
 import 'job_screen.dart';
 import 'prefs.dart';
+import 'puzzle_store.dart';
 import 'puzzles.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -111,6 +112,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       await history.remove(id);
       await PuzzleRatings.removeGame(id);
       await PuzzleHistory.removeGame(id);
+      await PuzzleStore.remove(id);
     }
     if (mounted) setState(_selected.clear);
   }
@@ -168,6 +170,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       analysisQueue.remove(old);
       final job = AnalysisJob(id: old.id, source: old.source, targetDepth: depth, multipv: lines, power: old.power, puzzles: old.puzzles);
       await PuzzleRatings.removeGame(id);
+      await PuzzleStore.remove(id);
       jobs.add(job);
     }
     // движок один: разборы встают в очередь и идут по одному
@@ -263,10 +266,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                   for (final e in entries)
                     ListTile(
+                      // выбранные — полупрозрачной подсветкой, без галочек
                       selected: _selected.contains(e.id),
-                      leading: _selecting
-                          ? Checkbox(value: _selected.contains(e.id), onChanged: (_) => _toggle(e.id))
-                          : null,
+                      selectedColor: scheme.onSurface,
+                      selectedTileColor: scheme.primary.withValues(alpha: 0.18),
                       // идущий анализ затемнён — кроме его кружка
                       title: Opacity(
                         opacity: e.progress < 1 ? 0.45 : 1,
@@ -291,8 +294,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       subtitle: Opacity(
                         opacity: e.progress < 1 ? 0.45 : 1,
                         child: Text(
-                          '${e.date.replaceAll('.??', '')} · depth ${e.depth}${e.progress < 1 ? ' of ${e.target}, ${(e.progress * 100).round()}%' : ''}'
-                          '${e.finished != null ? ' · analysed ${_when(e.finished!)}' : ''}',
+                          // дата партии и «analysed» убраны: время анализа, глубина,
+                          // число линий и задачи
+                          '${e.finished != null ? '${_when(e.finished!)} · ' : ''}'
+                          'depth ${e.depth}${e.progress < 1 ? ' of ${e.target}, ${(e.progress * 100).round()}%' : ''}'
+                          ' · ${e.multipv} line${e.multipv == 1 ? '' : 's'} · puzzles ${e.puzzles ? 'on' : 'off'}',
                         ),
                       ),
                       trailing: _selecting

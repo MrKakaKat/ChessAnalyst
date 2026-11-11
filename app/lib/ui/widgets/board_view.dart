@@ -63,6 +63,7 @@ String? shownKind(AnalysisController c) {
 /// green or red depending on whose side the board is seen from.
 Color shownColor(AnalysisController c, String kind) {
   if (kind == 'resign') return markColor(c.end!.step!);
+  if (kind == 'draw') return markColor('neutral');
   if (kind == 'mate' && !c.inVariation) return c.kindColorAt(c.ply, kind);
   return markColor(kind);
 }
@@ -254,7 +255,8 @@ class _BoardViewState extends State<BoardView> {
     final kind = shownKind(c);
     final shapes = _shapes();
     // у конца партии значок стоит на короле сдавшегося
-    final dest = c.atEnd ? c.position.king(c.end!.loser)! : (c.lastMove?.to ?? Square.a1);
+    // в ничьей — на короле стороны, чей ход
+    final dest = c.atEnd ? c.position.king(c.end!.loser ?? c.position.turn)! : (c.lastMove?.to ?? Square.a1);
     final badge = sq * 0.51;
     // бейдж — в правом верхнем углу клетки, слегка за её краем; у края доски
     // угол меняется: у верхнего края — нижний, у правого — левый

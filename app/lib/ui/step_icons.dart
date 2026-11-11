@@ -217,9 +217,20 @@ void _drawClock(Canvas canvas, double size, Color color, double hand) {
   canvas.drawLine(c, c + Offset(math.sin(hand), -math.cos(hand)) * (r * 0.62), stroke..strokeWidth = size * 0.09);
 }
 
+/// The draw: ½.
+void _drawHalf(Canvas canvas, double size, Color color) {
+  final tp = TextPainter(
+    text: TextSpan(
+        text: '½', style: TextStyle(fontSize: size * 0.95, height: 1, fontWeight: FontWeight.w900, color: color)),
+    textDirection: TextDirection.ltr,
+  )..layout();
+  tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
+}
+
 void drawStepGlyph(Canvas canvas, String kind, double size, Color color,
     {double hand = clockHand, bool hollow = false}) {
   if (kind == 'timeout') return _drawClock(canvas, size, color, hand);
+  if (kind == 'draw') return _drawHalf(canvas, size, color);
   // полый знак: только контур, чуть толще, чтобы не терялся
   final fill = hollow
       ? (Paint()

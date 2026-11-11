@@ -117,18 +117,24 @@ class AltMove {
 /// How the game ended, shown as a last pseudo-move: resignation (graded by the
 /// position the loser gave up) or loss on time.
 class GameEnd {
-  const GameEnd({required this.kind, required this.loser, this.step, this.category});
+  const GameEnd({required this.kind, this.loser, this.step, this.category, this.reason});
 
-  /// 'resign' or 'timeout'.
+  /// 'resign', 'timeout' or 'draw'.
   final String kind;
-  final Side loser;
+
+  /// The side that lost (null in a draw).
+  final Side? loser;
+
+  /// A draw: threefold repetition, stalemate, insufficient material, the
+  /// fifty-move rule or agreement.
+  final String? reason;
 
   /// Grade of a resignation: lost position — neutral, slightly worse —
   /// inaccuracy, equal — mistake, better or winning — blunder.
   final String? step;
   final String? category;
 
-  String get label => kind == 'resign' ? 'Resign' : 'Time out';
+  String get label => switch (kind) { 'resign' => 'Resign', 'draw' => 'Draw', _ => 'Time out' };
 }
 
 /// A branch from the game: starts after main-line ply [anchor] (−1: from the
@@ -273,6 +279,7 @@ class AnalysisController extends ChangeNotifier {
     final h = game.headers;
     final result = h['result'];
     final how = h['termination'] ?? '';
+    if (result == '1/2-1/2' && length > 0) return _end = GameEnd(kind: 'draw', reason: _drawReason(how));
     if ((result != '1-0' && result != '0-1') || length == 0) return _end = null;
     final loser = result == '1-0' ? Side.black : Side.white;
     if (how == 'time') return _end = GameEnd(kind: 'timeout', loser: loser);
@@ -284,6 +291,24 @@ class AnalysisController extends ChangeNotifier {
     final step = switch (i) { 0 => 'neutral', 1 => 'inaccuracy', 2 => 'mistake', _ => 'blunder' };
     return _end = GameEnd(kind: 'resign', loser: loser, step: step, category: cats[i]);
   }
+  /// Why the game was drawn: the last position, or a position met three
+  /// times, or the termination in the headers; otherwise by agreement.
+  String _drawReason(String how) {
+    final last = after[length - 1];
+    if (last.p.isStalemate) return 'Stalemate';
+    if (last.p.isInsufficientMaterial) return 'Insufficient material';
+    String key(Pos p) => p.fen.split(' ').take(4).join(' ');
+    final seen = <String, int>{};
+    for (final p in [_base(-1), for (var i = 0; i < length; i++) after[i]]) {
+      final k = key(p);
+      seen[k] = (seen[k] ?? 0) + 1;
+      if (seen[k]! >= 3) return 'Threefold repetition';
+    }
+    if (last.p.halfmoves >= 100) return 'Fifty-move rule';
+    if (how.isNotEmpty && how != 'normal') return how[0].toUpperCase() + how.substring(1);
+    return 'Agreement';
+  }
+
   Idea? get selectedIdea => _idea;
   bool get playing => _playingIdea;
   SelectedLock? get selectedLock => _lock;
@@ -1298,10 +1323,13 @@ class AnalysisController extends ChangeNotifier {
       pos = pos.push(m);
     }
     if (v.moves.isEmpty) return null;
-    // та же линия уже есть веткой — берётся она
+    // [авторское] та же линия уже есть веткой — берётся она, даже если одна
+    // длиннее другой (серые ходы движка дописываются с разной длиной): иначе
+    // при каждом просмотре идеи появлялась такая же ветка ещё раз
     for (final x in variationsAt(anchor)) {
-      if (x.moves.length == v.moves.length &&
-          [for (var j = 0; j < v.moves.length; j++) x.moves[j].move == v.moves[j].move].every((e) => e)) {
+      final n = math.min(x.moves.length, v.moves.length);
+      if ([for (var j = 0; j < n; j++) x.moves[j].move == v.moves[j].move].every((e) => e)) {
+        if (x.moves.length < v.moves.length) x.moves.addAll(v.moves.sublist(x.moves.length));
         return x;
       }
     }

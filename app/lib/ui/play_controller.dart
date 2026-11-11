@@ -226,11 +226,21 @@ class PlayController extends ChangeNotifier {
     } else if (p.halfmoves >= 100) {
       result = '1/2-1/2';
       reason = 'Fifty-move rule';
+    } else if (_threefold()) {
+      result = '1/2-1/2';
+      reason = 'Threefold repetition';
     } else {
       return false;
     }
     _set(PlayStatus.over);
     return true;
+  }
+
+  /// The current position has occurred three times.
+  bool _threefold() {
+    String key(Pos p) => p.fen.split(' ').take(4).join(' ');
+    final now = key(live);
+    return positions.where((p) => key(p) == now).length >= 3;
   }
 
   /// King onto its rook (chessground) → e1g1 / e1c1.

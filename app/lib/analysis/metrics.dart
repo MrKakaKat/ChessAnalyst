@@ -95,6 +95,13 @@ class SideAccuracy {
 
   /// Stage -> accuracy (null when the side made no move in that stage).
   final Map<String, double?> byStage;
+
+  /// The mean accuracy of the stages played (opening, middlegame, endgame),
+  /// each stage counting the same whatever its length; null without moves.
+  double? get stageMean {
+    final v = [for (final x in byStage.values) ?x];
+    return v.isEmpty ? overall : v.reduce((a, b) => a + b) / v.length;
+  }
   final int moves;
 }
 

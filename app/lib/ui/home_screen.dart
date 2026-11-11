@@ -225,7 +225,9 @@ class _GameDeckState extends State<_GameDeck> with SingleTickerProviderStateMixi
     return LayoutBuilder(
       builder: (context, box) {
         final width = box.maxWidth.clamp(0.0, 400.0);
-        final behind = math.min(2, _order.length - 1);
+        // [авторское] строятся только две верхние карты колоды: каждая
+        // разбирает свою партию, и третья подгружается после свайпа
+        final behind = math.min(1, _order.length - 1);
         final topHeight = _heights[widget.games[_order.first].id];
         final shown = _order.take(behind + 1).toList();
         return Center(
