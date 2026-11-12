@@ -113,7 +113,17 @@ class AnalysisJob extends ChangeNotifier {
   final bool puzzles;
 
   /// The difficulty analysis (difficulty.dart) runs after the classic one.
-  final bool difficulty;
+  bool difficulty;
+
+  /// Asks for the difficulty analysis of a game analysed without it: it
+  /// runs next, the classic analysis stays.
+  void addDifficulty() {
+    if (difficulty) return;
+    difficulty = true;
+    finished = null;
+    onSave?.call(this);
+    notifyListeners();
+  }
 
   /// Its scan of each position (null: not yet).
   final List<PlyScan?> scans;
@@ -212,14 +222,28 @@ class AnalysisJob extends ChangeNotifier {
 
   double get _rest => switch (power) { EnginePower.low => 1.5, EnginePower.medium => 0.5, EnginePower.high => 0.0 };
 
+  /// The loop of [start] is running (it may be waiting for the engine).
+  bool _looping = false;
+
   Future<void> start() async {
     if (state == JobState.running || done) return;
     state = JobState.running;
     pausedByUser = false;
     error = null;
     notifyListeners();
+    // прежний цикл ещё ждёт ответа движка — он и продолжит, второй не нужен
+    if (_looping) return;
+    _looping = true;
     try {
-      var bot = await EngineBot.shared();
+      await _run();
+    } finally {
+      _looping = false;
+    }
+  }
+
+  Future<void> _run() async {
+    try {
+      var bot = await EngineBot.shared().timeout(const Duration(seconds: 60));
       for (final d in [if (quickFirst && targetDepth > quickDepth) quickDepth, targetDepth]) {
         for (var i = 0; i < length; i++) {
           if (state != JobState.running) return;
@@ -227,12 +251,14 @@ class AnalysisJob extends ChangeNotifier {
           final watch = Stopwatch()..start();
           thinking = true;
           notifyListeners();
-          // движок не ответил — повторяем позицию ещё раз (без перезапуска)
+          // движок не ответил — повторяем позицию ещё раз; умерший движок
+          // (после перезахода в приложение) заменяется новым
           for (var attempt = 0;; attempt++) {
             try {
               await _analyse(bot, i, d);
               break;
             } on TimeoutException {
+              if (!bot.alive) bot = await EngineBot.shared().timeout(const Duration(seconds: 60));
               if (attempt >= 1) rethrow;
             }
           }
@@ -254,7 +280,7 @@ class AnalysisJob extends ChangeNotifier {
         }
         onSave?.call(this);
       }
-      if (difficulty) await _scanAll(bot);
+      if (difficulty) await _scanAll();
       if (state != JobState.running) return;
       state = JobState.done;
       finished = DateTime.now();
@@ -268,9 +294,22 @@ class AnalysisJob extends ChangeNotifier {
   }
 
   /// The difficulty pass: the nodes of the best lines of every position.
-  Future<void> _scanAll(EngineBot bot) async {
+  Future<void> _scanAll() async {
     final cache = <String, List<int>>{};
+    var bot = await EngineBot.shared().timeout(const Duration(seconds: 60));
     final threads = _threads(bot.cores);
+    // узел без ответа: движок заменяется новым, и узел считается ещё раз
+    Future<List<Line>> node(String fen, int n) async {
+      for (var attempt = 0;; attempt++) {
+        try {
+          return await bot.analyse(fen, depth: nodeDepth(depth), multipv: n, threads: threads);
+        } on TimeoutException {
+          if (attempt >= 1) rethrow;
+          if (!bot.alive) bot = await EngineBot.shared().timeout(const Duration(seconds: 60));
+        }
+      }
+    }
+
     final nd = nodeDepth(depth);
     for (var i = 0; i < length; i++) {
       if (state != JobState.running) return;
@@ -280,7 +319,7 @@ class AnalysisJob extends ChangeNotifier {
       notifyListeners();
       final p = plies[i]!;
       final scan = await scanPosition(
-          p.fenBefore, p.lines, (fen, n) => bot.analyse(fen, depth: nd, multipv: n, threads: threads),
+          p.fenBefore, p.lines, node,
           depth: nd, cache: cache, stopped: () => state != JobState.running);
       if (state != JobState.running) return;
       scans[i] = scan;

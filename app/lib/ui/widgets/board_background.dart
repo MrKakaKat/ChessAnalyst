@@ -7,6 +7,7 @@ library;
 
 import 'package:chessground/chessground.dart';
 import 'package:dartchess/dartchess.dart' show Side, Square;
+import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter/material.dart';
 
 import '../prefs.dart';
@@ -33,7 +34,7 @@ ChessboardColorScheme appScheme(ChessboardController board, {Color? lastMove}) {
   final base = prefs.scheme;
   final cache = _cache[board] ??= {};
   ChessboardBackground bg(Side side) => cache.putIfAbsent(
-      '${side.name}-${prefs.boardTheme}-${prefs.legalMoves.name}',
+      '${side.name}-${prefs.boardTheme}-${prefs.legalMoves.name}-${prefs.squaresVersion}',
       () => AppBoardBackground(board: board, orientation: side, scheme: base));
   return base.copyWith(
     lastMove: lastMove != null ? HighlightDetails(solidColor: lastMove) : null,
@@ -52,7 +53,10 @@ class AppBoardBackground extends ChessboardBackground {
 
   @override
   Widget build(BuildContext context) => Stack(fit: StackFit.expand, children: [
-        SolidColorChessboardBackground(lightSquare: lightSquare, darkSquare: darkSquare),
+        if (prefs.ownSquares)
+          OwnSquares(light: prefs.lightSquareImage!, dark: prefs.darkSquareImage!)
+        else
+          SolidColorChessboardBackground(lightSquare: lightSquare, darkSquare: darkSquare),
         ValueListenableBuilder<bool>(
           valueListenable: lightenOf(board),
           builder: (context, on, _) => AnimatedContainer(
@@ -187,4 +191,25 @@ class _DestsPainter extends CustomPainter {
   @override
   bool shouldRepaint(_DestsPainter old) =>
       old.flipped != flipped || old.board != board || old.light != light || old.mode != mode;
+}
+
+/// The board squares from the user's own pictures (light and dark), a1 dark.
+class OwnSquares extends StatelessWidget {
+  const OwnSquares({super.key, required this.light, required this.dark});
+
+  final Uint8List light, dark;
+
+  @override
+  Widget build(BuildContext context) => Column(children: [
+        for (var r = 0; r < 8; r++)
+          Expanded(
+            child: Row(children: [
+              for (var f = 0; f < 8; f++)
+                Expanded(
+                  child: Image.memory((r + f).isEven ? light : dark,
+                      fit: BoxFit.cover, gaplessPlayback: true, filterQuality: FilterQuality.medium),
+                ),
+            ]),
+          ),
+      ]);
 }

@@ -21,5 +21,8 @@ class _NativeEngine implements UciEngine {
   int get cores => Platform.numberOfProcessors;
 
   @override
+  bool get alive => _sf.state.value == StockfishState.ready;
+
+  @override
   Future<void> dispose() => _sf.dispose();
 }

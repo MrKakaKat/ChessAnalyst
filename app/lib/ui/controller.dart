@@ -766,6 +766,62 @@ class AnalysisController extends ChangeNotifier {
   }
 
   /// Plays an alternative to main-line move [ply] (a best or a book move).
+  /// Walks engine line [pv] from the position on the board: the whole line
+  /// becomes a branch (or continues the current one), the board shows its
+  /// first move and the arrows step along it.
+  void walkLine(List<String> pv) {
+    final seq = <NormalMove>[];
+    var pos = position;
+    for (final u in pv) {
+      final m = Pos.move(u);
+      if (!pos.isLegal(m)) break;
+      seq.add(m);
+      pos = pos.push(m);
+    }
+    if (seq.isEmpty) return;
+    final v = _var;
+    if (v == null) {
+      // позиция партии перед ходом _ply + 1; линия целиком — ветка, чтобы
+      // «далее» шло по ней, а не по партии
+      final anchor = atStart ? -1 : _ply;
+      _enter(anchor, seq, auto: true);
+      final w = _var;
+      if (w != null) selectVar(w, 0);
+      return;
+    }
+    final prefix = [for (final x in v.moves.take(_varIndex + 1)) x.move];
+    _enter(v.anchor, [...prefix, ...seq], auto: true);
+    final w = _var;
+    if (w != null) selectVar(w, prefix.length);
+  }
+
+  /// Lines computed on the device for positions outside the game (branches),
+  /// by position.
+  final _liveMulti = <String, List<Line>>{};
+  final _liveMultiBusy = <String>{};
+
+  /// The engine lines of [pos] (five, depth 14) for the Lines tab of a
+  /// branch: null while they are computed (the tab refreshes then).
+  List<Line>? liveLinesOf(Pos pos) {
+    final key = pos.fen;
+    final hit = _liveMulti[key];
+    if (hit != null || pos.p.isGameOver) return hit ?? const [];
+    if (_liveMultiBusy.add(key)) {
+      () async {
+        try {
+          final bot = await EngineBot.shared();
+          _liveMulti[key] = await bot.analyse(pos.fen, depth: 14, multipv: 5);
+        } catch (_) {
+          _liveMulti[key] = const [];
+        } finally {
+          _liveMultiBusy.remove(key);
+          notifyListeners();
+        }
+      }();
+    }
+    return null;
+  }
+
   void playAlternative(int ply, String uci) {
     final m = Pos.move(uci);
     if (m == moves[ply]) return select(ply);
@@ -967,6 +1023,29 @@ class AnalysisController extends ChangeNotifier {
   }
 
   bool get hasDifficulty => game.hasDifficulty;
+
+  /// Starts the difficulty analysis of this game (set by the game screen of
+  /// an own game; null for the showcase games).
+  VoidCallback? runDifficulty;
+
+  /// The difficulty analysis is running for this game.
+  bool difficultyRunning = false;
+
+  /// Each side's moves graded by the practical evaluation (the Diff column;
+  /// null without the difficulty analysis): ply → grade.
+  Map<int, String>? get practicalSteps {
+    if (!hasDifficulty) return null;
+    final d = difficulty;
+    return {
+      for (final r in analysis.records)
+        r.ply: practicalStep(
+          r.step,
+          d[r.ply]?.practical,
+          r.ply + 1 < d.length && d[r.ply + 1] != null ? -d[r.ply + 1]!.practical : null,
+          mateInOne: game.plies[r.ply].lines.first.eval.mate == 1 && game.plies[r.ply].played.eval.mate != 1,
+        ),
+    };
+  }
 
   /// Practical evaluation after each ply, pawns for White (null where it is
   /// not known).

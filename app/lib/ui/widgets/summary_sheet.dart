@@ -57,9 +57,10 @@ class AccuracyButton extends StatelessWidget {
 void showSummary(BuildContext context, AnalysisController c) {
   final s = summarize(c.analysis);
   final sharp = sharpnessOf(c.analysis, (ply) => c.characterAt(ply).sharpness == Sharpness.sharp ? 1 : 0);
-  // ходы по видам в каждой оценке: Pawns, WDL и AAC (пешки и WDL вместе)
+  // ходы по видам в каждой оценке: Pawns, WDL и Diff (по практической
+  // оценке анализа сложности)
   final byUnit = {
-    for (final u in [Unit.pawns, Unit.wdl, Unit.both])
+    for (final u in [Unit.pawns, Unit.wdl])
       u: u == c.unit ? c.analysis : analyzeGame(c.game, Settings(unit: u), book: c.book),
   };
 
@@ -294,18 +295,21 @@ class _Difficulty extends StatelessWidget {
   }
 }
 
-/// Counts of each side's moves by icon kind in [a].
-Map<String, int> kindsIn(GameAnalysis a, Side side) {
+/// Counts of each side's moves by icon kind in [a] ([steps]: grades by ply
+/// that replace the analysis' own — the Diff column).
+Map<String, int> kindsIn(GameAnalysis a, Side side, {Map<int, String>? steps}) {
   final out = <String, int>{};
   for (final r in a.records.where((r) => r.side == side)) {
-    final k = iconKindOf(r.step, r.subtype);
+    final step = steps?[r.ply] ?? r.step;
+    final k = step == r.step ? iconKindOf(r.step, r.subtype) : iconKindOf(step, null);
     out[k] = (out[k] ?? 0) + 1;
   }
   return out;
 }
 
 /// Moves by kind for three ways of judging — WDL, Pawns (in the middle,
-/// open at first), AAC. As lists: each column opens and closes from its
+/// open at first), Diff (the practical evaluation of the difficulty
+/// analysis; a note without it). As lists: each column opens and closes from its
 /// header, its rows drop in; each row has White's count, the icon, Black's
 /// count (0 when none). As rings: one way at a time (chosen at the top), a
 /// ring per side like the difficulty gauges, with the number of negative
@@ -331,7 +335,17 @@ class _MovesByKindState extends State<_MovesByKind> {
     'neutral', 'inaccuracy', 'laxity', 'pass', 'mistake', 'blunder'];
   static const _negative = {'inaccuracy', 'laxity', 'pass', 'mistake', 'blunder'};
 
-  String _name(Unit u) => u == Unit.both ? 'AAC' : unitLabels[u]!;
+  String _name(Unit u) => unitLabels[u]!;
+
+  /// Diff: the grades by the practical evaluation; null without the
+  /// difficulty analysis.
+  late final Map<int, String>? _diff = widget.c.practicalSteps;
+
+  Map<String, int>? _counts(Unit u, Side side) {
+    if (u != Unit.both) return kindsIn(widget.byUnit[u]!, side);
+    final d = _diff;
+    return d == null ? null : kindsIn(widget.byUnit[Unit.pawns]!, side, steps: d);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -366,9 +380,19 @@ class _MovesByKindState extends State<_MovesByKind> {
     }
 
     Widget column(Unit u) {
-      final a = widget.byUnit[u]!;
-      final w = kindsIn(a, Side.white), b = kindsIn(a, Side.black);
+      final w = _counts(u, Side.white), b = _counts(u, Side.black);
       final on = _open.contains(u);
+      if (w == null || b == null) {
+        return Column(children: [
+          header(u, on, () => setState(() => on ? _open.remove(u) : _open.add(u))),
+          if (on)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text('Needs the difficulty analysis',
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: 11.5, color: scheme.outline)),
+            ),
+        ]);
+      }
       return Column(children: [
         header(u, on, () => setState(() => on ? _open.remove(u) : _open.add(u))),
         AnimatedSize(
@@ -400,7 +424,7 @@ class _MovesByKindState extends State<_MovesByKind> {
     }
 
     Widget ring(Side side) {
-      final counts = kindsIn(widget.byUnit[_ringUnit]!, side);
+      final counts = _counts(_ringUnit, side) ?? const <String, int>{};
       final negative = counts.entries.where((e) => _negative.contains(e.key)).fold(0, (x, e) => x + e.value);
       return Row(children: [
         TweenAnimationBuilder<double>(

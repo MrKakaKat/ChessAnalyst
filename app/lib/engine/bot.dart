@@ -54,6 +54,16 @@ class EngineBot {
   /// When the engine last wrote anything (a long search keeps writing).
   DateTime _lastLine = DateTime.now();
 
+  /// Lines the engine has written (to see that it answers at all).
+  int _lineCount = 0;
+
+  /// The engine did not answer a search at all: it is dead, and [shared]
+  /// starts a new one.
+  bool _dead = false;
+
+  /// The engine runs and answers.
+  bool get alive => !_dead && _engine.alive;
+
   /// Runs engine requests one after another (the engine is single-threaded).
   Future<T> _serial<T>(Future<T> Function() job) {
     final next = _queue.then((_) => job());
@@ -62,24 +72,37 @@ class EngineBot {
   }
 
   static Future<EngineBot>? _shared;
+  static EngineBot? _current;
 
   /// One engine for the whole app: games against it and game analysis take
-  /// turns on it (requests run one after another).
-  static Future<EngineBot> shared() => _shared ??= start().catchError((Object e) {
-        _shared = null;
-        throw e;
-      });
+  /// turns on it (requests run one after another). An engine that died (the
+  /// native one can stop on its own, for example while the app was in the
+  /// background) is replaced by a new one.
+  static Future<EngineBot> shared() {
+    final cur = _current;
+    if (cur != null && !cur.alive) {
+      _current = null;
+      _shared = null;
+      // старый движок — освободить, не дожидаясь
+      cur._engine.dispose().catchError((_) {});
+    }
+    return _shared ??= start().then((b) => _current = b).catchError((Object e) {
+      _shared = null;
+      throw e;
+    });
+  }
 
   /// Drops the shared engine (it stopped answering); the next [shared]
   /// starts a fresh one.
   static Future<void> reset() async {
     final old = _shared;
     _shared = null;
+    _current = null;
     if (old == null) return;
     try {
-      final bot = await old;
+      final bot = await old.timeout(const Duration(seconds: 10));
       bot._engine.send('stop');
-      await bot.dispose();
+      await bot.dispose().timeout(const Duration(seconds: 10));
     } catch (_) {}
   }
 
@@ -143,6 +166,7 @@ class EngineBot {
 
   void _onLine(String line) {
     _lastLine = DateTime.now();
+    _lineCount++;
     if (line.startsWith('info ') && line.contains(' pv ')) _info.add(line);
     final w = _waitFor;
     if (w != null && line.startsWith(w)) {
@@ -164,17 +188,42 @@ class EngineBot {
     _waitFor = reply;
     final c = _waiting = Completer<String>();
     _lastLine = DateTime.now();
-    _engine.send(command);
-    if (!search) return c.future.timeout(const Duration(seconds: 30));
+    final sent = _lastLine;
+    final before = _lineCount;
+    try {
+      _engine.send(command);
+    } catch (e) {
+      // движок уже не принимает команды (умер)
+      _dead = true;
+      _waitFor = null;
+      _waiting = null;
+      return Future.error(TimeoutException('The engine stopped: $e'));
+    }
+    if (!search) {
+      return c.future.timeout(const Duration(seconds: 30), onTimeout: () {
+        _dead = true;
+        throw TimeoutException('The engine stopped answering');
+      });
+    }
     var stopped = false;
     final watch = Timer.periodic(const Duration(seconds: 5), (_) {
       if (c.isCompleted) return;
       final quiet = DateTime.now().difference(_lastLine);
+      // [авторское] живой движок отвечает на поиск сразу (строки info);
+      // ни строки за 20 с — движок мёртв, ждать полторы минуты незачем
+      if (_lineCount == before && DateTime.now().difference(sent) >= const Duration(seconds: 20)) {
+        _dead = true;
+        _waitFor = null;
+        _waiting = null;
+        c.completeError(TimeoutException('The engine does not answer'));
+        return;
+      }
       if (!stopped && quiet >= const Duration(seconds: 90)) {
         stopped = true;
         _lastLine = DateTime.now();
         _engine.send('stop');
       } else if (stopped && quiet >= const Duration(seconds: 60)) {
+        _dead = true;
         _waitFor = null;
         _waiting = null;
         c.completeError(TimeoutException('The engine stopped answering'));

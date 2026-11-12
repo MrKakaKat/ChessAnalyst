@@ -20,6 +20,10 @@ abstract class UciEngine {
   /// Processor cores available to the engine (1 on the web build).
   int get cores;
 
+  /// The engine still runs (the native one can die on its own, for example
+  /// while the app was in the background).
+  bool get alive;
+
   Future<void> dispose();
 }
 

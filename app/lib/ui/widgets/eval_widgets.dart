@@ -91,12 +91,9 @@ class EvalBar extends StatelessWidget {
       final p = c.atStart ? 0.0 : practicalWhiteAt(c, c.recordPly);
       target = 0.5 + 0.5 * (p / 8).clamp(-1.0, 1.0);
       text = '${p >= 0 ? '+' : ''}${p.toStringAsFixed(1)}';
-    } else if (c.unit == Unit.both) {
-      // AAC: контригра вместо оценки движка
-      final v = c.atStart ? 0.0 : c.aac[c.recordPly].value;
-      target = 0.5 + 0.5 * v;
-      text = '${v >= 0 ? '+' : ''}${(v * 100).round()}';
     }
+    // Diff без анализа сложности — шкала целиком серая
+    final none = c.unit == Unit.both && !c.hasDifficulty;
     if (c.atStart && c.unit != Unit.both) {
       // начальная позиция: оценка до первого хода
       target = whiteShare(r, barUnit, before: true);
@@ -113,7 +110,11 @@ class EvalBar extends StatelessWidget {
     final flipped = c.flipped;
     // WDL: ничья — серым посередине, между выигрышем белых и чёрных
     var draw = 0.0;
-    if (c.unit == Unit.wdl && vm == null) {
+    if (none) {
+      target = 0;
+      draw = 1;
+      text = '–';
+    } else if (c.unit == Unit.wdl && vm == null) {
       final e = c.atStart ? r.e1 : r.ep;
       final white = r.side == Side.white;
       final (w, d, l) = e.wdl;
@@ -225,7 +226,8 @@ class _EvalGraphState extends State<EvalGraph> with TickerProviderStateMixin {
         for (var i = 0; i < c.analysis.records.length; i++) 0.5 + 0.5 * (practicalWhiteAt(c, i) / 8).clamp(-1.0, 1.0),
       ];
     }
-    if (c.unit == Unit.both) return [for (final p in c.aac) 0.5 + 0.5 * p.value];
+    // Diff без анализа сложности — линии нет
+    if (c.unit == Unit.both) return [for (final _ in c.analysis.records) 0.5];
     final unit = c.unit == Unit.pawns ? Unit.pawns : Unit.wdl;
     return [for (final r in c.analysis.records) whiteShare(r, unit)];
   }
@@ -253,6 +255,7 @@ class _EvalGraphState extends State<EvalGraph> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final b = Theme.of(context).brightness;
+    if (c.unit == Unit.both && !c.hasDifficulty) return _NoDifficulty(c: c, height: widget.height);
     return LayoutBuilder(builder: (context, box) {
       final w = box.maxWidth;
       return GestureDetector(
@@ -363,6 +366,37 @@ class _GraphPainter extends CustomPainter {
 
 
 /// The graph with a header that folds it away.
+/// The Diff graph of a game without the difficulty analysis: only a button
+/// to run it.
+class _NoDifficulty extends StatelessWidget {
+  const _NoDifficulty({required this.c, required this.height});
+
+  final AnalysisController c;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final run = c.runDifficulty;
+    return SizedBox(
+      height: height,
+      width: double.infinity,
+      child: Center(
+        child: c.difficultyRunning
+            ? Text('The difficulty analysis is running…', style: TextStyle(color: scheme.outline, fontSize: 13))
+            : run == null
+                ? Text('The difficulty analysis is for your own games.',
+                    style: TextStyle(color: scheme.outline, fontSize: 13))
+                : FilledButton.tonalIcon(
+                    onPressed: run,
+                    icon: const Icon(Icons.psychology_alt_rounded, size: 18),
+                    label: const Text('Run this analysis'),
+                  ),
+      ),
+    );
+  }
+}
+
 class CollapsibleGraph extends StatefulWidget {
   const CollapsibleGraph({super.key, required this.controller, this.height = 110});
 

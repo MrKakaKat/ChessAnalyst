@@ -79,11 +79,12 @@ const typeLabels = {
   'defensive': 'Defence',
 };
 
-const unitLabels = {Unit.pawns: 'Pawns', Unit.wdl: 'WDL', Unit.both: 'AAC'};
+const unitLabels = {Unit.pawns: 'Pawns', Unit.wdl: 'WDL', Unit.both: 'Diff'};
 
-/// The third unit is the practical evaluation in a game with the difficulty
-/// analysis (AAC stays in More graphs).
-String unitLabel(Unit u, {bool practical = false}) => u == Unit.both && practical ? 'Practical' : unitLabels[u]!;
+/// The third unit, Diff, is the practical evaluation of the difficulty
+/// analysis (AAC stays in More graphs); without that analysis it shows
+/// nothing but a button to run it.
+String unitLabel(Unit u) => unitLabels[u]!;
 
 /// Move type: the base (tactical / positional), then its directions
 /// (attack, counterattack, defence), e.g. "Tactical · Attack + Defence".
@@ -172,3 +173,14 @@ const _glyphLetters = {
 String deglyph(String text) => text.split('').map((ch) => _glyphLetters[ch] ?? ch).join();
 
 String plyText(int ply) => '${ply ~/ 2 + 1}${ply.isOdd ? '...' : '.'}';
+
+/// Kinds of move icons that can be hidden on the board (Settings).
+const boardIconKinds = [
+  'brilliant', 'only_move', 'only_light', 'best', 'excellent', 'good', 'book', 'forced', //
+  'neutral', 'inaccuracy', 'laxity', 'pass', 'mistake', 'blunder',
+];
+
+String boardIconLabel(String k) => switch (k) {
+      'only_light' => 'Obvious only move',
+      _ => stepLabels[k] ?? flagLabels[k] ?? k,
+    };

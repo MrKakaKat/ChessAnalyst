@@ -149,11 +149,43 @@ Map<int, List<int>> scanPlan(List<Line> lines) {
 /// An only move found in a line: its index in the line, whose (true: the
 /// side to move at the root), tactical or positional, and its weight.
 class OnlyMove {
-  const OnlyMove(this.index, this.root, this.tactical, this.weight);
+  const OnlyMove(this.index, this.root, this.tactical, this.weight, {this.obvious = false});
   final int index;
   final bool root;
   final bool tactical;
   final double weight;
+
+  /// A recapture or an escape: its weight is already lowered.
+  final bool obvious;
+}
+
+/// The only moves of the side to move in the best line of a position, for
+/// the move card: its first move when it is the one good move, the later
+/// ones from the difficulty scan ([nodes]), obvious ones too (marked), and a
+/// mate line as one only move at the distance of the mate.
+List<OnlyMove> onlyMovesOfBest(String fen, List<Line> lines, List<List<int>?>? nodes) {
+  if (lines.isEmpty) return const [];
+  final line = lines.first;
+  final m = line.eval.mate;
+  final at = _along(fen, line.pv, nodes?.length ?? 1);
+  final out = <OnlyMove>[];
+  final rootOnly = lines.length >= 2 && goodLines(lines).length == 1 && pawnsOfEval(line.eval) > -winBoundary;
+  if (rootOnly) {
+    final obvious = _obvious(at, line.pv, 0);
+    out.add(OnlyMove(0, true, _forcing(fen, line.pv, 0), onlyWeight(1) * (obvious ? obviousShare : 1),
+        obvious: obvious));
+  }
+  if (m != null && m > 0) return out;
+  if (nodes == null) return out;
+  for (var j = 2; j < nodes.length; j += 2) {
+    final n = nodes[j];
+    if (n == null || n.length < 2 || j >= line.pv.length) continue;
+    if (goodCount(n) == 1 && pawnsOfScore(n.first) > -winBoundary) {
+      final obvious = _obvious(at, line.pv, j);
+      out.add(OnlyMove(j, true, _forcing(fen, line.pv, j), _onlyAt(at, line.pv, j), obvious: obvious));
+    }
+  }
+  return out;
 }
 
 /// Only moves of [line] from its scan [nodes] (the root counts when
@@ -413,4 +445,23 @@ bool lineHasOnly(String fen, List<Line> lines, int i, PlyScan? scan) {
   final nodes = scan?.lines[i];
   if (nodes == null) return false;
   return onlyMoves(fen, lines[i], nodes).any((o) => o.root);
+}
+
+/// [авторское] The grade of a negative move by the practical evaluation
+/// (the Diff column): the loss in practical pawns of the side that moved,
+/// [before] the move and [after] it. A lost class (a win given away, a loss
+/// let in) is a blunder, as is a missed mate in one ([mateInOne]); then
+/// over 1 pawn a mistake, 0.5 laxity, 0.1 inaccuracy, less is neutral. A
+/// miss in a hard position costs less, because its practical value was
+/// lower to begin with. Other grades stay.
+String practicalStep(String step, double? before, double? after, {bool mateInOne = false}) {
+  const negative = {'inaccuracy', 'laxity', 'mistake', 'blunder'};
+  if (!negative.contains(step) || before == null || after == null) return step;
+  if (mateInOne) return 'blunder';
+  if (outcomeOf(after) < outcomeOf(before)) return 'blunder';
+  final l = before - after;
+  if (l > 1.0) return 'mistake';
+  if (l > 0.5) return 'laxity';
+  if (l > 0.1) return 'inaccuracy';
+  return 'neutral';
 }

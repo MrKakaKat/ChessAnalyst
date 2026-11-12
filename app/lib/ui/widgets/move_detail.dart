@@ -14,7 +14,8 @@ import 'package:flutter/material.dart';
 import '../../analysis/aac.dart' show Trick;
 import '../../analysis/character.dart' show Sharpness;
 import '../../analysis/classify.dart';
-import '../../analysis/difficulty.dart' show lineHasOnly;
+import '../../analysis/eval.dart' show Line;
+import '../../analysis/difficulty.dart' show PlyScan, lineDifficulty, lineHasOnly, onlyMovesOfBest, onlyWeight;
 import '../../analysis/human.dart' show humanAim, significance;
 import '../../analysis/ideas.dart';
 import '../../analysis/kinds.dart' show kindLabels;
@@ -340,7 +341,7 @@ class _Card extends StatelessWidget {
       // соперника, в которой он получает перевес
       if (!variation && (negativeSteps.contains(r.step) || idea != null)) ...[
         const SizedBox(height: 10),
-        // Why и Underline — в одной строке; причина идеи — под Why, не сдвигая его
+        // Why и Underline — в одной строке, без подписи под Why
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (idea != null || (isBad(r.step) && c.canShowPunishment(c.ply)))
             Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -358,12 +359,6 @@ class _Card extends StatelessWidget {
                 icon: const Icon(Icons.help_outline_rounded, size: 18),
                 label: const Text('Why?'),
               ),
-              if (idea != null)
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Text(motifLabels[idea.signature.motif] ?? idea.signature.motif,
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: scheme.onSurfaceVariant)),
-                ),
             ]),
           // правее Why: отметить ошибку как непонятную (вес ×2 в профиле)
           if (negativeSteps.contains(r.step))
@@ -428,9 +423,14 @@ class _Card extends StatelessWidget {
               'Aim',
               Text(
                   '${switch (h.aim) { 'win' => 'Play for the win', 'draw' => 'Aim for a draw', _ => 'Keep the balance' }}'
-                  ' · ${c.before[c.ply].san(Pos.move(h.uci))}${h.engineBest ? '' : ' (human)'}'
-                  ' · W ${(h.wdl.$1 / 10).round()} D ${(h.wdl.$2 / 10).round()} L ${(h.wdl.$3 / 10).round()}',
+                  ' · ${c.before[c.ply].san(Pos.move(h.uci))}${h.engineBest ? '' : ' (human)'}',
                   style: _valueStyle)),
+      // единственные ходы лучшей линии: сейчас и дальше, их трудность
+      if (!variation && r.step != 'book' && r.step != 'forced') ?_onlyMoves(context),
+      // чем наказана ошибка: первый острый ход соперника в его лучшей линии
+      if (!variation && negativeSteps.contains(r.step) && c.ply + 1 < c.length)
+        if (punishKinds(c.before[c.ply + 1], c.game.plies[c.ply + 1].lines.first) case final k when k.isNotEmpty)
+          _kv(context, 'Punished by', Text(k.map((x) => kindLabels[x] ?? x).join(' · '), style: _valueStyle)),
       // анализ сложности: трудность позиции до хода для каждой стороны и
       // практическая оценка (оценка движка с поправкой на сложность стороны,
       // которая впереди)
@@ -496,6 +496,41 @@ class _Card extends StatelessWidget {
   }
 
   static const _valueStyle = TextStyle(fontSize: 13, fontFeatures: [FontFeature.tabularFigures()]);
+
+  /// The only moves of the side to move in the best line: the first move
+  /// when it is the one good move, the later ones from the difficulty
+  /// analysis; for each its move, tactical or positional, obvious, and its
+  /// difficulty (by distance); a mate by its length; the line's difficulty.
+  Widget? _onlyMoves(BuildContext context) {
+    final p = c.game.plies[c.ply];
+    if (p.lines.isEmpty) return null;
+    final best = p.lines.first;
+    final scans = c.game.scans;
+    final scan = scans != null && c.ply < scans.length ? scans[c.ply] : null;
+    final only = onlyMovesOfBest(p.fenBefore, p.lines, scan?.lines[0]);
+    final mate = best.eval.mate;
+    final sans = <String>[];
+    var pos = c.before[c.ply];
+    for (final u in best.pv.take(only.isEmpty ? 0 : only.last.index + 1)) {
+      final m = Pos.move(u);
+      if (!pos.isLegal(m)) break;
+      sans.add(pos.san(m));
+      pos = pos.push(m);
+    }
+    final parts = [
+      for (final o in only)
+        '${o.index == 0 ? 'Now' : 'Move ${o.index ~/ 2 + 1}'} '
+            '${o.index < sans.length ? sans[o.index] : ''} · ${o.tactical ? 'tactical' : 'positional'}'
+            '${o.obvious ? ', obvious' : ''} · ${(o.weight * 100).round()}%',
+      if (mate != null && mate > 0)
+        'Mate in $mate${mate == 1 ? ' (positional)' : ''} · ${(onlyWeight(mate) * 100).round()}%',
+    ];
+    if (parts.isEmpty) return null;
+    if (scan != null && (mate == null || mate <= 0)) {
+      parts.add('Line ${(lineDifficulty(p.fenBefore, best, scan.lines[0], root: true) * 100).round()}% hard');
+    }
+    return _kv(context, 'Only move', Text(parts.join('\n'), style: _valueStyle));
+  }
 
   Widget _kv(BuildContext context, String k, Widget v) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -747,48 +782,79 @@ class LinesTable extends StatelessWidget {
     // позиция на доске — до хода ply + 1
     final next = c.atStart ? 0 : c.ply + 1;
     final Widget body;
+    // строка линии: нажатие на оценку — пройти всю линию на доске (ветка,
+    // шаги стрелками), на сами ходы — сыграть первый ход
+    Widget row(Pos pos, int i, Line ln, List<Line> lines, {String? played, VoidCallback? onMove, PlyScan? scan}) =>
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(6),
+              onTap: () => c.walkLine(ln.pv),
+              child: SizedBox(
+                width: 58,
+                child: Text(whiteEvalText(ln.eval, pos.turn, c.unit == Unit.wdl ? Unit.wdl : Unit.pawns),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        // синяя оценка: линия требует only move
+                        color: lineHasOnly(pos.fen, lines, i, scan)
+                            ? onlyBlue
+                            : (i == 0 ? scheme.primary : scheme.onSurface),
+                        fontFeatures: const [FontFeature.tabularFigures()])),
+              ),
+            ),
+            Expanded(
+              child: InkWell(
+                onTap: onMove,
+                // одна строка: длинная линия листается вбок и гаснет справа
+                child: FadedLine(_sanLine(pos, ln.pv),
+                    style: TextStyle(fontSize: 13, color: ln.move == played ? scheme.tertiary : null)),
+              ),
+            ),
+          ]),
+        );
     if (c.inVariation) {
-      body = Text('Engine lines are stored for the game positions only.', style: TextStyle(color: scheme.outline));
+      // своя ветка: линии считает движок на устройстве в этой позиции
+      final pos = c.position;
+      final lines = c.liveLinesOf(pos);
+      body = Column(
+        key: ValueKey(pos.fen),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+              lines == null
+                  ? 'Branch position: the engine is computing…'
+                  : 'Branch position: Stockfish on the device, depth 14, ${lines.length} lines'
+                      ' · tap an evaluation to step through its line',
+              style: TextStyle(color: scheme.outline, fontSize: 12)),
+          const SizedBox(height: 6),
+          if (lines == null)
+            const LinearProgressIndicator(minHeight: 2)
+          else
+            for (final (i, ln) in lines.indexed) row(pos, i, ln, lines, onMove: () => c.walkLine([ln.move])),
+        ],
+      );
     } else if (next >= c.length) {
       body = Text('The game is over: no lines after the last move.', style: TextStyle(color: scheme.outline));
     } else {
       final p = c.game.plies[next];
       final pos = Pos.fromFen(p.fenBefore);
       final where = next == 0 ? 'Start position' : 'After ${plyText(next - 1)} ${c.game.plies[next - 1].san}';
+      final scans = c.game.scans;
       body = Column(
         key: ValueKey(next),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
               '$where: Stockfish, depth ${c.game.engine['depth']}, ${p.lines.length} lines'
-              ' · blue: the line needs an only move',
+              ' · tap an evaluation to step through its line · blue: the line needs an only move',
               style: TextStyle(color: scheme.outline, fontSize: 12)),
           const SizedBox(height: 6),
           for (final (i, ln) in p.lines.indexed)
-            InkWell(
-              onTap: () => c.playAlternative(next, ln.move),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  SizedBox(
-                    width: 58,
-                    child: Text(whiteEvalText(ln.eval, pos.turn, c.unit == Unit.wdl ? Unit.wdl : Unit.pawns),
-                        style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            // синяя оценка: линия требует only move
-                            color: lineHasOnly(p.fenBefore, p.lines, i, c.game.scans?[next])
-                                ? onlyBlue
-                                : (i == 0 ? scheme.primary : scheme.onSurface),
-                            fontFeatures: const [FontFeature.tabularFigures()])),
-                  ),
-                  Expanded(
-                    // одна строка: длинная линия листается вбок и гаснет справа
-                    child: FadedLine(_sanLine(pos, ln.pv),
-                        style: TextStyle(fontSize: 13, color: ln.move == p.uci ? scheme.tertiary : null)),
-                  ),
-                ]),
-              ),
-            ),
+            row(pos, i, ln, p.lines,
+                played: p.uci,
+                onMove: () => c.playAlternative(next, ln.move),
+                scan: scans != null && next < scans.length ? scans[next] : null),
           if (p.lines.every((l) => l.move != p.uci))
             Padding(
               padding: const EdgeInsets.only(top: 6),

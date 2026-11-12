@@ -6,10 +6,14 @@ import 'dart:async';
 
 import 'package:chessground/chessground.dart' as cg show GameData;
 import 'package:dartchess/dartchess.dart' show Square, Side, makeLegalMoves;
+import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter/material.dart';
 
 import '../analysis/pos.dart';
+import 'labels.dart';
 import 'prefs.dart';
+import 'square_crop.dart';
+import 'step_icons.dart' show StepIcon;
 import 'widgets/board_background.dart';
 import 'widgets/arrows.dart';
 
@@ -180,6 +184,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
           for (final e in boardThemes.entries)
             _BoardSample(name: e.key, scheme: e.value, selected: prefs.boardTheme == e.key,
                 onTap: () => prefs.update(theme: e.key)),
+          // свои клетки — из картинок, если обе выбраны
+          if (prefs.lightSquareImage != null && prefs.darkSquareImage != null)
+            _BoardSample(
+                name: AppPrefs.customTheme,
+                scheme: prefs.scheme,
+                light: prefs.lightSquareImage,
+                dark: prefs.darkSquareImage,
+                selected: prefs.boardTheme == AppPrefs.customTheme,
+                onTap: () => prefs.update(theme: AppPrefs.customTheme)),
+        ]),
+        const SizedBox(height: 10),
+        // [авторское] свои клетки: картинка с устройства, квадрат вырезается
+        // и масштабируется
+        Text('Own squares', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 6),
+        Wrap(spacing: 8, runSpacing: 8, children: [
+          for (final light in [true, false])
+            _SquarePicker(light: light),
+        ]),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text('Pick a picture for the light and the dark squares: cut a square from it and zoom. With both '
+              'the board uses them.',
+              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
+        ),
+        const SizedBox(height: 20),
+        Text('Icons on the board', style: title),
+        const SizedBox(height: 4),
+        Text('Tap a kind to hide its icon on the board (the move list and the card keep it).',
+            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
+        const SizedBox(height: 8),
+        Wrap(spacing: 6, runSpacing: 6, children: [
+          for (final k in boardIconKinds)
+            FilterChip(
+              avatar: Opacity(opacity: prefs.hiddenBoardKinds.contains(k) ? 0.35 : 1, child: StepIcon(kind: k, size: 18)),
+              label: Text(boardIconLabel(k)),
+              selected: !prefs.hiddenBoardKinds.contains(k),
+              showCheckmark: false,
+              onSelected: (_) => prefs.toggleBoardKind(k),
+            ),
         ]),
         const SizedBox(height: 20),
         Text('Pieces', style: title),
@@ -269,11 +313,39 @@ class _ArrowSample extends StatelessWidget {
   }
 }
 
+/// A button for one of the own square pictures: its preview, pick, remove.
+class _SquarePicker extends StatelessWidget {
+  const _SquarePicker({required this.light});
+
+  final bool light;
+
+  @override
+  Widget build(BuildContext context) {
+    final img = light ? prefs.lightSquareImage : prefs.darkSquareImage;
+    final name = light ? 'Light square' : 'Dark square';
+    return InputChip(
+      avatar: img == null
+          ? const Icon(Icons.add_photo_alternate_outlined, size: 18)
+          : ClipRRect(borderRadius: BorderRadius.circular(3), child: Image.memory(img, width: 22, height: 22, fit: BoxFit.cover)),
+      label: Text(name),
+      onPressed: () async {
+        final bytes = await pickSquareImage(context, name);
+        if (bytes != null) await prefs.setSquareImage(light: light, bytes: bytes);
+      },
+      onDeleted: img == null ? null : () => prefs.setSquareImage(light: light, bytes: null),
+    );
+  }
+}
+
 class _BoardSample extends StatelessWidget {
-  const _BoardSample({required this.name, required this.scheme, required this.selected, required this.onTap});
+  const _BoardSample(
+      {required this.name, required this.scheme, required this.selected, required this.onTap, this.light, this.dark});
 
   final String name;
   final ChessboardColorScheme scheme;
+
+  /// Own square pictures instead of the scheme's colours.
+  final Uint8List? light, dark;
   final bool selected;
   final VoidCallback onTap;
 
@@ -297,10 +369,11 @@ class _BoardSample extends StatelessWidget {
               crossAxisCount: 2,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                ColoredBox(color: scheme.lightSquare),
-                ColoredBox(color: scheme.darkSquare),
-                ColoredBox(color: scheme.darkSquare),
-                ColoredBox(color: scheme.lightSquare),
+                for (final l in [true, false, false, true])
+                  if ((l ? light : dark) case final img?)
+                    Image.memory(img, fit: BoxFit.cover)
+                  else
+                    ColoredBox(color: l ? scheme.lightSquare : scheme.darkSquare),
               ],
             ),
           ),

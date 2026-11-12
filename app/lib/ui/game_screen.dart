@@ -109,7 +109,22 @@ class _GameScreenState extends State<GameScreen> {
       // [авторское] разбор обновляется раз в 5 секунд, а не на каждой позиции:
       // пересчёт меток и идей дешевле, а значки не мерцают
       _refresh = Timer.periodic(const Duration(seconds: 5), (_) => _pull());
+      // Diff без анализа сложности: кнопка запускает его для этой партии
+      // (классический анализ не пересчитывается)
+      c.runDifficulty = () {
+        job.addDifficulty();
+        analysisQueue.resume(job);
+        _syncDifficulty();
+      };
+      _syncDifficulty();
     }
+  }
+
+  void _syncDifficulty() {
+    final job = widget.job;
+    if (job == null) return;
+    c.difficultyRunning = job.difficulty && !job.scanned;
+    if (mounted) setState(() {});
   }
 
   void _onPrefs() => c.setPercentSteps(prefs.percentSteps);
@@ -119,6 +134,7 @@ class _GameScreenState extends State<GameScreen> {
     if (job == null || job.revision == _seen || !job.ready) return;
     _seen = job.revision;
     c.updateGame(job.snapshot());
+    _syncDifficulty();
   }
 
   @override
@@ -411,7 +427,7 @@ class _GameScreenState extends State<GameScreen> {
       round(const Icon(Icons.tune_rounded, size: 20), 'Quick settings', _quickSettings),
       const SizedBox(width: 8),
       SegmentedButton<Unit>(
-        segments: [for (final u in Unit.values) ButtonSegment(value: u, label: Text(unitLabel(u, practical: c.hasDifficulty)))],
+        segments: [for (final u in Unit.values) ButtonSegment(value: u, label: Text(unitLabel(u)))],
         selected: {c.unit},
         showSelectedIcon: false,
         style: ButtonStyle(

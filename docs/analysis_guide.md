@@ -186,11 +186,16 @@ matter more than calculation here.
 
 ---
 
-## Evaluation: Pawns, WDL, AAC
+## Evaluation: Pawns, WDL, Diff
 
 - **Pawns** — the engine's evaluation in pawns.
 - **WDL** — the chances to win, draw or lose, as an expected result.
-- **AAC** — counterplay instead of the engine score. Each side gets three
+- **Diff** — the practical evaluation of the difficulty analysis (see
+  Position difficulty): the bar, the graph and the Diff column of the
+  accuracy window. Without that analysis the bar is all grey and the graph
+  shows only a **Run this analysis** button (own games): the classic
+  analysis stays, only the difficulty part runs.
+- **AAC** (in More graphs) — counterplay instead of the engine score. Each side gets three
   parts:
   - **Abilities**: its threats and the checks it can give. Only good checks
     count: ones that keep the position (by the engine) or at least do not
@@ -199,7 +204,7 @@ matter more than calculation here.
   - **Complication**: how hard the position is for the opponent, that is how
     few good replies they have.
 
-  The AAC graph compares both sides at every move. The move card shows the
+  The AAC graph (More graphs) compares both sides at every move. The move card shows the
   activity of both sides after the move. "More graphs" in the
   Game tab shows each part separately, together with the character of the
   positions along the game.
@@ -332,16 +337,23 @@ analysis measures that:
   reference games (masters, engines and our own, 1103 positions) that are
   easier, for each side separately. 50% is a usual position.
 - **Practical evaluation**: E′ = E · (1.5 − difficulty of the side ahead).
-  +6 at 80% gives +4.2, at 30% +7.2. A mate counts as +8. With the analysis
-  it takes AAC's place on the unit switch (**Practical**); AAC stays in More
-  graphs.
+  +6 at 80% gives +4.2, at 30% +7.2. A mate counts as +8. It is the
+  **Diff** unit; AAC stays in More graphs.
+- **Diff grades** (the accuracy window): a negative move is graded again by
+  the practical evaluation it lost — a lost class is a blunder (and a missed
+  mate in one), then over 1 pawn a mistake, 0.5 laxity, 0.1 inaccuracy, less
+  neutral. A miss in a hard position costs less.
 
 Where it shows:
 - a line whose evaluation is **blue** needs an only move of the side to
   move (the first move from the classic analysis, the later ones from this
   one; on the free board — the first move);
 - the move card: **Difficulty** for both sides and the practical evaluation
-  next to the engine's;
+  next to the engine's; **Only move** — the only moves of the best line: the
+  first move when it is the one good move, the later ones from this
+  analysis, each with its move, tactical or positional, obvious or not and
+  its difficulty by distance, a mate by its length, and how hard the whole
+  line is;
 - the accuracy window: how difficult each side's positions were and the
   accuracy **with difficulty** — a miss in a hard position costs less, in an
   easy one more;
@@ -376,8 +388,12 @@ that keeps the goal counts as correct. In defensive puzzles the first move
 must be the one saving move; after it, another move counts too when it
 holds as well (within half a pawn of the solution).
 
-Puzzles do not overlap: when two puzzles share positions, the longer one
-is kept.
+Puzzles are unbroken pieces: when a puzzle's line was played in the game
+and the next puzzle starts right after the opponent's reply, they become
+one puzzle (the same kind of goal goes on; an attack into a needed defence
+becomes combined). A puzzle does not stop where the next one starts.
+Puzzles do not overlap either: when two puzzles share positions, the longer
+one is kept.
 
 The rating of a puzzle comes from the engine. It is computed when the
 game's analysis ends, and again when the analysis is sent deeper. Each of
@@ -449,6 +465,10 @@ character, the kinds missed, the kinds you were punished by, and the cost.
   the top card away to see the next one. Below the decks is the list of all
   games.
 - **Copy PGN** (quick settings of a game) puts the game on the clipboard.
+- **Lines** tab: tap the evaluation of a line to walk it on the board —
+  the whole line becomes a branch, the arrows step through it; tap the
+  moves to play just the first one. In a branch the tab shows lines the
+  device engine computes for that position (five lines, depth 14).
 - In the move list, hold a move to select it and drag to select a range;
   the round buttons at the top copy the moves. Holding a branch move also
   offers to delete it, with every move and branch after it. Under a move with an idea, "Better" and
@@ -493,3 +513,15 @@ character, the kinds missed, the kinds you were punished by, and the cost.
   counts for the weakness profile.
 - The app can notify you when an analysis is finished (it asks once, after
   your first analysis).
+
+---
+
+## Board settings
+
+- **Icons on the board** (Settings): tap a kind of move to hide its icon on
+  the board — for example book or neutral moves. The move list and the move
+  card keep it.
+- **Own squares** (Settings → Board): pick a picture for the light and one
+  for the dark squares. Cut a square from it — drag to move, pinch or use
+  the slider to zoom — and it becomes one board square. With both pictures
+  the board uses them (the "Own" sample); the cross on a picture removes it.

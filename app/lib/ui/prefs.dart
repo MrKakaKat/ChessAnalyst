@@ -4,6 +4,8 @@ library;
 
 import 'package:chessground/chessground.dart';
 import 'package:flutter/painting.dart' show Color;
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -135,7 +137,52 @@ class AppPrefs extends ChangeNotifier {
   bool colourSummaryIcons = false;
   String boardTheme = 'Green';
 
+  /// The board theme with the user's own square pictures.
+  static const customTheme = 'Own';
+
   ChessboardColorScheme get scheme => boardThemes[boardTheme] ?? ChessboardColorScheme.green;
+
+  /// Kinds of moves whose icon is not shown on the board (the move list and
+  /// the card keep them).
+  Set<String> hiddenBoardKinds = {};
+
+  /// The user's square pictures (PNG, 256×256); [squaresVersion] grows with
+  /// each change so the boards repaint.
+  Uint8List? lightSquareImage, darkSquareImage;
+  int squaresVersion = 0;
+
+  /// Own squares are chosen and both pictures are there.
+  bool get ownSquares => boardTheme == customTheme && lightSquareImage != null && darkSquareImage != null;
+
+  /// Sets a square picture ([light] or dark; null removes it) and turns the
+  /// own squares on when both are there.
+  Future<void> setSquareImage({required bool light, Uint8List? bytes}) async {
+    if (light) {
+      lightSquareImage = bytes;
+    } else {
+      darkSquareImage = bytes;
+    }
+    squaresVersion++;
+    if (lightSquareImage != null && darkSquareImage != null) {
+      boardTheme = customTheme;
+    } else if (boardTheme == customTheme) {
+      boardTheme = 'Green';
+    }
+    notifyListeners();
+    _save();
+    try {
+      final p = await SharedPreferences.getInstance();
+      final key = light ? 'lightSquareImage' : 'darkSquareImage';
+      bytes == null ? await p.remove(key) : await p.setString(key, base64Encode(bytes));
+    } catch (_) {}
+  }
+
+  void toggleBoardKind(String kind) {
+    hiddenBoardKinds.contains(kind) ? hiddenBoardKinds.remove(kind) : hiddenBoardKinds.add(kind);
+    hiddenBoardKinds = {...hiddenBoardKinds};
+    notifyListeners();
+    _save();
+  }
 
   Future<void> load() async {
     try {
@@ -173,8 +220,12 @@ class AppPrefs extends ChangeNotifier {
       if (mc != null && markColors.containsKey(mc)) markColor = mc;
       final ac = p.getString('arrowColor');
       if (ac != null && arrowColors.containsKey(ac)) arrowColor = ac;
+      hiddenBoardKinds = {...?p.getStringList('hiddenBoardKinds')};
+      final light = p.getString('lightSquareImage'), dark = p.getString('darkSquareImage');
+      if (light != null) lightSquareImage = base64Decode(light);
+      if (dark != null) darkSquareImage = base64Decode(dark);
       final theme = p.getString('boardTheme');
-      if (theme != null && boardThemes.containsKey(theme)) boardTheme = theme;
+      if (theme != null && (boardThemes.containsKey(theme) || theme == customTheme)) boardTheme = theme;
       notifyListeners();
     } catch (_) {
       // без хранилища — настройки по умолчанию
@@ -188,6 +239,7 @@ class AppPrefs extends ChangeNotifier {
       await p.setString('legalMoves', legalMoves.name);
       await p.setString('pieceSet', pieceSet.name);
       await p.setString('boardTheme', boardTheme);
+      await p.setStringList('hiddenBoardKinds', hiddenBoardKinds.toList());
       await p.setBool('animateArrows', animateArrows);
       await p.setString('arrowColor', arrowColor);
       await p.setString('markColor', markColor);

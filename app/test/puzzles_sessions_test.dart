@@ -114,4 +114,23 @@ void main() {
     expect(back.goal2, PuzzleGoal.defend);
     expect(back.switchAt, 4);
   });
+
+  test('a puzzle does not stop where the next one starts: same goals in a row are one puzzle', () {
+    final g = GameData.parse(File('assets/games/kasparov_topalov_1999.json').readAsStringSync());
+    Puzzle at(int ply, int len, PuzzleGoal goal) => Puzzle(
+        id: '${g.id}:$ply',
+        fen: g.plies[ply].fenBefore,
+        solution: [for (var i = 0; i < len; i++) g.plies[ply + i].uci],
+        source: '',
+        gap: 2,
+        goal: goal,
+        value: 4.5);
+    // 20–22, ответ 23, 24, ответ 25, 26 — три атаки подряд
+    final list = combine([at(20, 3, PuzzleGoal.win), at(24, 1, PuzzleGoal.win), at(26, 1, PuzzleGoal.advantage)], g);
+    expect(list.length, 1);
+    final p = list.single;
+    expect(p.combined, isFalse);
+    expect(p.solution, [for (var i = 20; i <= 26; i++) g.plies[i].uci]);
+    expect(p.goal, PuzzleGoal.win);
+  });
 }

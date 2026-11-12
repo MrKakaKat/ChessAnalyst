@@ -269,7 +269,7 @@ class _BoardViewState extends State<BoardView> {
     );
     // стрелки через клетку хода или через сам значок (он залезает на
     // соседние клетки) — позже и полупрозрачные
-    if (kind != null && prefs.showBoardIcons) {
+    if (kind != null && prefs.showBoardIcons && !prefs.hiddenBoardKinds.contains(kind)) {
       for (var i = 0; i < _arrows.length; i++) {
         final a = _arrows[i];
         if (a.squares.contains(dest) || _passesNear(a, center, badge / 2 + sq * 0.1, sq)) {
@@ -351,7 +351,7 @@ class _BoardViewState extends State<BoardView> {
                     key: ValueKey(('leaving', l.key)), kind: l.kind, color: l.color, size: badge, leaving: true),
               ),
             ),
-          if (kind != null && prefs.showBoardIcons)
+          if (kind != null && prefs.showBoardIcons && !prefs.hiddenBoardKinds.contains(kind))
             Positioned(
               left: center.dx - badge / 2,
               top: center.dy - badge / 2,

@@ -198,6 +198,30 @@ class Puzzle {
         difficulty: difficulty,
       );
 
+  /// This puzzle continued by [next] with the same kind of goal (attack
+  /// after attack, defence after defence): one unbroken puzzle — a puzzle
+  /// must not stop where the next one starts. [reply] is the opponent's
+  /// move between them.
+  Puzzle extend(String reply, Puzzle next) => Puzzle(
+        id: id,
+        fen: fen,
+        solution: [...solution, reply, ...next.solution],
+        source: source,
+        gap: gap,
+        goal: goal,
+        value: value,
+        alternatives: alternatives,
+        prevFen: prevFen,
+        prevMove: prevMove,
+        tags: {...tags, ...next.tags},
+        minValue: minValue,
+        goal2: goal2,
+        value2: value2,
+        switchAt: switchAt,
+        practical: practical,
+        difficulty: [difficulty, next.difficulty].whereType<double>().fold<double?>(null, (a, b) => a == null || b > a ? b : a),
+      );
+
   Side get solver => Pos.fromFen(fen).turn;
   int get solverMoves => (solution.length + 1) ~/ 2;
 }
@@ -276,31 +300,45 @@ List<Puzzle> puzzlesFrom(GameAnalysis a) {
   return withoutOverlaps(combine(out, a.game));
 }
 
-/// [авторское] Combined puzzles: an attack whose line, played in the game,
-/// leads straight to a position where only a precise defence holds (or the
-/// other way round) becomes one puzzle — take the advantage, then hold it.
-/// Rare, but these are the hardest moments: the goal changes on the way.
+/// [авторское] Puzzles in a row are one unbroken piece: when a puzzle's
+/// line was played in the game and the next puzzle starts right after the
+/// opponent's reply, they are joined. With the same kind of goal (attack
+/// after attack, defence after defence) the solution simply goes on; an
+/// attack that leads straight to a position where only a precise defence
+/// holds (or the other way round) becomes a combined puzzle — take the
+/// advantage, then hold it (the goal changes on the way, once). A puzzle
+/// must not stop where the next one starts.
 List<Puzzle> combine(List<Puzzle> list, GameData g) {
-  final byPly = {for (final p in list) int.parse(p.id.substring(p.id.lastIndexOf(':') + 1)): p};
+  int plyOf(Puzzle p) => int.parse(p.id.substring(p.id.lastIndexOf(':') + 1));
+  final byPly = {for (final p in list) plyOf(p): p};
   final used = <String>{};
   final out = <Puzzle>[];
   for (final p in list) {
     if (used.contains(p.id)) continue;
-    final ply = int.parse(p.id.substring(p.id.lastIndexOf(':') + 1));
-    final end = ply + p.solution.length; // ход соперника после решения
-    final next = byPly[end + 1];
-    final attack = p.goal != PuzzleGoal.defend;
-    final follows = end < g.plies.length &&
-        [for (var i = 0; i < p.solution.length; i++) ply + i < g.plies.length && g.plies[ply + i].uci == p.solution[i]]
-            .every((x) => x);
-    if (next != null && !next.combined && follows && attack != (next.goal != PuzzleGoal.defend)) {
-      out.add(p.then(g.plies[end].uci, next));
+    final ply = plyOf(p);
+    var cur = p;
+    while (true) {
+      final end = ply + cur.solution.length; // ход соперника после решения
+      final next = byPly[end + 1];
+      if (next == null || used.contains(next.id) || next.combined || end >= g.plies.length) break;
+      final follows = [
+        for (var i = 0; i < cur.solution.length; i++) ply + i < g.plies.length && g.plies[ply + i].uci == cur.solution[i]
+      ].every((x) => x);
+      if (!follows) break;
+      final lastAttack = cur.goalAt(cur.solution.length - 1) != PuzzleGoal.defend;
+      final nextAttack = next.goal != PuzzleGoal.defend;
+      if (lastAttack == nextAttack) {
+        cur = cur.extend(g.plies[end].uci, next);
+      } else if (!cur.combined) {
+        cur = cur.then(g.plies[end].uci, next);
+      } else {
+        break;
+      }
       used.add(next.id);
-    } else {
-      out.add(p);
     }
+    out.add(cur);
   }
-  return [for (final p in out) if (!used.contains(p.id) || p.combined) p];
+  return [for (final p in out) if (!used.contains(p.id)) p];
 }
 
 /// Puzzles that share positions: the longest line is kept, and no other
@@ -473,7 +511,7 @@ class PuzzleRatings {
 
   /// Version of the rating formula (puzzle_rater.dart): ratings of an older
   /// one are forgotten and the puzzles are rated again.
-  static const version = 5;
+  static const version = 6;
 
   static Future<Map<String, int>> load() async {
     try {

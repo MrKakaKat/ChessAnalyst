@@ -35,6 +35,9 @@ class _WebEngine implements UciEngine {
   int get cores => 1; // однопоточная сборка Stockfish.js
 
   @override
+  bool get alive => true;
+
+  @override
   Future<void> dispose() async {
     _worker.terminate();
     await _lines.close();
