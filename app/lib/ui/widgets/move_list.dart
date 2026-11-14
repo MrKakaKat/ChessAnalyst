@@ -19,6 +19,7 @@ import 'package:flutter/services.dart';
 
 import '../controller.dart';
 import '../labels.dart';
+import '../prefs.dart';
 import '../step_icons.dart';
 import 'eval_widgets.dart';
 
@@ -225,7 +226,8 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
   /// as a branch.
   Widget _ideaLines(BuildContext context, int ply) {
     final idea = c.analysis.ideaAt(ply);
-    if (idea == null || idea.kind == 'brilliant') return const SizedBox.shrink();
+    // строки Better / Punished можно скрыть (Game, под More graphs)
+    if (idea == null || idea.kind == 'brilliant' || !prefs.showIdeaRows) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
     final p = c.game.plies[ply];
     final missed = p.lines.first.pv.isNotEmpty && p.lines.first.move != p.uci ? p.lines.first.pv : const <String>[];
@@ -433,26 +435,32 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
   /// chip of the move).
   Widget _branches(BuildContext context, int anchor) {
     final list = c.variationsAt(anchor);
-    if (list.isEmpty) return const SizedBox.shrink();
-    final open = !_folded.contains(anchor);
+    final open = !_folded.contains(anchor) && list.isNotEmpty;
+    // [авторское] ветка появляется плавно (высота растёт, строка проявляется):
+    // окно не дёргается, когда идея или наказание открывают её
     return Padding(
-      padding: const EdgeInsets.only(left: 30, right: 6, bottom: 2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedSize(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeInOutCubic,
-            alignment: Alignment.topLeft,
-            child: open
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [for (final v in list) _variationLine(context, v)],
-                  )
-                : const SizedBox(width: double.infinity),
-          ),
-        ],
+      padding: EdgeInsets.only(left: 30, right: 6, bottom: list.isEmpty ? 0 : 2),
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.topLeft,
+        child: open
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final v in list)
+                    TweenAnimationBuilder<double>(
+                      key: ValueKey(identityHashCode(v)),
+                      tween: Tween(begin: 0, end: 1),
+                      duration: const Duration(milliseconds: 350),
+                      curve: Curves.easeOut,
+                      builder: (context, t, child) => Opacity(opacity: t, child: child),
+                      child: _variationLine(context, v),
+                    ),
+                ],
+              )
+            : const SizedBox(width: double.infinity),
       ),
     );
   }

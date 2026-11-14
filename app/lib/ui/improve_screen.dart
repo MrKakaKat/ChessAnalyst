@@ -1,9 +1,11 @@
 /// Start to improve: work through the mistakes of a game.
 ///
 /// [авторское]
-/// - **Fix**: the mistakes in order — blunders, mistakes, weaknesses,
-///   passes, inaccuracies — each as a position where the player finds a
-///   positive move without hints.
+/// - **Fix**: the mistakes in order — blunders, mistakes, missed chances
+///   (passes), weaknesses — each as a position where the player finds a
+///   positive move without hints. Then the board offers to finish or to go
+///   on with the inaccuracies. First the board asks how to judge the moves:
+///   Diff (recommended, needs the difficulty analysis), Pawns or WDL.
 /// - **Survival**: after the found move, hold the position against the
 ///   strongest engine with positive moves only, until the position is quiet,
 ///   clearly winning (+3) or eight moves are played.
@@ -26,6 +28,7 @@ import 'package:flutter/material.dart';
 import '../analysis/character.dart' show positiveLoss;
 import '../analysis/eval.dart';
 import '../analysis/features.dart' as features;
+import '../analysis/game.dart' show analyzeGame;
 import '../analysis/kinds.dart';
 import '../analysis/pgn_import.dart' show normalizeCastling;
 import '../analysis/pos.dart';
@@ -45,7 +48,9 @@ import 'widgets/board_background.dart';
 
 enum ImproveMode { fix, foresight }
 
-const _order = ['blunder', 'mistake', 'laxity', 'pass', 'inaccuracy'];
+/// The main mistakes, from the worst; the inaccuracies come after them, on
+/// request.
+const _order = ['blunder', 'mistake', 'pass', 'laxity'];
 
 class ImproveScreen extends StatefulWidget {
   const ImproveScreen({super.key, required this.controller});
@@ -60,7 +65,18 @@ enum _Phase { find, wrong, found, survival, held, lost, foresight, judged }
 
 class _ImproveScreenState extends State<ImproveScreen> {
   AnalysisController get c => widget.controller;
-  late final List<int> _tasks = _collect();
+  List<int> _tasks = [];
+
+  /// How the moves are judged (chosen on the board first); the grade of each
+  /// ply by it.
+  Unit? _unit;
+  Map<int, String> _steps = {};
+
+  /// The inaccuracies, offered after the main mistakes; [_gate]: the board
+  /// shows the offer.
+  List<int> _inaccuracies = [];
+  bool _withInaccuracies = false;
+  bool _gate = false;
   int _task = 0;
   ImproveMode _mode = ImproveMode.fix;
   _Phase _phase = _Phase.find;
@@ -69,6 +85,10 @@ class _ImproveScreenState extends State<ImproveScreen> {
   bool _busy = false;
   String _note = '';
   int _held = 0;
+
+  /// Survival: the position before each own move (with the last move shown
+  /// and the moves held), to take a move back.
+  final _survivalBack = <(Pos, NormalMove?, int)>[];
   final _plan = <NormalMove>[];
 
   /// The better move after a miss, shown only when its fold is opened.
@@ -97,21 +117,63 @@ class _ImproveScreenState extends State<ImproveScreen> {
   bool _recordedHere = false;
   late final ChessboardController _board = ChessboardController(game: _data());
 
-  /// The player's negative moves (their side in an own game, else both),
-  /// from the worst kind to the mildest.
-  List<int> _collect() {
+  /// The grades of the game's moves by [unit] (Diff: the difficulty
+  /// analysis' own grading).
+  Map<int, String> _gradesBy(Unit unit) {
+    if (unit == Unit.both) return c.practicalSteps ?? const {};
+    final a = analyzeGame(c.game, Settings(unit: unit), book: c.book);
+    return {for (final r in a.records) r.ply: r.step};
+  }
+
+  /// Chooses how to judge and collects the player's negative moves (their
+  /// side in an own game, else both): the main ones from the worst kind, the
+  /// inaccuracies apart.
+  void _choose(Unit unit) {
+    _unit = unit;
+    _steps = _gradesBy(unit);
     // свои ошибки — если имя игрока задано в статистике и нашлось в партии
     final side = prefs.playerName.trim().isEmpty ? null : playerSide(c.game, prefs.playerName);
-    final out = [
-      for (final r in c.analysis.records)
-        if (_order.contains(r.step) && (side == null || r.side == side)) r.ply,
-    ];
-    out.sort((a, b) {
-      final d = _order.indexOf(c.analysis.records[a].step) - _order.indexOf(c.analysis.records[b].step);
-      return d != 0 ? d : a - b;
-    });
-    return out;
+    bool mine(int ply) => side == null || c.analysis.records[ply].side == side;
+    final main = [
+      for (final e in _steps.entries)
+        if (_order.contains(e.value) && mine(e.key)) e.key,
+    ]..sort((a, b) {
+        final d = _order.indexOf(_steps[a]!) - _order.indexOf(_steps[b]!);
+        return d != 0 ? d : a - b;
+      });
+    _inaccuracies = [
+      for (final e in _steps.entries)
+        if (e.value == 'inaccuracy' && mine(e.key)) e.key,
+    ]..sort();
+    _tasks = main;
+    _withInaccuracies = false;
+    if (_tasks.isEmpty) {
+      // серьёзных ошибок нет — сразу предложение
+      setState(() => _gate = true);
+      return;
+    }
+    _gate = false;
+    _open(0);
   }
+
+  /// To the next mistake, or the offer after the main ones.
+  void _next() {
+    if (_task + 1 < _tasks.length) return _open(_task + 1);
+    setState(() => _gate = true);
+  }
+
+  void _continueWithInaccuracies() {
+    final from = _tasks.length;
+    setState(() {
+      _withInaccuracies = true;
+      _tasks = [..._tasks, ..._inaccuracies];
+      _gate = false;
+    });
+    _open(from);
+  }
+
+  /// The grade of the shown mistake by the chosen way.
+  String get _step => _steps[_ply] ?? c.analysis.records[_ply].step;
 
   int get _ply => _tasks[_task];
 
@@ -135,7 +197,6 @@ class _ImproveScreenState extends State<ImproveScreen> {
   @override
   void initState() {
     super.initState();
-    if (_tasks.isNotEmpty) _open(0);
     ImproveHistory.load().then((h) {
       if (mounted) setState(() => _hist = h);
     });
@@ -179,6 +240,7 @@ class _ImproveScreenState extends State<ImproveScreen> {
       _phase = _mode == ImproveMode.fix ? _Phase.find : _Phase.foresight;
       _note = '';
       _held = 0;
+      _survivalBack.clear();
       _plan.clear();
       _better = null;
       _showBetter = false;
@@ -212,6 +274,7 @@ class _ImproveScreenState extends State<ImproveScreen> {
     if (!_pos.isLegal(m)) return;
     if (_phase == _Phase.foresight) return _planMove(m);
     final before = _pos;
+    if (_phase == _Phase.survival) _survivalBack.add((before, _last, _held));
     setState(() {
       _busy = true;
       _last = m;
@@ -298,6 +361,26 @@ class _ImproveScreenState extends State<ImproveScreen> {
             : (quiet ? 'Held: the position is quiet now.' : 'Held for $_held moves.');
       });
     }
+  }
+
+  /// Survival: takes back the last own move (and the engine's reply after
+  /// it), and the survival goes on from there.
+  void _takeBackSurvival() {
+    if (_survivalBack.isEmpty) return;
+    final (pos, last, held) = _survivalBack.removeLast();
+    setState(() {
+      _pos = pos;
+      _last = last;
+      _held = held;
+      _phase = _Phase.survival;
+      _note = 'Taken back. Keep playing positive moves.';
+      _better = null;
+      _showBetter = false;
+      _wrongFrom = null;
+      _wrongMove = null;
+      _dartAt = null;
+    });
+    _sync();
   }
 
   void _survive() {
@@ -515,12 +598,8 @@ class _ImproveScreenState extends State<ImproveScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    if (_tasks.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Start to improve')),
-        body: const Center(child: Text('No mistakes to work on in this game.')),
-      );
-    }
+    // сначала — как судить ходы, на доске; задач ещё нет
+    if (_unit == null || _tasks.isEmpty) return _choiceScreen(context);
     final r = c.analysis.records[_ply];
     return Scaffold(
       appBar: AppBar(
@@ -533,7 +612,7 @@ class _ImproveScreenState extends State<ImproveScreen> {
           ),
           IconButton(
             tooltip: 'Next',
-            onPressed: _task + 1 < _tasks.length ? () => _open(_task + 1) : null,
+            onPressed: _gate ? null : _next,
             icon: const Icon(Icons.skip_next_rounded),
           ),
         ],
@@ -589,6 +668,8 @@ class _ImproveScreenState extends State<ImproveScreen> {
                         ),
                       ),
                       if (_dartAt != null && _replay == null) _dartOver(_dartAt!, size),
+                      // после главных ошибок — предложение прямо на доске
+                      if (_gate) Positioned.fill(child: _gateOverlay(context)),
                     ],
                   ),
                 ),
@@ -622,11 +703,12 @@ class _ImproveScreenState extends State<ImproveScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  StepIcon(kind: r.step, size: 26),
+                  StepIcon(kind: _step, size: 26),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
-                      '${plyText(r.ply)} ${r.san} was a ${stepLabels[r.step]!.toLowerCase()}. '
+                      '${plyText(r.ply)} ${r.san} was ${_step == 'inaccuracy' ? 'an' : 'a'} '
+                      '${(stepLabels[_step] ?? _step).toLowerCase()}. '
                       '${switch (_phase) {
                         _Phase.find || _Phase.wrong => 'Find a better move.',
                         _Phase.foresight => 'Play the plan of both sides: ${4 - _plan.length} plies left.',
@@ -652,6 +734,23 @@ class _ImproveScreenState extends State<ImproveScreen> {
                   child: Text(h, style: TextStyle(fontSize: 12, color: scheme.outline)),
                 ),
               if (_busy) const Padding(padding: EdgeInsets.only(top: 10), child: LinearProgressIndicator()),
+              // после ошибки или решения — отметить позицию как непонятую (над
+              // строкой о ходе)
+              if (_phase != _Phase.find && _phase != _Phase.survival && _phase != _Phase.foresight)
+                ListenableBuilder(
+                  listenable: underlines,
+                  builder: (context, _) {
+                    final on = underlines.has(c.game.id, _ply);
+                    return Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () => underlines.toggle(c.game.id, _ply),
+                        icon: Icon(on ? Icons.bookmark_rounded : Icons.bookmark_border_rounded, size: 18),
+                        label: Text(on ? 'Underlined: not clear to me' : 'Underline: not clear to me why'),
+                      ),
+                    );
+                  },
+                ),
               if (_note.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
@@ -685,6 +784,13 @@ class _ImproveScreenState extends State<ImproveScreen> {
                 runSpacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
+                  // выживание: вернуть свой ход (с ответом движка), а не всё сначала
+                  if ((_phase == _Phase.survival || _phase == _Phase.lost) && _survivalBack.isNotEmpty)
+                    FilledButton.tonalIcon(
+                      onPressed: _busy || _replaying ? null : _takeBackSurvival,
+                      icon: const Icon(Icons.undo_rounded),
+                      label: const Text('Take back'),
+                    ),
                   if (_phase == _Phase.wrong || _phase == _Phase.lost || _phase == _Phase.judged)
                     FilledButton.icon(
                       onPressed: () => _open(_task, keepRecord: true),
@@ -716,12 +822,9 @@ class _ImproveScreenState extends State<ImproveScreen> {
                       icon: const Icon(Icons.play_arrow_rounded),
                       label: const Text("Play the engine's line"),
                     ),
-                  if (_phase != _Phase.find &&
-                      _phase != _Phase.survival &&
-                      _phase != _Phase.foresight &&
-                      _task + 1 < _tasks.length)
+                  if (_phase != _Phase.find && _phase != _Phase.survival && _phase != _Phase.foresight && !_gate)
                     OutlinedButton.icon(
-                      onPressed: () => _open(_task + 1),
+                      onPressed: _next,
                       icon: const Icon(Icons.skip_next_rounded),
                       label: const Text('Next mistake'),
                     ),
@@ -749,26 +852,126 @@ class _ImproveScreenState extends State<ImproveScreen> {
                     style: TextStyle(fontSize: 12, color: scheme.outline),
                   ),
                 ),
-              // после ошибки или решения — отметить позицию как непонятую
-              if (_phase != _Phase.find && _phase != _Phase.survival && _phase != _Phase.foresight)
-                ListenableBuilder(
-                  listenable: underlines,
-                  builder: (context, _) {
-                    final on = underlines.has(c.game.id, _ply);
-                    return Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed: () => underlines.toggle(c.game.id, _ply),
-                        icon: Icon(on ? Icons.bookmark_rounded : Icons.bookmark_border_rounded, size: 18),
-                        label: Text(on ? 'Underlined: not clear to me' : 'Underline: not clear to me why'),
-                      ),
-                    );
-                  },
-                ),
             ],
           );
         },
       ),
+    );
+  }
+
+  /// The board darkened with [child] over it.
+  Widget _dimmed(BuildContext context, Widget child) => ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          color: const Color(0xCC101418),
+          padding: const EdgeInsets.all(20),
+          alignment: Alignment.center,
+          child: DefaultTextStyle(
+            style: const TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+            child: child,
+          ),
+        ),
+      );
+
+  /// After the main mistakes: finish, or go on with the inaccuracies.
+  Widget _gateOverlay(BuildContext context) {
+    final n = _withInaccuracies ? 0 : _inaccuracies.length;
+    return _dimmed(
+      context,
+      Column(mainAxisSize: MainAxisSize.min, children: [
+        Text(_tasks.isEmpty ? 'No serious mistakes here' : 'The main mistakes are done',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 6),
+        Text(n > 0 ? '$n inaccurac${n == 1 ? 'y' : 'ies'} left.' : 'Nothing left to work on.',
+            style: const TextStyle(fontSize: 13, color: Color(0xCCFFFFFF))),
+        const SizedBox(height: 16),
+        Wrap(spacing: 10, runSpacing: 10, alignment: WrapAlignment.center, children: [
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.check_rounded),
+            label: const Text('Finish'),
+          ),
+          if (n > 0)
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white70)),
+              onPressed: _continueWithInaccuracies,
+              icon: const Icon(Icons.skip_next_rounded),
+              label: const Text('Go on with inaccuracies'),
+            ),
+        ]),
+      ]),
+    );
+  }
+
+  /// The first screen: how to judge the moves, on the darkened board of the
+  /// game's start.
+  Widget _choiceScreen(BuildContext context) {
+    final hasDiff = c.hasDifficulty;
+    Widget option(Unit u, String title, String sub, {bool recommended = false, bool enabled = true}) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: SizedBox(
+            width: double.infinity,
+            child: (recommended ? FilledButton.new : OutlinedButton.new)(
+              onPressed: enabled ? () => setState(() => _choose(u)) : null,
+              style: recommended
+                  ? FilledButton.styleFrom(
+                      disabledBackgroundColor: Colors.white.withValues(alpha: 0.12),
+                      disabledForegroundColor: Colors.white70)
+                  : OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white54)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Column(children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(sub, style: const TextStyle(fontSize: 11), textAlign: TextAlign.center),
+                ]),
+              ),
+            ),
+          ),
+        );
+    return Scaffold(
+      appBar: AppBar(title: const Text('Start to improve')),
+      body: LayoutBuilder(builder: (context, box) {
+        final size = math.min(box.maxWidth - 24, math.min(520.0, box.maxHeight * 0.7));
+        return ListView(padding: const EdgeInsets.fromLTRB(12, 8, 12, 24), children: [
+          Center(
+            child: SizedBox.square(
+              dimension: size,
+              child: Stack(children: [
+                StaticChessboard(
+                  size: size,
+                  orientation: c.before[0].turn,
+                  fen: c.before[0].fen,
+                  settings: StaticChessboardSettings(
+                    colorScheme: prefs.scheme,
+                    pieceAssets: prefs.pieceSet.assets,
+                    borderRadius: const BorderRadius.all(Radius.circular(6)),
+                  ),
+                ),
+                Positioned.fill(
+                  child: _gate
+                      ? _gateOverlay(context)
+                      : _dimmed(
+                          context,
+                          Column(mainAxisSize: MainAxisSize.min, children: [
+                            const Text('Judge the moves by', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 12),
+                            option(Unit.both, 'Diff · recommended',
+                                hasDiff
+                                    ? 'the difficulty of each position: a miss in a hard one costs less'
+                                    : 'needs the difficulty analysis of this game',
+                                recommended: true,
+                                enabled: hasDiff),
+                            option(Unit.pawns, 'Pawns', 'the engine evaluation in pawns'),
+                            option(Unit.wdl, 'WDL', 'the chances to win, draw or lose'),
+                          ]),
+                        ),
+                ),
+              ]),
+            ),
+          ),
+        ]);
+      }),
     );
   }
 }

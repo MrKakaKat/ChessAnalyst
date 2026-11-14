@@ -142,6 +142,15 @@ class AppPrefs extends ChangeNotifier {
 
   ChessboardColorScheme get scheme => boardThemes[boardTheme] ?? ChessboardColorScheme.green;
 
+  /// The move list shows the Better / Punished lines under moves with an idea.
+  bool showIdeaRows = true;
+
+  void setShowIdeaRows(bool on) {
+    showIdeaRows = on;
+    notifyListeners();
+    _save();
+  }
+
   /// Kinds of moves whose icon is not shown on the board (the move list and
   /// the card keep them).
   Set<String> hiddenBoardKinds = {};
@@ -221,6 +230,7 @@ class AppPrefs extends ChangeNotifier {
       final ac = p.getString('arrowColor');
       if (ac != null && arrowColors.containsKey(ac)) arrowColor = ac;
       hiddenBoardKinds = {...?p.getStringList('hiddenBoardKinds')};
+      showIdeaRows = p.getBool('showIdeaRows') ?? showIdeaRows;
       final light = p.getString('lightSquareImage'), dark = p.getString('darkSquareImage');
       if (light != null) lightSquareImage = base64Decode(light);
       if (dark != null) darkSquareImage = base64Decode(dark);
@@ -240,6 +250,7 @@ class AppPrefs extends ChangeNotifier {
       await p.setString('pieceSet', pieceSet.name);
       await p.setString('boardTheme', boardTheme);
       await p.setStringList('hiddenBoardKinds', hiddenBoardKinds.toList());
+      await p.setBool('showIdeaRows', showIdeaRows);
       await p.setBool('animateArrows', animateArrows);
       await p.setString('arrowColor', arrowColor);
       await p.setString('markColor', markColor);

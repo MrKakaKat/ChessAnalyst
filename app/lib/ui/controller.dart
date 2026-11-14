@@ -722,7 +722,9 @@ class AnalysisController extends ChangeNotifier {
     stopChain();
     var pos = after[ply];
     final seq = <NormalMove>[];
-    for (final uci in game.plies[ply + 1].lines.first.pv.take(punishPlies)) {
+    final reply = game.plies[ply + 1].lines.first;
+    // мат в несколько ходов — до мата
+    for (final uci in reply.pv.take(_shortMate(reply.eval) ? 12 : punishPlies)) {
       final m = Pos.move(uci);
       if (!pos.isLegal(m)) break;
       seq.add(m);
@@ -1379,7 +1381,8 @@ class AnalysisController extends ChangeNotifier {
     final mover = before[k].turn;
     // наказание: линия соперника после ошибки
     if (!brilliant && k + 1 < length && game.plies[k + 1].lines.first.pv.isNotEmpty) {
-      final v = await _ideaBranch(k, game.plies[k + 1].lines.first.pv, mover, token);
+      final v = await _ideaBranch(k, game.plies[k + 1].lines.first.pv, mover, token,
+          untilMate: _shortMate(game.plies[k + 1].lines.first.eval));
       if (token != _framesToken) return;
       if (v != null) {
         for (var i = 0; i < v.moves.length; i++) {
@@ -1397,7 +1400,8 @@ class AnalysisController extends ChangeNotifier {
     final p = game.plies[k];
     final better = brilliant ? p.played.pv : p.lines.first.pv;
     if (better.isNotEmpty && (brilliant || better.first != p.uci)) {
-      final v = await _ideaBranch(k - 1, better, mover.opposite, token);
+      final v = await _ideaBranch(k - 1, better, mover.opposite, token,
+          untilMate: _shortMate(brilliant ? p.played.eval : p.lines.first.eval));
       if (token != _framesToken) return;
       if (v != null) {
         for (var i = 0; i < v.moves.length; i++) {
@@ -1430,12 +1434,14 @@ class AnalysisController extends ChangeNotifier {
   /// The branch of a line of the idea after main-line ply [anchor]: [pv]
   /// (analysed, blue), then the device engine (grey), until [stopSide] is
   /// calm (or 30 plies). Built without being selected.
-  Future<Variation?> _ideaBranch(int anchor, List<String> pv, Side stopSide, int token) async {
+  /// [untilMate]: the line is a mate in a few moves — it is shown to the
+  /// mate, not cut where the position calms down.
+  Future<Variation?> _ideaBranch(int anchor, List<String> pv, Side stopSide, int token, {bool untilMate = false}) async {
     var pos = _base(anchor);
     final v = Variation(anchor);
     var i = 0;
     while (v.moves.length < 30 && !pos.p.isGameOver) {
-      if (pos.turn == stopSide && v.moves.isNotEmpty && await _calm(pos)) break;
+      if (!untilMate && pos.turn == stopSide && v.moves.isNotEmpty && await _calm(pos)) break;
       if (token != _framesToken || _disposed) return null;
       NormalMove? m;
       if (i < pv.length) {
@@ -1479,6 +1485,9 @@ class AnalysisController extends ChangeNotifier {
     variations.add(v);
     return v;
   }
+
+  /// [авторское] A mate in up to six moves is shown in full in the ideas.
+  static bool _shortMate(Eval e) => e.mate != null && e.mate! > 0 && e.mate! <= 6;
 
   void _showFrame(int i) {
     if (i < 0 || i >= _frames.length) return;

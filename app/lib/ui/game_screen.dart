@@ -344,6 +344,14 @@ class _GameScreenState extends State<GameScreen> {
           CollapsibleGraph(controller: c, height: 90),
           MoreGraphs(controller: c),
         ],
+        // строки «Better» / «Punished» под ходами с идеями — скрыть или показать
+        SwitchListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+          dense: true,
+          title: const Text('Idea and punishment lines in the move list'),
+          value: prefs.showIdeaRows,
+          onChanged: (v) => setState(() => prefs.setShowIdeaRows(v)),
+        ),
         // стереть все свои ветки (с подтверждением)
         if (c.variations.isNotEmpty)
           Align(

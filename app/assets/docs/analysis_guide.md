@@ -195,7 +195,8 @@ matter more than calculation here.
   accuracy window. Without that analysis the bar is all grey and the graph
   shows only a **Run this analysis** button (own games): the classic
   analysis stays, only the difficulty part runs.
-- **AAC** (in More graphs) — counterplay instead of the engine score. Each side gets three
+- **AAC** (in More graphs: the whole AAC and its three parts) — counterplay
+  instead of the engine score. Each side gets three
   parts:
   - **Abilities**: its threats and the checks it can give. Only good checks
     count: ones that keep the position (by the engine) or at least do not
@@ -243,11 +244,16 @@ began and ends with the move that wins material or mates.
 
 - **Step through mistakes** (Game tab) — the arrows jump only between
   negative moves. Their icons are shown next to the arrows.
-- **Start to improve** (tap the title at the start of a game) — the
-  mistakes of the game, from blunders to inaccuracies:
+- **Start to improve** (tap the title at the start of a game) — first the
+  board asks how to judge the moves: **Diff** (recommended; it needs the
+  difficulty analysis), Pawns or WDL. Then the mistakes in order: blunders,
+  mistakes, missed chances, weaknesses. After them the darkened board offers
+  to finish or to go on with the inaccuracies.
   - **Fix and survive**: find a positive move without hints. Then hold the
     position against the strongest engine with positive moves only, until it
-    is quiet, clearly winning, or eight moves have been played.
+    is quiet, clearly winning, or eight moves have been played. **Take back**
+    returns your last move (with the engine's reply) and the survival goes
+    on from there; Again starts the position anew.
   - **Foresight**: from the mistake's position, play the plan of both sides
     for four plies. It counts as understood when your ideas match the
     engine's line: the same kinds of moves, pieces and squares. The exact
@@ -473,6 +479,9 @@ character, the kinds missed, the kinds you were punished by, and the cost.
   the top card away to see the next one. Below the decks is the list of all
   games.
 - **Copy PGN** (quick settings of a game) puts the game on the clipboard.
+- **Idea and punishment lines** (switch under More graphs): show or hide the
+  Better / Punished lines under moves with an idea. In an idea a mate in up
+  to six moves is played to the end.
 - **Lines** tab: tap the evaluation of a line to walk it on the board —
   the whole line becomes a branch, the arrows step through it; tap the
   moves to play just the first one. In a branch the tab shows lines the

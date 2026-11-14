@@ -516,6 +516,8 @@ class _BoardBadgeState extends State<BoardBadge> with SingleTickerProviderStateM
         // приближаются и быстро качаются — «звонят»
         var hand = clockHand;
         var zoom = 1.0;
+        // ничья: по очереди появляются 1, / и 2
+        if (!_calm && widget.kind == 'draw') hand = Curves.easeOut.transform((t / 0.7).clamp(0.0, 1.0)).clamp(0.001, 1.0);
         if (moving && widget.kind == 'timeout') {
           hand = clockHand + 2 * math.pi * Curves.easeInOutCubic.transform((t / 0.6).clamp(0.0, 1.0));
           if (t > 0.5) {

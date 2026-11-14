@@ -71,6 +71,19 @@ class MoreGraphs extends StatelessWidget {
                   _Seek(c, n, CustomPaint(size: const Size(double.infinity, 22), painter: _CharacterPainter(chars, c.recordPly, scheme))),
                   legend: 'sharp · middle · trivial, dot = quiet',
                 ),
+                // AAC целиком: контригра сторон вместо оценки движка (выше — белые)
+                titled(
+                  'AAC (counterplay)',
+                  _Seek(
+                    c,
+                    n,
+                    CustomPaint(
+                      size: const Size(double.infinity, 70),
+                      painter: _AacPainter([for (final p in aac) p.value], c.recordPly, scheme),
+                    ),
+                  ),
+                  legend: 'above the middle — White, below — Black',
+                ),
                 for (final (name, part) in [
                   ('Abilities', (Side s, int i) => aac[i].abilities[s]!),
                   ('Activity', (Side s, int i) => aac[i].activity[s]!),
@@ -100,6 +113,49 @@ class MoreGraphs extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The AAC of the game: −1…1 after each ply, White above the middle line.
+class _AacPainter extends CustomPainter {
+  _AacPainter(this.values, this.cursor, this.scheme);
+
+  final List<double> values;
+  final int cursor;
+  final ColorScheme scheme;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final n = values.length;
+    if (n < 2) return;
+    final mid = size.height / 2;
+    double x(int i) => i / (n - 1) * size.width;
+    double y(double v) => mid - v.clamp(-1.0, 1.0) * mid * 0.95;
+    canvas.drawRRect(RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(4)),
+        Paint()..color = scheme.surfaceContainerHighest.withValues(alpha: 0.5));
+    final line = Path()..moveTo(0, y(values[0]));
+    for (var i = 1; i < n; i++) {
+      line.lineTo(x(i), y(values[i]));
+    }
+    final area = Path.from(line)
+      ..lineTo(size.width, mid)
+      ..lineTo(0, mid)
+      ..close();
+    canvas.drawPath(area, Paint()..color = scheme.primary.withValues(alpha: 0.18));
+    canvas.drawLine(Offset(0, mid), Offset(size.width, mid), Paint()..color = scheme.outlineVariant);
+    canvas.drawPath(
+        line,
+        Paint()
+          ..color = scheme.primary
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.6);
+    if (cursor >= 0 && cursor < n) {
+      canvas.drawLine(Offset(x(cursor), 0), Offset(x(cursor), size.height),
+          Paint()..color = scheme.tertiary..strokeWidth = 1.5);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_AacPainter old) => old.cursor != cursor || !identical(old.values, values);
 }
 
 /// Tap or drag to go to that move.
