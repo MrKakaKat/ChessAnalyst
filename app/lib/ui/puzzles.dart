@@ -257,12 +257,27 @@ List<Puzzle> puzzlesFrom(GameAnalysis a) {
       goal = PuzzleGoal.defend;
     }
     if (goal == null) continue;
+    // [авторское] в уже выигранной позиции задачи нет: решающий был в +8 по
+    // движку ещё до последнего хода соперника, или и без ключевого хода
+    // остаётся +8 (не мат). Сам удар, выигрывающий ферзя (+9), — задача
+    final prevLines = r.ply > 0 ? a.game.plies[r.ply - 1].lines : const <Line>[];
+    final before = prevLines.isEmpty ? null : -prevLines.first.eval.pawns(s);
+    if (before != null && before >= 8) continue;
+    if (lines.length >= 2 && lines[1].eval.mate == null && lines[1].eval.pawns(s) >= 8) continue;
     // [авторское] партия с анализом сложности: задача на атаку — только если
     // практическая оценка после ключевого хода (удержать найденное) от +3;
     // ниже позиция спорная. Трудность до хода — трудность самой задачи: она
     // поднимает рейтинг, а не отсеивает
     final scan = a.game.hasDifficulty ? a.game.scans![r.ply] : null;
     if (scan != null && goal != PuzzleGoal.defend && practicalAfterKey(p.fenBefore, lines, scan) < winBoundary) continue;
+    // и от +6 по практической оценке до последнего хода соперника — тоже
+    // уже выиграно
+    if (scan != null && r.ply > 0) {
+      final prevScan = a.game.scans![r.ply - 1];
+      if (prevScan != null && -positionDifficulty(a.game.plies[r.ply - 1].fenBefore, prevLines, prevScan).practical >= 6) {
+        continue;
+      }
+    }
     final hardness = scan == null ? null : positionDifficulty(p.fenBefore, lines, scan).mover;
     final start = Pos.fromFen(p.fenBefore);
     final solution = tacticLine(start, best.pv);

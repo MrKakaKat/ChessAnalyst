@@ -101,8 +101,9 @@ class PuzzleStore {
   /// Version of the record; with the analysis rules and the depth it decides
   /// whether a record is still good.
   /// 3 — new kinds (tactical fork, blocked king escape), the puzzle
-  /// threshold after the key move; 4 — puzzles in a row joined.
-  static const version = 4;
+  /// threshold after the key move; 4 — puzzles in a row joined; 5 — no
+  /// puzzles in positions already won.
+  static const version = 5;
   static const _prefix = 'pstore.';
 
   /// The record of [key] if it is up to date for [depth] and [plies].

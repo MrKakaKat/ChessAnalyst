@@ -87,6 +87,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  Future<void> _resume(String id) async {
+    final job = await history.open(id);
+    if (job != null) analysisQueue.resume(job);
+  }
+
+  /// Stops an unfinished analysis: it leaves the queue and stays as it is.
+  Future<void> _stop(String id) async {
+    final job = await history.open(id);
+    if (job == null) return;
+    job.pause();
+    analysisQueue.remove(job);
+    if (mounted) setState(() {});
+  }
+
   void _toggle(String id) => setState(() => _selected.contains(id) ? _selected.remove(id) : _selected.add(id));
 
   /// Deletes the analyses and the puzzles made from them (with their ratings
@@ -211,7 +225,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
               multipv: lines,
               power: old.power,
               puzzles: old.puzzles,
-              difficulty: difficulty);
+              difficulty: difficulty,
+              // [авторское] прежний разбор остаётся, пока считается новый: партия
+              // открывается и во время повторного анализа, и если его остановить;
+              // позиции заменяются по мере расчёта, сразу на новой глубине
+              plies: old.plies.every((p) => p != null) ? [...old.plies] : null,
+              quickFirst: !old.plies.every((p) => p != null),
+              created: old.created);
       await PuzzleRatings.removeGame(id);
       await PuzzleStore.remove(id);
       jobs.add(job);
@@ -349,21 +369,42 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           ? null
                           : (e.progress < 1
                                 // кружок загрузки — окно загрузки анализа
-                                ? InkResponse(
-                                    radius: 22,
-                                    onTap: () => _openJob(e.id),
-                                    child: SizedBox(
-                                      width: 28,
-                                      height: 28,
-                                      child: switch (analysisQueue.jobs.where((j) => j.id == e.id).firstOrNull) {
-                                        final job? => ListenableBuilder(
-                                          listenable: job,
-                                          builder: (_, _) => JobRing(job: job, stroke: 3),
-                                        ),
-                                        null => CircularProgressIndicator(value: e.progress, strokeWidth: 3),
+                                ? Row(mainAxisSize: MainAxisSize.min, children: [
+                                    InkResponse(
+                                      radius: 22,
+                                      onTap: () => _openJob(e.id),
+                                      child: SizedBox(
+                                        width: 28,
+                                        height: 28,
+                                        child: switch (analysisQueue.jobs.where((j) => j.id == e.id).firstOrNull) {
+                                          final job? => ListenableBuilder(
+                                            listenable: job,
+                                            builder: (_, _) => JobRing(job: job, stroke: 3),
+                                          ),
+                                          null => CircularProgressIndicator(value: e.progress, strokeWidth: 3),
+                                        },
+                                      ),
+                                    ),
+                                    // [авторское] недоделанный разбор тоже можно остановить
+                                    // или удалить, а не только смотреть на кружок
+                                    PopupMenuButton<String>(
+                                      onSelected: (a) => switch (a) {
+                                        'resume' => _resume(e.id),
+                                        'stop' => _stop(e.id),
+                                        _ => _delete({e.id}),
+                                      },
+                                      itemBuilder: (_) {
+                                        final running = analysisQueue.jobs
+                                            .any((j) => j.id == e.id && j.state == JobState.running);
+                                        return [
+                                          running
+                                              ? const PopupMenuItem(value: 'stop', child: Text('Stop'))
+                                              : const PopupMenuItem(value: 'resume', child: Text('Resume')),
+                                          const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                                        ];
                                       },
                                     ),
-                                  )
+                                  ])
                                 : Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [

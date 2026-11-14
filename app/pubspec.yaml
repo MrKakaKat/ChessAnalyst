@@ -1,7 +1,7 @@
 name: chessanalyst
 description: "ChessAnalyst: idea-first game analysis (analysis core ported from Python)."
 publish_to: 'none'
-version: 1.3.5+1000
+version: 1.3.6+1000
 
 environment:
   sdk: ^3.13.7
@@ -31,3 +31,5 @@ flutter:
     - assets/openings_book.json
     - assets/openings_weights.json
     - assets/docs/analysis_guide.md
+    - assets/icons/alien_gambit_96.png
+    - assets/icons/alien_gambit_192.png

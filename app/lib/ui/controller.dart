@@ -229,8 +229,25 @@ class AnalysisController extends ChangeNotifier {
   /// Icon kind of game move [ply]: checkmate first, then the verdict.
   String kindAt(int ply) {
     if (isMate(ply)) return 'mate';
+    if (diffKindAt(ply) case final k?) return k;
     final r = _analysis.records[ply];
+    // [авторское] Alien Gambit — свой значок вместо книги
+    if (r.step == 'book' && (r.opening?.contains('Alien Gambit') ?? false)) return 'alien';
     return iconKindOf(r.step, r.subtype);
+  }
+
+  Map<int, String>? _diffKinds;
+  Object? _diffKindsOf;
+
+  /// With the Diff unit and the difficulty analysis: the kind of move [ply]
+  /// by the difficulty analysis' own grading; null otherwise.
+  String? diffKindAt(int ply) {
+    if (unit != Unit.both || !hasDifficulty) return null;
+    if (_diffKinds == null || !identical(_diffKindsOf, _analysis)) {
+      _diffKinds = practicalSteps;
+      _diffKindsOf = _analysis;
+    }
+    return _diffKinds?[ply];
   }
 
   /// Colour of [kind] for game move [ply]: checkmate is green seen from the
@@ -1031,19 +1048,24 @@ class AnalysisController extends ChangeNotifier {
   /// The difficulty analysis is running for this game.
   bool difficultyRunning = false;
 
-  /// Each side's moves graded by the practical evaluation (the Diff column;
-  /// null without the difficulty analysis): ply → grade.
+  /// Each side's moves graded by the difficulty analysis' own mechanism
+  /// (the Diff column; null without it): ply → icon kind.
   Map<int, String>? get practicalSteps {
     if (!hasDifficulty) return null;
     final d = difficulty;
     return {
       for (final r in analysis.records)
-        r.ply: practicalStep(
-          r.step,
-          d[r.ply]?.practical,
-          r.ply + 1 < d.length && d[r.ply + 1] != null ? -d[r.ply + 1]!.practical : null,
-          mateInOne: game.plies[r.ply].lines.first.eval.mate == 1 && game.plies[r.ply].played.eval.mate != 1,
-        ),
+        if (d[r.ply] case final pd?)
+          r.ply: diffStep(
+            r.step,
+            game.plies[r.ply].fenBefore,
+            game.plies[r.ply].lines,
+            game.plies[r.ply].played,
+            pd.mover,
+            before: pd.practical,
+            after: r.ply + 1 < d.length && d[r.ply + 1] != null ? -d[r.ply + 1]!.practical : null,
+            mateInOne: game.plies[r.ply].lines.first.eval.mate == 1 && game.plies[r.ply].played.eval.mate != 1,
+          ),
     };
   }
 

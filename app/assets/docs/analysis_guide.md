@@ -339,10 +339,15 @@ analysis measures that:
 - **Practical evaluation**: E′ = E · (1.5 − difficulty of the side ahead).
   +6 at 80% gives +4.2, at 30% +7.2. A mate counts as +8. It is the
   **Diff** unit; AAC stays in More graphs.
-- **Diff grades** (the accuracy window): a negative move is graded again by
-  the practical evaluation it lost — a lost class is a blunder (and a missed
-  mate in one), then over 1 pawn a mistake, 0.5 laxity, 0.1 inaccuracy, less
-  neutral. A miss in a hard position costs less.
+- **Diff grades** (with the Diff unit: the board, the move list, the card,
+  the Diff column of the accuracy window) come from the analysis' own
+  mechanism, not from pawns: a good move (keeps the class; when not won,
+  loses at most a pawn) is best when it is the engine's first, good
+  otherwise; the one good move is an only move — obvious for a recapture or
+  an escape, brilliant in a position at least 80% hard. A move that drops
+  the class is a blunder (so is a missed mate in one); another miss is
+  graded by how hard the position was: under 50% a mistake, up to 80%
+  laxity, harder an inaccuracy.
 
 Where it shows:
 - a line whose evaluation is **blue** needs an only move of the side to
@@ -392,8 +397,11 @@ Puzzles are unbroken pieces: when a puzzle's line was played in the game
 and the next puzzle starts right after the opponent's reply, they become
 one puzzle (the same kind of goal goes on; an attack into a needed defence
 becomes combined). A puzzle does not stop where the next one starts.
-Puzzles do not overlap either: when two puzzles share positions, the longer
-one is kept.
+Puzzles do not overlap either, also across games: when two puzzles share
+positions, the longer one is kept. There are no puzzles in positions
+already won: when the solver was +8 by the engine (+6 by the practical
+evaluation) before the opponent's last move, or stays +8 even without the
+key move.
 
 The rating of a puzzle comes from the engine. It is computed when the
 game's analysis ends, and again when the analysis is sent deeper. Each of

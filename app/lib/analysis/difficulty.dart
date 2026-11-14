@@ -447,21 +447,33 @@ bool lineHasOnly(String fen, List<Line> lines, int i, PlyScan? scan) {
   return onlyMoves(fen, lines[i], nodes).any((o) => o.root);
 }
 
-/// [авторское] The grade of a negative move by the practical evaluation
-/// (the Diff column): the loss in practical pawns of the side that moved,
-/// [before] the move and [after] it. A lost class (a win given away, a loss
-/// let in) is a blunder, as is a missed mate in one ([mateInOne]); then
-/// over 1 pawn a mistake, 0.5 laxity, 0.1 inaccuracy, less is neutral. A
-/// miss in a hard position costs less, because its practical value was
-/// lower to begin with. Other grades stay.
-String practicalStep(String step, double? before, double? after, {bool mateInOne = false}) {
-  const negative = {'inaccuracy', 'laxity', 'mistake', 'blunder'};
-  if (!negative.contains(step) || before == null || after == null) return step;
+/// [авторское] The grade of a move by the difficulty analysis itself (the
+/// Diff column), not by pawns: its own classes, good moves and difficulty.
+/// - a good move (keeps the class; when not won, loses at most a pawn):
+///   the one good move is an only move — obvious (a recapture, an escape),
+///   brilliant in a position at least 80% hard, an only move otherwise; the
+///   engine's first move is best, another good move is good;
+/// - a move that drops the class (by the engine or the practical
+///   evaluation: [before] and [after], side that moved) is a blunder, as is
+///   a missed mate in one;
+/// - another miss is graded by how hard the position was: under 50% — a
+///   mistake (it should have been seen), up to 80% laxity, harder an
+///   inaccuracy.
+/// Book and forced moves stay.
+String diffStep(String step, String fen, List<Line> lines, Line played, double moverDifficulty,
+    {double? before, double? after, bool mateInOne = false}) {
+  if (step == 'book' || step == 'forced' || lines.isEmpty) return step;
   if (mateInOne) return 'blunder';
-  if (outcomeOf(after) < outcomeOf(before)) return 'blunder';
-  final l = before - after;
-  if (l > 1.0) return 'mistake';
-  if (l > 0.5) return 'laxity';
-  if (l > 0.1) return 'inaccuracy';
-  return 'neutral';
+  final best = pawnsOfEval(lines.first.eval), mine = pawnsOfEval(played.eval);
+  if (_goodLine(best, mine)) {
+    if (lines.length >= 2 && goodLines(lines).length == 1) {
+      if (_obvious(_along(fen, lines.first.pv, 1), lines.first.pv, 0)) return 'only_light';
+      return moverDifficulty >= 0.8 ? 'brilliant' : 'only_move';
+    }
+    return played.move == lines.first.move ? 'best' : 'good';
+  }
+  if (outcomeOf(mine) < outcomeOf(best)) return 'blunder';
+  if (before != null && after != null && outcomeOf(after) < outcomeOf(before)) return 'blunder';
+  if (moverDifficulty < 0.5) return 'mistake';
+  return moverDifficulty < 0.8 ? 'laxity' : 'inaccuracy';
 }

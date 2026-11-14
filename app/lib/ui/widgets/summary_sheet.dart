@@ -300,8 +300,8 @@ class _Difficulty extends StatelessWidget {
 Map<String, int> kindsIn(GameAnalysis a, Side side, {Map<int, String>? steps}) {
   final out = <String, int>{};
   for (final r in a.records.where((r) => r.side == side)) {
-    final step = steps?[r.ply] ?? r.step;
-    final k = step == r.step ? iconKindOf(r.step, r.subtype) : iconKindOf(step, null);
+    // Diff: свой вид хода уже готов (best, only, brilliant…)
+    final k = steps?[r.ply] ?? iconKindOf(r.step, r.subtype);
     out[k] = (out[k] ?? 0) + 1;
   }
   return out;

@@ -126,5 +126,22 @@ void main() {
     expect(lineDifficulty(fen, l, nodes, root: false), closeTo(onlyWeight(1) * obviousShare, 1e-9));
     expect(onlyMoves(fen, l, nodes), isEmpty);
   });
+
+  test('Diff grades a move by its own mechanism', () {
+    const fen = '6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1';
+    final lines = [line('a1a8', cp: 400), line('a1a7', cp: 100), line('h2h3', cp: 50)];
+    // единственный хороший ход: в трудной позиции — brilliant, иначе only move
+    expect(diffStep('best', fen, lines, lines[0], 0.9), 'brilliant');
+    expect(diffStep('best', fen, lines, lines[0], 0.3), 'only_move');
+    // ход уронил класс (выигрыш → не выигрыш) — зевок
+    expect(diffStep('mistake', fen, lines, lines[1], 0.3), 'blunder');
+    // промах в той же категории — по трудности позиции
+    final calm = [line('a1a8', cp: 150), line('a1a7', cp: 120), line('h2h3', cp: -20)];
+    expect(diffStep('mistake', fen, calm, calm[2], 0.3), 'mistake');
+    expect(diffStep('mistake', fen, calm, calm[2], 0.6), 'laxity');
+    expect(diffStep('mistake', fen, calm, calm[2], 0.9), 'inaccuracy');
+    expect(diffStep('good', fen, calm, calm[1], 0.5), 'good');
+    expect(diffStep('book', fen, calm, calm[2], 0.5), 'book');
+  });
 }
 

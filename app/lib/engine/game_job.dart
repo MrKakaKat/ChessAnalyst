@@ -222,8 +222,12 @@ class AnalysisJob extends ChangeNotifier {
 
   double get _rest => switch (power) { EnginePower.low => 1.5, EnginePower.medium => 0.5, EnginePower.high => 0.0 };
 
-  /// The loop of [start] is running (it may be waiting for the engine).
-  bool _looping = false;
+  /// Generation of the loop of [start]: each start begins a new loop, and
+  /// an older one (paused, or stuck waiting for the engine) quits at its next
+  /// step without touching the state.
+  int _gen = 0;
+
+  bool _live(int gen) => gen == _gen && state == JobState.running;
 
   Future<void> start() async {
     if (state == JobState.running || done) return;
@@ -231,22 +235,16 @@ class AnalysisJob extends ChangeNotifier {
     pausedByUser = false;
     error = null;
     notifyListeners();
-    // прежний цикл ещё ждёт ответа движка — он и продолжит, второй не нужен
-    if (_looping) return;
-    _looping = true;
-    try {
-      await _run();
-    } finally {
-      _looping = false;
-    }
+    // новый цикл; прежний (на паузе или ждущий движка) выйдет сам
+    await _run(++_gen);
   }
 
-  Future<void> _run() async {
+  Future<void> _run(int gen) async {
     try {
       var bot = await EngineBot.shared().timeout(const Duration(seconds: 60));
       for (final d in [if (quickFirst && targetDepth > quickDepth) quickDepth, targetDepth]) {
         for (var i = 0; i < length; i++) {
-          if (state != JobState.running) return;
+          if (!_live(gen)) return;
           if (depthAt[i] >= d) continue;
           final watch = Stopwatch()..start();
           thinking = true;
@@ -256,6 +254,7 @@ class AnalysisJob extends ChangeNotifier {
           for (var attempt = 0;; attempt++) {
             try {
               await _analyse(bot, i, d);
+              if (gen != _gen) return;
               break;
             } on TimeoutException {
               if (!bot.alive) bot = await EngineBot.shared().timeout(const Duration(seconds: 60));
@@ -280,11 +279,13 @@ class AnalysisJob extends ChangeNotifier {
         }
         onSave?.call(this);
       }
-      if (difficulty) await _scanAll();
-      if (state != JobState.running) return;
+      if (difficulty) await _scanAll(gen);
+      if (!_live(gen)) return;
       state = JobState.done;
       finished = DateTime.now();
     } catch (e) {
+      // ошибка старого цикла — уже не его дело
+      if (gen != _gen) return;
       thinking = false;
       error = '$e';
       state = JobState.failed;
@@ -294,7 +295,7 @@ class AnalysisJob extends ChangeNotifier {
   }
 
   /// The difficulty pass: the nodes of the best lines of every position.
-  Future<void> _scanAll() async {
+  Future<void> _scanAll(int gen) async {
     final cache = <String, List<int>>{};
     var bot = await EngineBot.shared().timeout(const Duration(seconds: 60));
     final threads = _threads(bot.cores);
@@ -312,7 +313,7 @@ class AnalysisJob extends ChangeNotifier {
 
     final nd = nodeDepth(depth);
     for (var i = 0; i < length; i++) {
-      if (state != JobState.running) return;
+      if (!_live(gen)) return;
       if (scans[i] != null) continue;
       final watch = Stopwatch()..start();
       thinking = true;
@@ -320,8 +321,8 @@ class AnalysisJob extends ChangeNotifier {
       final p = plies[i]!;
       final scan = await scanPosition(
           p.fenBefore, p.lines, node,
-          depth: nd, cache: cache, stopped: () => state != JobState.running);
-      if (state != JobState.running) return;
+          depth: nd, cache: cache, stopped: () => !_live(gen));
+      if (!_live(gen)) return;
       scans[i] = scan;
       watch.stop();
       thinking = false;
@@ -369,6 +370,7 @@ class AnalysisJob extends ChangeNotifier {
     if (state != JobState.running) return;
     pausedByUser = true;
     state = JobState.paused;
+    thinking = false;
     onSave?.call(this);
     notifyListeners();
   }

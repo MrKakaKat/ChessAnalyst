@@ -76,6 +76,18 @@ def load_book() -> dict[str, str]:
     return json.loads(DATA.read_text(encoding="utf-8"))
 
 
+ALIEN = "Caro-Kann Defense: Alien Gambit"
+
+
+def alien_gambit(board: chess.Board, move: chess.Move, name: str, ply: int) -> bool:
+    """White's knight from g5 takes on f7 early in a Caro-Kann."""
+    if ply >= 20 or "Caro-Kann" not in name or move.uci() != "g5f7":
+        return False
+    piece = board.piece_at(chess.G5)
+    target = board.piece_at(chess.F7)
+    return piece == chess.Piece(chess.KNIGHT, chess.WHITE) and target is not None and target.color == chess.BLACK
+
+
 def book_names(start_fen: str, ucis: list[str], book: dict[str, str] | None = None) -> list[str | None]:
     """For each ply: the opening name if the move is a book move, else None.
 
@@ -87,8 +99,17 @@ def book_names(start_fen: str, ucis: list[str], book: dict[str, str] | None = No
     out: list[str | None] = []
     in_book = True
     name = ""
-    for uci in ucis:
-        board.push(chess.Move.from_uci(uci))
+    for i, uci in enumerate(ucis):
+        move = chess.Move.from_uci(uci)
+        # [авторское] Alien Gambit: жертва коня Ng5xf7 в Каро-Канн — в любой
+        # системе (книга знает её только после 4...Nf6)
+        if alien_gambit(board, move, name, i):
+            board.push(move)
+            name = ALIEN
+            out.append(name)
+            in_book = False
+            continue
+        board.push(move)
         epd = board.epd()
         if in_book and epd in book:
             name = book[epd] or name

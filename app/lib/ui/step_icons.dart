@@ -53,6 +53,7 @@ Color markColor(String kind) => switch (kind) {
       'excellent' => const Color(0xFF5C9E68),
       'good' => const Color(0xFF7FA486),
       'book' => const Color(0xFFB0702F),
+      'alien' => const Color(0xFF21964E),
       'forced' => const Color(0xFF5C626D),
       'neutral' => const Color(0xFF959595),
       'inaccuracy' => const Color(0xFFF0B414),
@@ -105,7 +106,9 @@ class StepIcon extends StatelessWidget {
   final double brighten;
 
   @override
-  Widget build(BuildContext context) => CustomPaint(
+  Widget build(BuildContext context) => kind == 'alien'
+      ? _AlienIcon(size: size * (0.85 + 0.15 * glyphScale))
+      : CustomPaint(
         size: Size.square(size),
         painter: _BadgePainter(kind, color ?? markColor(kind),
             glyphScale: glyphScale, glyphAngle: glyphAngle, brighten: brighten, hand: hand),
@@ -126,9 +129,28 @@ class StepGlyph extends StatelessWidget {
   final bool shadow;
 
   @override
-  Widget build(BuildContext context) => CustomPaint(
-        size: Size.square(size),
-        painter: _GlyphPainter(kind, color, shadow: shadow, hollow: hollow),
+  Widget build(BuildContext context) => kind == 'alien'
+      ? _AlienIcon(size: size)
+      : CustomPaint(
+          size: Size.square(size),
+          painter: _GlyphPainter(kind, color, shadow: shadow, hollow: hollow),
+        );
+}
+
+/// [авторское] The Alien Gambit (Caro-Kann, 6.Nxf7): the alien in a circle
+/// instead of the book icon.
+class _AlienIcon extends StatelessWidget {
+  const _AlienIcon({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+        dimension: size,
+        child: ClipOval(
+          child: Image.asset(size > 48 ? 'assets/icons/alien_gambit_192.png' : 'assets/icons/alien_gambit_96.png',
+              fit: BoxFit.cover, filterQuality: FilterQuality.medium),
+        ),
       );
 }
 

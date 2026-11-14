@@ -118,6 +118,13 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
       // партия без задач — только для профиля слабостей
       if (st.puzzlesOn) list.addAll(st.puzzles);
     }
+    // [авторское] задачи разных партий тоже не пересекаются: одна и та же
+    // позиция (тот же дебют, партия, разобранная дважды) — одна задача,
+    // самая длинная
+    final deduped = withoutOverlaps(list);
+    list
+      ..clear()
+      ..addAll(deduped);
     final attempts = await PuzzleHistory.load();
     final ratings = await PuzzleRatings.load();
     _seen = await PuzzleSeen.load();
@@ -1010,11 +1017,19 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
               ]),
             ),
           ),
-          // в углу под доской: на ход назад и вперёд по сыгранному в задаче
-          if (_trail.length > 1)
-            SizedBox(
-              width: size,
-              child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          // под доской: слева — чем выбрана и проверяется задача (оценкой
+          // движка или с учётом сложности позиции), справа — на ход назад и
+          // вперёд по сыгранному в задаче
+          SizedBox(
+            width: size,
+            height: 44,
+            child: Row(children: [
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(p.practical ? 'With position difficulty' : 'Engine evaluation',
+                    style: TextStyle(fontSize: 11.5, color: p.practical ? onlyBlue : scheme.outline)),
+              ),
+              if (_trail.length > 1) ...[
                 IconButton(
                   tooltip: 'One move back',
                   visualDensity: VisualDensity.compact,
@@ -1027,8 +1042,9 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                   onPressed: _view != null ? () => _step1(1) : null,
                   icon: const Icon(Icons.chevron_right_rounded),
                 ),
-              ]),
-            ),
+              ],
+            ]),
+          ),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -1129,10 +1145,6 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
           ),
         ),
       ),
-      // чем выбрана и проверяется задача: оценкой движка или с учётом
-      // сложности позиции (анализ сложности партии)
-      Text(p.practical ? 'With position difficulty' : 'Engine evaluation',
-          style: TextStyle(fontSize: 11, color: p.practical ? onlyBlue : scheme.outline)),
       // открыта из записанных попыток — какие ошибки были тогда
       if (widget.review case final r? when r.wrong.isNotEmpty)
         Container(

@@ -118,10 +118,41 @@ class _BoardViewState extends State<BoardView> {
 
   AnalysisController get c => widget.controller;
 
+  /// The position shown last (to tell a one-move step from a jump).
+  String? _shownFen;
+
+  /// Whether the boards of [a] and [b] differ by one move: 2 squares, 3 (en
+  /// passant) or 4 (castling).
+  static bool _oneMoveApart(String? a, String b) {
+    if (a == null) return false;
+    List<String> squares(String fen) {
+      final out = <String>[];
+      for (final ch in fen.split(' ').first.split('')) {
+        if (ch == '/') continue;
+        final n = int.tryParse(ch);
+        if (n != null) {
+          out.addAll(List.filled(n, '.'));
+        } else {
+          out.add(ch);
+        }
+      }
+      return out;
+    }
+
+    final x = squares(a), y = squares(b);
+    if (x.length != 64 || y.length != 64) return false;
+    var diff = 0;
+    for (var i = 0; i < 64; i++) {
+      if (x[i] != y[i]) diff++;
+    }
+    return diff >= 1 && diff <= 4;
+  }
+
   @override
   void initState() {
     super.initState();
     _board = ChessboardController(game: _gameData());
+    _shownFen = c.position.fen;
     _syncCheck();
     _shownKey = c.positionKey;
     _shownIndex = c.shownPlyIndex;
@@ -155,9 +186,14 @@ class _BoardViewState extends State<BoardView> {
     final key = c.positionKey;
     lightenOf(_board).value = c.inVariation;
     if (key != _shownKey) {
-      // соседний ход партии или ветки — фигуры едут; прыжки — сразу
-      // фигуры едут только на соседний ход: два хода сразу сбивают с толку
-      final near = key is int && _shownKey is int ? ((key - (_shownKey as int)).abs() <= 1) : true;
+      // фигуры едут только на соседний ход: два хода сразу сбивают с толку —
+      // движок доски подбирает «похожие» фигуры, и стоящие на месте фигуры
+      // летят на свои же поля. Соседний ход — когда позиции отличаются на
+      // один ход (до 4 полей: рокировка), где бы он ни был (партия, ветка,
+      // идея)
+      final fen = c.position.fen;
+      final near = _oneMoveApart(_shownFen, fen);
+      _shownFen = fen;
       _board.updatePosition(_gameData(), animate: near);
       _syncCheck();
       _backward = c.shownPlyIndex < _shownIndex;

@@ -285,7 +285,7 @@ class _Card extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(right: suggest ? 150 : (variation ? 150 : 0)),
               child: Wrap(spacing: 10, runSpacing: 8, children: [
-              StepBadge(kind: iconKindOf(r.step, r.subtype)),
+              StepBadge(kind: (variation ? null : c.diffKindAt(c.ply)) ?? iconKindOf(r.step, r.subtype)),
               // трюк: круглая карточка без названия справа от основной
               if (!variation && prefs.showTrick)
                 if (c.trickAt(r.ply) case final t?) TrickBadge(trick: t),

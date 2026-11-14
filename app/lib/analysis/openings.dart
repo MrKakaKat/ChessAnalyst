@@ -28,13 +28,31 @@ class OpeningBook {
   static String epd(Pos b) => b.fen.split(' ').take(4).join(' ');
 
   /// For each ply: the opening name if the move is a book move, else null.
+  static const alienGambit = 'Caro-Kann Defense: Alien Gambit';
+
+  /// White's knight from g5 takes on f7 early in a Caro-Kann.
+  static bool isAlienGambit(Pos b, String uci, String name, int ply) {
+    if (ply >= 20 || !name.contains('Caro-Kann') || uci != 'g5f7') return false;
+    final piece = b.pieceAt(Square.g5), target = b.pieceAt(Square.f7);
+    return piece == const Piece(color: Side.white, role: Role.knight) && target != null && target.color == Side.black;
+  }
+
   List<String?> names(String startFen, List<String> ucis) {
     var b = Pos.fromFen(startFen);
     if (b.fen != Chess.initial.fen) return List.filled(ucis.length, null);
     final out = <String?>[];
     var inBook = true;
     var name = '';
-    for (final uci in ucis) {
+    for (final (i, uci) in ucis.indexed) {
+      // [авторское] Alien Gambit: жертва коня Ng5xf7 в Каро-Канн — в любой
+      // системе (книга знает её только после 4...Nf6)
+      if (isAlienGambit(b, uci, name, i)) {
+        b = b.push(Pos.move(uci));
+        name = alienGambit;
+        out.add(name);
+        inBook = false;
+        continue;
+      }
       b = b.push(Pos.move(uci));
       final key = epd(b);
       final hit = positions[key];
