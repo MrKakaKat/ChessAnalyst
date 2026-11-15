@@ -43,7 +43,6 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
   late final AnimationController _intro = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
     ..forward();
   int _lastPly = -1;
-  final _folded = <int>{};
 
   /// Selected range of game plies (long press and drag); the bar with the
   /// copy button stays at the top.
@@ -389,14 +388,10 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
     final n = anchors.fold(0, (x, a) => x + c.variationsAt(a).length);
     if (n == 0) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
-    final open = anchors.any((a) => c.variationsAt(a).isNotEmpty && !_folded.contains(a));
+    final open = anchors.any((a) => c.variationsAt(a).isNotEmpty && c.branchesOpen(a));
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => setState(() {
-        for (final a in anchors) {
-          open ? _folded.add(a) : _folded.remove(a);
-        }
-      }),
+      onTap: () => c.toggleBranches(anchors, !open),
       child: Container(
         constraints: BoxConstraints(minWidth: hitWidth.clamp(0.0, 120.0), minHeight: 26),
         alignment: Alignment.centerRight,
@@ -435,7 +430,7 @@ class _MoveListState extends State<MoveList> with SingleTickerProviderStateMixin
   /// chip of the move).
   Widget _branches(BuildContext context, int anchor) {
     final list = c.variationsAt(anchor);
-    final open = !_folded.contains(anchor) && list.isNotEmpty;
+    final open = c.branchesOpen(anchor) && list.isNotEmpty;
     // [авторское] ветка появляется плавно (высота растёт, строка проявляется):
     // окно не дёргается, когда идея или наказание открывают её
     return Padding(

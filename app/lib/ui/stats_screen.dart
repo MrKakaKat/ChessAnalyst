@@ -130,6 +130,14 @@ class _StatsScreenState extends State<StatsScreen> {
                 ]),
                 note: 'Won, drawn and lost; under each ring the negative moves (inaccuracy and worse).',
               ),
+              // [авторское] в каких дебютах какой результат: своим цветом
+              section(
+                Icons.menu_book_rounded,
+                'Openings',
+                _OpeningTable(st: st),
+                note: 'Your result in each opening with each colour: won, drawn and lost, and the score (a draw is '
+                    'half). Only finished games count.',
+              ),
               section(Icons.timeline_rounded, 'Mistakes by stage', bars(st.stages, (k) => stageLabels[k] ?? k)),
               // аккуратность по видам ходов: сколько, насколько точно, сколько пропущено
               section(
@@ -264,6 +272,76 @@ class _SectorsPainter extends CustomPainter {
 
 /// Kinds of move: name, the player's moves of that kind, their mean
 /// accuracy, and how often that kind was the best move and was missed.
+class _OpeningTable extends StatelessWidget {
+  const _OpeningTable({required this.st});
+
+  final PlayerStats st;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final rows = st.openings.entries.where((e) => e.value.games > 0).toList()
+      ..sort((a, b) {
+        final g = b.value.games.compareTo(a.value.games);
+        return g != 0 ? g : b.value.score.compareTo(a.value.score);
+      });
+    if (rows.isEmpty) return Text('—', style: TextStyle(color: scheme.outline));
+    const numStyle = TextStyle(fontSize: 13, fontWeight: FontWeight.w700, fontFeatures: [FontFeature.tabularFigures()]);
+    final head = TextStyle(fontSize: 11, color: scheme.outline, fontWeight: FontWeight.w600);
+    const won = Color(0xFF4CAF50), drawn = Color(0xFF9E9E9E), lost = Color(0xFFD7322F);
+    Color scoreColor(double s) => s >= 0.6 ? won : (s >= 0.4 ? const Color(0xFFF0B414) : lost);
+    return Column(children: [
+      Row(children: [
+        Expanded(child: Text('Opening', style: head)),
+        SizedBox(width: 40, child: Text('Games', style: head, textAlign: TextAlign.right)),
+        const SizedBox(width: 8),
+        SizedBox(width: 70, child: Text('W · D · L', style: head, textAlign: TextAlign.center)),
+        SizedBox(width: 50, child: Text('Score', style: head, textAlign: TextAlign.right)),
+      ]),
+      const Divider(height: 10),
+      for (final e in rows)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(children: [
+            // цвет, которым играл
+            Container(
+              width: 12,
+              height: 12,
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: e.key.$2 == Side.white ? Colors.white : const Color(0xFF2B2B2B),
+                shape: BoxShape.circle,
+                border: Border.all(color: scheme.outline, width: 1),
+              ),
+            ),
+            Expanded(
+                child: Text(e.key.$1, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13))),
+            SizedBox(width: 40, child: Text('${e.value.games}', style: numStyle, textAlign: TextAlign.right)),
+            const SizedBox(width: 8),
+            // полоска: победы, ничьи, поражения
+            SizedBox(
+              width: 70,
+              height: 8,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Row(children: [
+                  if (e.value.wins > 0) Expanded(flex: e.value.wins, child: const ColoredBox(color: won)),
+                  if (e.value.draws > 0) Expanded(flex: e.value.draws, child: const ColoredBox(color: drawn)),
+                  if (e.value.losses > 0) Expanded(flex: e.value.losses, child: const ColoredBox(color: lost)),
+                ]),
+              ),
+            ),
+            SizedBox(
+              width: 50,
+              child: Text('${(e.value.score * 100).round()}%',
+                  style: numStyle.copyWith(color: scoreColor(e.value.score)), textAlign: TextAlign.right),
+            ),
+          ]),
+        ),
+    ]);
+  }
+}
+
 class _KindTable extends StatelessWidget {
   const _KindTable({required this.st});
 

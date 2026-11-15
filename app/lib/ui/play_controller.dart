@@ -109,8 +109,13 @@ class PlayController extends ChangeNotifier {
 
   Future<void> _engineMove() async {
     _set(PlayStatus.thinking);
+    final watch = Stopwatch()..start();
     try {
       final uci = await _bot!.bestMove(live.fen, level);
+      // [авторское] ответ не раньше выбранной задержки: ход виден и не
+      // мелькает сразу за своим
+      final wait = prefs.playReplyMs - watch.elapsedMilliseconds;
+      if (wait > 0) await Future<void>.delayed(Duration(milliseconds: wait));
       if (_disposed || _status != PlayStatus.thinking) return;
       _push(NormalMove.fromUci(uci));
     } catch (e) {

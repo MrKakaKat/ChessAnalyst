@@ -60,9 +60,23 @@ class _PlayScreenState extends State<PlayScreen> {
     );
   }
 
+  String? _shownFen;
+  NormalMove? _shownLast;
+  bool? _shownMyTurn;
+
   void _onChange() {
-    // фигуры едут при ходе и при листании на соседнюю позицию
-    _board.updatePosition(_gameData(), animate: (c.shownIndex - _shown).abs() <= 2);
+    // [авторское] доска — только при новой позиции: иначе следующее
+    // уведомление (смена статуса после хода движка) ставило ту же позицию
+    // заново и обрывало анимацию фигуры
+    final pos = c.position;
+    if (pos.fen != _shownFen || c.lastMove != _shownLast || c.myTurn != _shownMyTurn) {
+      final moved = pos.fen != _shownFen;
+      // фигуры едут при ходе и при листании на соседнюю позицию
+      _board.updatePosition(_gameData(), animate: moved && (c.shownIndex - _shown).abs() <= 2);
+      _shownFen = pos.fen;
+      _shownLast = c.lastMove;
+      _shownMyTurn = c.myTurn;
+    }
     syncCheck(_board, inCheck: c.position.isCheck, king: c.position.king(c.position.turn));
     _shown = c.shownIndex;
     setState(() {});
@@ -76,7 +90,20 @@ class _PlayScreenState extends State<PlayScreen> {
           builder: (context, _) => Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              SwitchListTile(
+              // скорость ответа движка
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                title: Text('Engine reply: ${prefs.playReplyMs == 0 ? 'at once' : '${(prefs.playReplyMs / 1000).toStringAsFixed(1)} s or more'}'),
+                subtitle: Slider(
+                  min: 0,
+                  max: 3000,
+                  divisions: 12,
+                  value: prefs.playReplyMs.toDouble(),
+                  label: '${(prefs.playReplyMs / 1000).toStringAsFixed(2)} s',
+                  onChanged: (v) => prefs.setPlayReplyMs(v.round()),
+                ),
+              ),
+              if (c.friendly) SwitchListTile(
                 title: const Text('Engine arrows'),
                 subtitle: const Text('The best move as an arrow on your turn'),
                 value: prefs.playArrows,
@@ -85,7 +112,7 @@ class _PlayScreenState extends State<PlayScreen> {
                   setState(() {});
                 },
               ),
-              SwitchListTile(
+              if (c.friendly) SwitchListTile(
                 title: const Text('Engine lines'),
                 subtitle: const Text('The evaluation and the best line under the board'),
                 value: prefs.playLines,
@@ -123,9 +150,8 @@ class _PlayScreenState extends State<PlayScreen> {
           ),
         if (c.status != PlayStatus.setup)
           IconButton(tooltip: 'New game', onPressed: c.newGame, icon: const Icon(Icons.restart_alt_rounded)),
-        // дружеская игра: скрыть стрелки и линии движка
-        if (c.friendly)
-          IconButton(tooltip: 'Friendly game settings', onPressed: _settings, icon: const Icon(Icons.tune_rounded)),
+        // скорость ответа движка; в дружеской игре — ещё стрелки и линии
+        IconButton(tooltip: 'Game settings', onPressed: _settings, icon: const Icon(Icons.tune_rounded)),
       ]),
       body: LayoutBuilder(builder: (context, box) {
         final size = math.min(box.maxWidth - 24, math.min(520.0, box.maxHeight * 0.6));

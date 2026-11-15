@@ -15,7 +15,7 @@ import 'package:dartchess/dartchess.dart' hide Board;
 import 'package:flutter/material.dart';
 
 import '../analysis/settings.dart';
-import '../analysis/difficulty.dart' show matePawns, positionDifficulty, winBoundary;
+import '../analysis/difficulty.dart' show matePawns, positionDifficulty, puzzleBoundary;
 import '../analysis/difficulty_scan.dart' show scanPosition;
 import '../analysis/eval.dart';
 import '../analysis/game.dart';
@@ -786,7 +786,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
             final r = expected != null && before.isLegal(expected) ? await _practicalAfter(bot, before.push(expected)) : null;
             return (m.$1, r?.$1, m.$2);
           });
-          if (mine >= winBoundary || (ref != null && mine >= ref - 0.3)) tail = tacticTail(after, pv);
+          if (mine >= puzzleBoundary || (ref != null && mine >= ref - 0.3)) tail = tacticTail(after, pv);
         } else {
           final (lines, sol) = await analysisQueue.priority(() async {
             final mine = await bot.analyse(after.fen, depth: 16, multipv: 1);

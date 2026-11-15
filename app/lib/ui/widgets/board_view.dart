@@ -462,6 +462,8 @@ class _BoardBadgeState extends State<BoardBadge> with SingleTickerProviderStateM
       'only_light' => const Duration(milliseconds: 800),
       'best' => const Duration(milliseconds: 420),
       'blunder' => const Duration(milliseconds: 650),
+      // инопланетянин: прыжок спокойнее, чем у зевка
+      'alien' => const Duration(milliseconds: 1200),
       'resign' || 'timeout' => const Duration(milliseconds: 1400),
       _ => const Duration(milliseconds: 180),
     };
@@ -499,7 +501,9 @@ class _BoardBadgeState extends State<BoardBadge> with SingleTickerProviderStateM
     final appear = CurvedAnimation(parent: _a, curve: const Interval(0, 0.3, curve: Curves.easeOutBack));
     final flash = CurvedAnimation(parent: _a, curve: const Interval(0.08, 0.55, curve: Curves.easeOut));
     // у brilliant прыжок после вспышки, у blunder — сразу после проявления
-    final (j0, j1) = widget.kind == 'brilliant' || widget.kind == 'only_move' ? (0.45, 0.85) : (0.15, 0.7);
+    final (j0, j1) = widget.kind == 'brilliant' || widget.kind == 'only_move'
+        ? (0.45, 0.85)
+        : (widget.kind == 'alien' ? (0.2, 0.75) : (0.15, 0.7));
     return AnimatedBuilder(
       animation: _a,
       builder: (context, _) {
@@ -516,8 +520,6 @@ class _BoardBadgeState extends State<BoardBadge> with SingleTickerProviderStateM
         // приближаются и быстро качаются — «звонят»
         var hand = clockHand;
         var zoom = 1.0;
-        // ничья: по очереди появляются 1, / и 2
-        if (!_calm && widget.kind == 'draw') hand = Curves.easeOut.transform((t / 0.7).clamp(0.0, 1.0)).clamp(0.001, 1.0);
         if (moving && widget.kind == 'timeout') {
           hand = clockHand + 2 * math.pi * Curves.easeInOutCubic.transform((t / 0.6).clamp(0.0, 1.0));
           if (t > 0.5) {

@@ -26,7 +26,7 @@ import 'package:dartchess/dartchess.dart' show NormalMove, Side;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../analysis/character.dart' show Sharpness, characterOf;
-import '../analysis/difficulty.dart' show positionDifficulty, practicalAfterKey, winBoundary;
+import '../analysis/difficulty.dart' show positionDifficulty, practicalAfterKey, puzzleBoundary;
 import '../analysis/eval.dart';
 import '../analysis/game.dart';
 import '../analysis/pos.dart';
@@ -265,11 +265,11 @@ List<Puzzle> puzzlesFrom(GameAnalysis a) {
     if (before != null && before >= 8) continue;
     if (lines.length >= 2 && lines[1].eval.mate == null && lines[1].eval.pawns(s) >= 8) continue;
     // [авторское] партия с анализом сложности: задача на атаку — только если
-    // практическая оценка после ключевого хода (удержать найденное) от +3;
+    // практическая оценка после ключевого хода (удержать найденное) от +2;
     // ниже позиция спорная. Трудность до хода — трудность самой задачи: она
     // поднимает рейтинг, а не отсеивает
     final scan = a.game.hasDifficulty ? a.game.scans![r.ply] : null;
-    if (scan != null && goal != PuzzleGoal.defend && practicalAfterKey(p.fenBefore, lines, scan) < winBoundary) continue;
+    if (scan != null && goal != PuzzleGoal.defend && practicalAfterKey(p.fenBefore, lines, scan) < puzzleBoundary) continue;
     // и от +6 по практической оценке до последнего хода соперника — тоже
     // уже выиграно
     if (scan != null && r.ply > 0) {

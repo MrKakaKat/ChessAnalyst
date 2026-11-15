@@ -17,6 +17,26 @@ import 'step_icons.dart' show StepIcon;
 import 'widgets/board_background.dart';
 import 'widgets/arrows.dart';
 
+/// The default value of every setting (a fresh, unloaded copy).
+final _defaults = AppPrefs();
+
+/// A section title with its own reset to the default, shown when the value
+/// differs from it.
+Widget _head(BuildContext context, String text, {required bool changed, required VoidCallback reset, TextStyle? style}) =>
+    Row(children: [
+      Expanded(child: Text(text, style: style ?? Theme.of(context).textTheme.titleMedium)),
+      AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: changed ? 1 : 0,
+        child: IconButton(
+          tooltip: 'Reset to default',
+          visualDensity: VisualDensity.compact,
+          onPressed: changed ? reset : null,
+          icon: const Icon(Icons.restart_alt_rounded, size: 20),
+        ),
+      ),
+    ]);
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -41,18 +61,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final title = Theme.of(context).textTheme.titleMedium;
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
-        Text('Arrows', style: title),
-        const SizedBox(height: 8),
+        _head(context, 'Arrows',
+            changed: prefs.arrowStyle != _defaults.arrowStyle, reset: () => prefs.update(arrow: _defaults.arrowStyle)),
+        const SizedBox(height: 4),
         Wrap(spacing: 12, runSpacing: 12, children: [
           for (final s in ArrowStyle.values)
             _ArrowSample(style: s, selected: prefs.arrowStyle == s, onTap: () => prefs.update(arrow: s)),
         ]),
         const SizedBox(height: 12),
-        Text('Colour of your arrows', style: Theme.of(context).textTheme.bodyMedium),
+        _head(context, 'Colour of your arrows',
+            style: Theme.of(context).textTheme.bodyMedium,
+            changed: prefs.arrowColor != _defaults.arrowColor,
+            reset: () => prefs.update(color: _defaults.arrowColor)),
         const SizedBox(height: 6),
         Wrap(spacing: 10, children: [
           for (final e in arrowColors.entries)
@@ -77,7 +100,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
         ]),
         const SizedBox(height: 12),
-        Text('Colour of marked squares (tap a square with the pen)', style: Theme.of(context).textTheme.bodyMedium),
+        _head(context, 'Colour of marked squares (tap a square with the pen)',
+            style: Theme.of(context).textTheme.bodyMedium,
+            changed: prefs.markColor != _defaults.markColor,
+            reset: () => prefs.update(mark: _defaults.markColor)),
         const SizedBox(height: 6),
         Wrap(spacing: 10, runSpacing: 10, children: [
           for (final e in markColors.entries)
@@ -104,12 +130,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Draw arrows in'),
+          secondary: prefs.animateArrows == _defaults.animateArrows
+              ? null
+              : IconButton(
+                  tooltip: 'Reset to default',
+                  onPressed: () => prefs.update(animate: _defaults.animateArrows),
+                  icon: const Icon(Icons.restart_alt_rounded, size: 20)),
           subtitle: const Text('A new arrow grows from its start to its end'),
           value: prefs.animateArrows,
           onChanged: (v) => prefs.update(animate: v),
         ),
         const SizedBox(height: 12),
-        Text('Move animation', style: title),
+        _head(context, 'Move animation',
+            changed: prefs.moveAnimationMs != _defaults.moveAnimationMs,
+            reset: () => prefs.update(moveMs: _defaults.moveAnimationMs)),
         const SizedBox(height: 8),
         // карточка-пример: g6, Bg7, Nf6 с выбранной скоростью
         Row(children: [
@@ -130,7 +164,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ]),
         const SizedBox(height: 12),
-        Text('Idea playback', style: title),
+        _head(context, 'Idea playback',
+            changed: prefs.ideaStepMs != _defaults.ideaStepMs, reset: () => prefs.update(ideaStep: _defaults.ideaStepMs)),
         Text('${(prefs.ideaStepMs / 1000).toStringAsFixed(1)} s per move'),
         Slider(
           min: 400,
@@ -141,7 +176,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onChanged: (v) => prefs.update(ideaStep: v.round()),
         ),
         const SizedBox(height: 12),
-        Text('Engine', style: title),
+        _head(context, 'Engine',
+            changed: prefs.engineLines != _defaults.engineLines, reset: () => prefs.update(lines: _defaults.engineLines)),
         const SizedBox(height: 4),
         Text('Lines per move in new analyses: ${prefs.engineLines}', style: Theme.of(context).textTheme.bodyMedium),
         Slider(
@@ -152,17 +188,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           label: '${prefs.engineLines}',
           onChanged: (v) => prefs.update(lines: v.round()),
         ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Analyze own moves'),
-          subtitle: const Text('Your moves in branches are judged by the engine on the device'),
-          value: prefs.analyzeOwnMoves,
-          onChanged: (v) => prefs.update(ownMoves: v),
-        ),
         const SizedBox(height: 12),
-        Text('Legal moves of a piece', style: title),
-        const SizedBox(height: 8),
-        Wrap(spacing: 8, runSpacing: 8, children: [
+        _head(context, 'Legal moves of a piece',
+            changed: prefs.legalMoves != _defaults.legalMoves, reset: () => prefs.update(legal: _defaults.legalMoves)),
+        const SizedBox(height: 4),
+        // образец: король в углу доски 3×3 и его ходы выбранным способом
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const _LegalSample(),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Wrap(spacing: 8, runSpacing: 8, children: [
           for (final (v, label) in const [
             (LegalMoves.outline, 'Rounded outline'),
             (LegalMoves.squares, 'Square outline'),
@@ -176,9 +211,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               showCheckmark: false,
               onSelected: (_) => prefs.update(legal: v),
             ),
+            ]),
+          ),
         ]),
         const SizedBox(height: 20),
-        Text('Board', style: title),
+        _head(context, 'Board',
+            changed: prefs.boardTheme != _defaults.boardTheme, reset: () => prefs.update(theme: _defaults.boardTheme)),
         const SizedBox(height: 8),
         Wrap(spacing: 10, runSpacing: 10, children: [
           for (final e in boardThemes.entries)
@@ -210,7 +248,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
         ),
         const SizedBox(height: 20),
-        Text('Icons on the board', style: title),
+        _head(context, 'Icons on the board',
+            changed: prefs.hiddenBoardKinds.isNotEmpty,
+            reset: () {
+              for (final k in [...prefs.hiddenBoardKinds]) {
+                prefs.toggleBoardKind(k);
+              }
+            }),
         const SizedBox(height: 4),
         Text('Tap a kind to hide its icon on the board (the move list and the card keep it).',
             style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
@@ -226,7 +270,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
         ]),
         const SizedBox(height: 20),
-        Text('Pieces', style: title),
+        _head(context, 'Pieces',
+            changed: prefs.pieceSet != _defaults.pieceSet, reset: () => prefs.update(pieces: _defaults.pieceSet)),
         const SizedBox(height: 8),
         DropdownButton<PieceSet>(
           value: prefs.pieceSet,
@@ -263,28 +308,37 @@ class _ArrowSample extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     // у каждого образца — свой стиль, независимо от выбранного
+    // доска 3×3 (a2–c4): ход пешки на два поля и ход конём
     final layer = ArrowLayer(arrows: [
       // образцы — выбранным цветом своих стрелок
-      BoardArrow(Square.a1, Square.a4, prefs.userArrowColor),
-      BoardArrow(Square.c1, Square.d3, prefs.userArrowColor),
-      BoardArrow(Square.h1, Square.e4, prefs.userArrowColor),
+      BoardArrow(Square.a2, Square.a4, prefs.userArrowColor),
+      BoardArrow(Square.b2, Square.c4, prefs.userArrowColor),
     ], flipped: false, style: style, animate: false);
-    final picture = SizedBox(
-      width: 120,
-      height: 120,
-      child: ClipRect(
+    const shown = 84.0, full = shown * 8 / 3, sq = full / 8;
+    final picture = SizedBox.square(
+      dimension: shown,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
         child: OverflowBox(
           alignment: Alignment.bottomLeft,
-          maxWidth: 240,
-          maxHeight: 240,
-          child: SizedBox(
-            width: 240,
-            height: 240,
-            child: Stack(children: [
-              StaticChessboard(size: 240, orientation: Side.white, fen: '8/8/8/8/8/8/8/8 w - - 0 1',
-                  settings: StaticChessboardSettings(colorScheme: prefs.scheme)),
-              Positioned.fill(child: layer),
-            ]),
+          minWidth: full,
+          maxWidth: full,
+          minHeight: full,
+          maxHeight: full,
+          child: Transform.translate(
+            // на клетку вниз: видны вертикали a–c и горизонтали 2–4
+            offset: const Offset(0, sq),
+            child: SizedBox.square(
+              dimension: full,
+              child: Stack(children: [
+                StaticChessboard(
+                    size: full,
+                    orientation: Side.white,
+                    fen: '8/8/8/8/8/8/PN6/8 w - - 0 1',
+                    settings: StaticChessboardSettings(colorScheme: prefs.scheme, pieceAssets: prefs.pieceSet.assets)),
+                Positioned.fill(child: layer),
+              ]),
+            ),
           ),
         ),
       ),
@@ -474,3 +528,45 @@ class _MoveSpeedPreviewState extends State<_MoveSpeedPreview> {
   }
 }
 
+/// The chosen display of legal moves on a 3×3 corner of the board: a king
+/// on b2 and the squares around it.
+class _LegalSample extends StatelessWidget {
+  const _LegalSample();
+
+  @override
+  Widget build(BuildContext context) {
+    const shown = 96.0, full = shown * 8 / 3;
+    return SizedBox.square(
+      dimension: shown,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        child: OverflowBox(
+          alignment: Alignment.bottomLeft,
+          minWidth: full,
+          maxWidth: full,
+          minHeight: full,
+          maxHeight: full,
+          child: SizedBox.square(
+            dimension: full,
+            child: Stack(children: [
+              StaticChessboard(
+                  size: full,
+                  orientation: Side.white,
+                  fen: '8/8/8/8/8/8/1K6/8 w - - 0 1',
+                  settings: StaticChessboardSettings(colorScheme: prefs.scheme, pieceAssets: prefs.pieceSet.assets)),
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: LegalDestsSample(
+                    const [Square.a1, Square.b1, Square.c1, Square.a2, Square.c2, Square.a3, Square.b3, Square.c3],
+                    prefs.legalMoves,
+                    prefs.scheme,
+                  ),
+                ),
+              ),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+}

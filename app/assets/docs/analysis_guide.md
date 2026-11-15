@@ -288,6 +288,10 @@ hard they were: the more and the harder, the better the pattern is learnt.
 Set your name with the badge button if the app does not find you in the
 games.
 
+- **Openings**: your result in each opening (its family, e.g. Caro-Kann
+  Defense) with each colour — games, a won / drawn / lost bar and the score
+  (a draw is half).
+
 ---
 
 ## Game summary
@@ -369,12 +373,12 @@ Where it shows:
   accuracy **with difficulty** — a miss in a hard position costs less, in an
   easy one more;
 - puzzles: from a game with this analysis an attacking puzzle is made only
-  when the practical evaluation **after the key move** is +3 or more — the
+  when the practical evaluation **after the key move** is +2 or more — the
   advantage holds once the move is found (below it the position is
   disputed). The difficulty before the move is the puzzle's own difficulty:
   it raises the rating (−150 for the easiest position, 0 for a usual one,
   up to +300 for the hardest) instead of dropping the puzzle. Your moves are
-  checked by the practical evaluation too: a move counts when it keeps +3 or
+  checked by the practical evaluation too: a move counts when it keeps +2 or
   is no worse than the solution's.
   Such puzzles are marked **With position difficulty**, the others **Engine
   evaluation**.
@@ -479,8 +483,9 @@ character, the kinds missed, the kinds you were punished by, and the cost.
   the top card away to see the next one. Below the decks is the list of all
   games.
 - **Copy PGN** (quick settings of a game) puts the game on the clipboard.
-- **Idea and punishment lines** (switch under More graphs): show or hide the
-  Better / Punished lines under moves with an idea. In an idea a mate in up
+- **Idea and punishment lines** (quick settings): show or hide the
+  Better / Punished lines under moves with an idea. Branches under a move
+  are folded at first; the ones you unfold stay unfolded next time. In an idea a mate in up
   to six moves is played to the end.
 - **Lines** tab: tap the evaluation of a line to walk it on the board —
   the whole line becomes a branch, the arrows step through it; tap the
@@ -503,6 +508,11 @@ character, the kinds missed, the kinds you were punished by, and the cost.
 - The analysis window shows the engine power modes; the mode can be
   changed while the analysis runs. A finished analysis offers to open the
   game or to close the window.
+- On the free analysis board, **Set up a position** (the grid icon) opens
+  an editor: clear the board, drag pieces on and off or pick a piece (or the
+  eraser) and tap squares, choose who moves; castling follows the kings and
+  rooks on their squares. The position opens as a new session. The session's
+  name stands under the toolbar.
 - On the free analysis board, hold a move to select it: the round buttons
   copy the line up to it, make its branch the main line (or a side one), or
   delete it with every move after it. "Copy PGN" takes the whole tree with
@@ -535,6 +545,11 @@ character, the kinds missed, the kinds you were punished by, and the cost.
 
 ## Board settings
 
+- Every setting has its own reset to the default (the round arrow next to
+  it, shown when it is changed). "Analyze own moves" is in the quick
+  settings of a game.
+- **Play the engine**: the game settings set the least time before the
+  engine's reply (the pieces move with the usual animation).
 - **Icons on the board** (Settings): tap a kind of move to hide its icon on
   the board — for example book or neutral moves. The move list and the move
   card keep it.

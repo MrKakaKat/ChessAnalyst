@@ -103,7 +103,7 @@ class PuzzleStore {
   /// 3 — new kinds (tactical fork, blocked king escape), the puzzle
   /// threshold after the key move; 4 — puzzles in a row joined; 5 — no
   /// puzzles in positions already won.
-  static const version = 5;
+  static const version = 6;
   static const _prefix = 'pstore.';
 
   /// The record of [key] if it is up to date for [depth] and [plies].

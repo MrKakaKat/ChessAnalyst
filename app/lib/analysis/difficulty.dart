@@ -47,6 +47,10 @@ import 'pos.dart';
 /// The winning boundary in pawns.
 const winBoundary = 3.0;
 
+/// [авторское] A puzzle from the difficulty analysis needs at least this
+/// practical evaluation after its key move (pawns).
+const puzzleBoundary = 2.0;
+
 /// A mate in pawns for the classes and the practical evaluation.
 const matePawns = 8.0;
 

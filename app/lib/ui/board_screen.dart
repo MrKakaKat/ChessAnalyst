@@ -17,6 +17,7 @@ import '../engine/game_job.dart' show EnginePower;
 import 'analysis_queue.dart';
 import 'theme.dart' show onlyBlue;
 import 'board_session.dart';
+import 'position_editor.dart';
 import 'prefs.dart';
 import 'widgets/arrows.dart';
 import 'widgets/board_background.dart';
@@ -301,6 +302,18 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
     return v;
   }
 
+  /// Sets up a position from the one on the board; it opens as a new
+  /// session.
+  Future<void> _setUp(SessionController s) async {
+    final fen = await editPosition(context, s.position.fen);
+    if (fen == null || !mounted) return;
+    final session = _newSession(
+        fen: fen, title: 'Position ${DateTime.now().toLocal().toString().substring(0, 16)}');
+    if (!s.temporary) BoardSessions.save(s.session);
+    s.open(session);
+    BoardSessions.save(session);
+  }
+
   void _new() {
     final s = _newSession();
     if (!c!.temporary) BoardSessions.save(c!.session);
@@ -313,8 +326,15 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
     final s = c;
     return Scaffold(
       appBar: AppBar(
-        title: Text(s?.session.name ?? 'Analysis board', overflow: TextOverflow.ellipsis),
+        // название сессии — под панелью инструментов, во всю ширину
+        title: s == null ? const Text('Analysis board') : null,
         actions: [
+          // своя позиция: очистить доску, расставить фигуры
+          IconButton(
+            tooltip: 'Set up a position',
+            onPressed: s == null ? null : () => _setUp(s),
+            icon: const Icon(Icons.grid_on_rounded),
+          ),
           IconButton(
             tooltip: _pen ? 'Stop drawing' : 'Draw arrows',
             isSelected: _pen,
@@ -352,7 +372,16 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
           : LayoutBuilder(builder: (context, box) {
               final size = math.min(box.maxWidth - 24, math.min(520.0, box.maxHeight * 0.55));
               return Column(children: [
-                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Text(s.session.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                  ),
+                ),
                 Center(child: _boardStack(s, size)),
                 _nav(s),
                 Expanded(

@@ -53,7 +53,32 @@ class PlayerStats {
   /// sum of their accuracy (the misses are in [missed]).
   final kindMoves = <String, (int, double)>{};
 
+  /// Results by opening (the family: "Caro-Kann Defense") and colour.
+  final openings = <(String, Side), OpeningScore>{};
+
   int get games => colours[Side.white]!.games + colours[Side.black]!.games;
+}
+
+/// Wins, draws and losses of the player in one opening with one colour.
+class OpeningScore {
+  int wins = 0, draws = 0, losses = 0;
+  int get games => wins + draws + losses;
+
+  /// Points per game, 0..1 (a draw is half).
+  double get score => games == 0 ? 0 : (wins + draws / 2) / games;
+}
+
+/// The opening of [a]: the family of the deepest book name ("Caro-Kann
+/// Defense: Classical Variation" → "Caro-Kann Defense"); null outside the
+/// book.
+String? openingFamily(GameAnalysis a) {
+  String? name;
+  for (final r in a.records) {
+    if (r.opening != null && r.opening!.isNotEmpty) name = r.opening;
+  }
+  if (name == null) return null;
+  final i = name.indexOf(':');
+  return (i < 0 ? name : name.substring(0, i)).trim();
 }
 
 /// Own analysed games (ready) with their analyses.
@@ -133,6 +158,13 @@ Future<PlayerStats> collectStats(List<GameAnalysis> games, {List<Puzzle> puzzles
     if (won) c.wins++;
     if (lost) c.losses++;
     if (result == '1/2-1/2') c.draws++;
+    // дебют: победы, ничьи и поражения своим цветом
+    if (openingFamily(a) case final o?) {
+      final score = st.openings.putIfAbsent((o, side), OpeningScore.new);
+      if (won) score.wins++;
+      if (lost) score.losses++;
+      if (result == '1/2-1/2') score.draws++;
+    }
     // аккуратность по видам сыгранных ходов
     for (final r in a.records.where((r) => r.side == side && r.step != 'book' && r.step != 'forced')) {
       final p = a.game.plies[r.ply];

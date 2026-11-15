@@ -574,8 +574,23 @@ class AnalysisController extends ChangeNotifier {
 
   /// Where the user is in the game, to come back to it next time: the move,
   /// the unit, the own branches and the shown branch move.
+  /// [авторское] Branches under a move are folded by default; the ones the
+  /// user unfolded are remembered with the game. The branch being shown is
+  /// always visible.
+  final openBranches = <int>{};
+
+  bool branchesOpen(int anchor) => openBranches.contains(anchor) || _var?.anchor == anchor;
+
+  void toggleBranches(Iterable<int> anchors, bool open) {
+    for (final a in anchors) {
+      open ? openBranches.add(a) : openBranches.remove(a);
+    }
+    notifyListeners();
+  }
+
   Map<String, dynamic> saveState() => {
         'ply': _ply,
+        'open': openBranches.toList(),
         'unit': _unit.name,
         'vars': [
           for (final v in variations) {'anchor': v.anchor, 'moves': [for (final m in v.moves) m.move.uci]},
@@ -585,6 +600,9 @@ class AnalysisController extends ChangeNotifier {
       };
 
   Future<void> restoreState(Map<String, dynamic> s) async {
+    openBranches
+      ..clear()
+      ..addAll((s['open'] as List? ?? const []).cast<int>());
     final unit = Unit.values.asNameMap()[s['unit']];
     if (unit != null && unit != _unit) await setUnit(unit);
     for (final v in (s['vars'] as List? ?? const []).cast<Map<String, dynamic>>()) {

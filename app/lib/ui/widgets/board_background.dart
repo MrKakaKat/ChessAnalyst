@@ -213,3 +213,43 @@ class OwnSquares extends StatelessWidget {
           ),
       ]);
 }
+
+/// The legal-move marks of [mode] on [dests] of a white-oriented board (the
+/// settings' sample), drawn as on the boards.
+class LegalDestsSample extends CustomPainter {
+  LegalDestsSample(this.dests, this.mode, this.scheme);
+
+  final List<Square> dests;
+  final LegalMoves mode;
+  final ChessboardColorScheme scheme;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (mode == LegalMoves.none) return;
+    final sq = size.shortestSide / 8;
+    final inset = sq * 0.085, width = sq * 0.075;
+    for (final d in dests) {
+      final cell = Rect.fromLTWH(d.file * sq, (7 - d.rank) * sq, sq, sq);
+      final darkSquare = (d.file + d.rank).isEven;
+      final opposite = darkSquare ? scheme.lightSquare : scheme.darkSquare;
+      switch (mode) {
+        case LegalMoves.dots:
+          canvas.drawCircle(cell.center, sq * 0.16, Paint()..color = scheme.validMoves);
+        case LegalMoves.contrastDots:
+          canvas.drawCircle(cell.center, sq * 0.13, Paint()..color = opposite);
+        default:
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                cell.deflate(inset + width / 2), Radius.circular(mode == LegalMoves.squares ? 0 : sq * 0.07)),
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = width
+              ..color = opposite,
+          );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(LegalDestsSample old) => old.mode != mode || old.scheme != scheme;
+}

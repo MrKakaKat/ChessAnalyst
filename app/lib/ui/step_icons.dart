@@ -130,7 +130,10 @@ class StepGlyph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => kind == 'alien'
-      ? _AlienIcon(size: size)
+      // вне доски — без кружка, как другие знаки: голова цвета знака на
+      // прозрачном фоне
+      ? Image.asset(size > 32 ? 'assets/icons/alien_glyph_96.png' : 'assets/icons/alien_glyph_48.png',
+          width: size, height: size, color: color, colorBlendMode: BlendMode.srcIn, filterQuality: FilterQuality.medium)
       : CustomPaint(
           size: Size.square(size),
           painter: _GlyphPainter(kind, color, shadow: shadow, hollow: hollow),
@@ -155,7 +158,7 @@ class _AlienIcon extends StatelessWidget {
             color: const Color(0xFF21964E),
             // голова крупнее в кружке (на картинке вокруг неё много фона)
             child: Transform.scale(
-              scale: 1.45 * scale,
+              scale: 1.18 * scale,
               child: Image.asset(size > 32 ? 'assets/icons/alien_gambit_192.png' : 'assets/icons/alien_gambit_96.png',
                   fit: BoxFit.cover, filterQuality: FilterQuality.medium),
             ),
@@ -249,46 +252,20 @@ void _drawClock(Canvas canvas, double size, Color color, double hand) {
   canvas.drawLine(c, c + Offset(math.sin(hand), -math.cos(hand)) * (r * 0.62), stroke..strokeWidth = size * 0.09);
 }
 
-/// The draw: ½, drawn as 1, a slash and 2 (centred: the text glyph sat a
-/// little high). [progress] 0..1: they appear one after another (1, /, 2).
-void _drawHalf(Canvas canvas, double size, Color color, {double progress = 1}) {
-  double part(int i) => ((progress * 3 - i)).clamp(0.0, 1.0);
-  void digit(String d, Offset at, double t) {
-    if (t <= 0) return;
-    final tp = TextPainter(
-      text: TextSpan(
-          text: d,
-          style: TextStyle(
-              fontSize: size * 0.56, height: 1, fontWeight: FontWeight.w900, color: color.withValues(alpha: color.a * t))),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    canvas.save();
-    canvas.translate(at.dx, at.dy);
-    final k = 0.6 + 0.4 * Curves.easeOutBack.transform(t);
-    canvas.scale(k);
-    tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
-    canvas.restore();
-  }
-
-  digit('1', Offset(-size * 0.2, -size * 0.17), part(0));
-  final s = part(1);
-  if (s > 0) {
-    final a = Offset(size * 0.2, -size * 0.3), b = Offset(-size * 0.2, size * 0.3);
-    canvas.drawLine(
-        a,
-        Offset.lerp(a, b, s)!,
-        Paint()
-          ..color = color
-          ..strokeWidth = size * 0.085
-          ..strokeCap = StrokeCap.round);
-  }
-  digit('2', Offset(size * 0.21, size * 0.2), part(2));
+/// The draw: ½ (the text glyph sits high in its box: moved down a little).
+void _drawHalf(Canvas canvas, double size, Color color) {
+  final tp = TextPainter(
+    text: TextSpan(
+        text: '½', style: TextStyle(fontSize: size * 0.95, height: 1, fontWeight: FontWeight.w900, color: color)),
+    textDirection: TextDirection.ltr,
+  )..layout();
+  tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2 + size * 0.08));
 }
 
 void drawStepGlyph(Canvas canvas, String kind, double size, Color color,
     {double hand = clockHand, bool hollow = false}) {
   if (kind == 'timeout') return _drawClock(canvas, size, color, hand);
-  if (kind == 'draw') return _drawHalf(canvas, size, color, progress: hand == clockHand ? 1 : hand);
+  if (kind == 'draw') return _drawHalf(canvas, size, color);
   // полый знак: только контур, чуть толще, чтобы не терялся
   final fill = hollow
       ? (Paint()

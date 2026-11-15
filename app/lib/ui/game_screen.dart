@@ -344,14 +344,7 @@ class _GameScreenState extends State<GameScreen> {
           CollapsibleGraph(controller: c, height: 90),
           MoreGraphs(controller: c),
         ],
-        // строки «Better» / «Punished» под ходами с идеями — скрыть или показать
-        SwitchListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-          dense: true,
-          title: const Text('Idea and punishment lines in the move list'),
-          value: prefs.showIdeaRows,
-          onChanged: (v) => setState(() => prefs.setShowIdeaRows(v)),
-        ),
+
         // стереть все свои ветки (с подтверждением)
         if (c.variations.isNotEmpty)
           Align(
@@ -482,15 +475,33 @@ class _GameScreenState extends State<GameScreen> {
       builder: (context) => ListenableBuilder(
         listenable: prefs,
         builder: (context, _) => ListView(shrinkWrap: true, padding: const EdgeInsets.only(bottom: 16), children: [
-          // копирование партии — первым
+          // копирование партии — первым; значок справа, как переключатели
           ListTile(
-            leading: const Icon(Icons.content_copy_rounded),
+            trailing: const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Icon(Icons.content_copy_rounded),
+            ),
             title: const Text('Copy PGN'),
             subtitle: const Text('The game with its headers, to paste elsewhere'),
             onTap: () {
               Clipboard.setData(ClipboardData(text: c.game.pgn));
               Navigator.pop(context);
               ScaffoldMessenger.of(this.context).showSnackBar(const SnackBar(content: Text('PGN copied')));
+            },
+          ),
+          SwitchListTile(
+            title: const Text('Analyze own moves'),
+            subtitle: const Text('Your moves in branches are judged by the engine on the device'),
+            value: prefs.analyzeOwnMoves,
+            onChanged: (v) => prefs.update(ownMoves: v),
+          ),
+          SwitchListTile(
+            title: const Text('Idea and punishment lines'),
+            subtitle: const Text('The Better / Punished lines under moves with an idea'),
+            value: prefs.showIdeaRows,
+            onChanged: (v) {
+              prefs.setShowIdeaRows(v);
+              if (mounted) setState(() {});
             },
           ),
           SwitchListTile(

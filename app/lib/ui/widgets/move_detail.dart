@@ -606,7 +606,10 @@ class _StepBadgeState extends State<StepBadge> with SingleTickerProviderStateMix
       'timeout' => 'Time out',
       'branch' => 'Own move',
       'mate' => 'Checkmate',
-      _ => stepLabels[kind]!,
+      'draw' => 'Draw',
+      'alien' => 'Alien Gambit',
+      // неизвестный вид не должен ронять карточку (белый блок вместо неё)
+      _ => stepLabels[kind] ?? flagLabels[kind] ?? kind,
     };
     final loud = isLoudKind(kind);
     const d = 30.0;

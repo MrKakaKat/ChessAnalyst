@@ -142,6 +142,16 @@ class AppPrefs extends ChangeNotifier {
 
   ChessboardColorScheme get scheme => boardThemes[boardTheme] ?? ChessboardColorScheme.green;
 
+  /// Play the engine: the least time before its reply, milliseconds (it
+  /// waits so long even when it found the move at once).
+  int playReplyMs = 500;
+
+  void setPlayReplyMs(int ms) {
+    playReplyMs = ms;
+    notifyListeners();
+    _save();
+  }
+
   /// The move list shows the Better / Punished lines under moves with an idea.
   bool showIdeaRows = true;
 
@@ -231,6 +241,7 @@ class AppPrefs extends ChangeNotifier {
       if (ac != null && arrowColors.containsKey(ac)) arrowColor = ac;
       hiddenBoardKinds = {...?p.getStringList('hiddenBoardKinds')};
       showIdeaRows = p.getBool('showIdeaRows') ?? showIdeaRows;
+      playReplyMs = p.getInt('playReplyMs') ?? playReplyMs;
       final light = p.getString('lightSquareImage'), dark = p.getString('darkSquareImage');
       if (light != null) lightSquareImage = base64Decode(light);
       if (dark != null) darkSquareImage = base64Decode(dark);
@@ -251,6 +262,7 @@ class AppPrefs extends ChangeNotifier {
       await p.setString('boardTheme', boardTheme);
       await p.setStringList('hiddenBoardKinds', hiddenBoardKinds.toList());
       await p.setBool('showIdeaRows', showIdeaRows);
+      await p.setInt('playReplyMs', playReplyMs);
       await p.setBool('animateArrows', animateArrows);
       await p.setString('arrowColor', arrowColor);
       await p.setString('markColor', markColor);
