@@ -327,7 +327,7 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
     return Scaffold(
       appBar: AppBar(
         // название сессии — под панелью инструментов, во всю ширину
-        title: s == null ? const Text('Analysis board') : null,
+        // заголовка нет и при загрузке: имя сессии появляется под панелью
         actions: [
           // своя позиция: очистить доску, расставить фигуры
           IconButton(

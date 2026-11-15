@@ -84,7 +84,11 @@ class _EditorScreenState extends State<_EditorScreen> {
 
   Widget _palette(Side side, double sq) {
     final scheme = Theme.of(context).colorScheme;
-    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+    // серая подложка: чёрные фигуры не сливаются с тёмной темой
+    return Container(
+      decoration: BoxDecoration(color: const Color(0xFFB9BCC0), borderRadius: BorderRadius.circular(6)),
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       for (final role in _roles)
         () {
           final piece = Piece(color: side, role: role);
@@ -110,7 +114,8 @@ class _EditorScreenState extends State<_EditorScreen> {
             ),
           );
         }(),
-    ]);
+    ]),
+    );
   }
 
   @override
@@ -120,14 +125,6 @@ class _EditorScreenState extends State<_EditorScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Set up a position'),
-        actions: [
-          IconButton(
-            tooltip: 'Flip the board',
-            onPressed: () => setState(() => _orientation = _orientation.opposite),
-            icon: const Icon(Icons.swap_vert_rounded),
-          ),
-          TextButton(onPressed: problem == null ? () => Navigator.pop(context, _fen) : null, child: const Text('Done')),
-        ],
       ),
       body: LayoutBuilder(builder: (context, box) {
         final size = math.min(box.maxWidth - 24, math.min(520.0, box.maxHeight * 0.55));
@@ -158,7 +155,10 @@ class _EditorScreenState extends State<_EditorScreen> {
           const SizedBox(height: 6),
           _palette(_orientation, sq),
           const SizedBox(height: 12),
-          Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
+          // инструменты — в одну строку, листаются вбок
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: [
             FilterChip(
               avatar: const Icon(Icons.auto_fix_normal_rounded, size: 18),
               label: const Text('Eraser'),
@@ -182,7 +182,8 @@ class _EditorScreenState extends State<_EditorScreen> {
                 _turn = Side.white;
               }),
             ),
-          ]),
+            ].expand((w) => [w, const SizedBox(width: 8)]).toList()),
+          ),
           const SizedBox(height: 12),
           SegmentedButton<Side>(
             segments: const [
@@ -193,6 +194,23 @@ class _EditorScreenState extends State<_EditorScreen> {
             showSelectedIcon: false,
             onSelectionChanged: (s) => setState(() => _turn = s.first),
           ),
+          const SizedBox(height: 12),
+          // Done — во всю ширину, справа разворот доски
+          Row(children: [
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: problem == null ? () => Navigator.pop(context, _fen) : null,
+                icon: const Icon(Icons.check_rounded),
+                label: const Text('Done'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton.filledTonal(
+              tooltip: 'Flip the board',
+              onPressed: () => setState(() => _orientation = _orientation.opposite),
+              icon: const Icon(Icons.swap_vert_rounded),
+            ),
+          ]),
           const SizedBox(height: 10),
           Text(
             problem ??

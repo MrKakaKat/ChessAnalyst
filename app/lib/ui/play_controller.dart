@@ -10,15 +10,30 @@ import 'package:dartchess/dartchess.dart';
 import 'package:flutter/foundation.dart';
 
 import '../analysis/pos.dart';
+import '../analysis/eval.dart';
 import '../engine/bot.dart';
+import '../engine/rated_play.dart';
 import 'prefs.dart';
 import 'widgets/arrows.dart';
 
-enum PlayStatus { setup, starting, playing, thinking, over, failed }
+/// [blunder]: friendly game, the player's move is a serious blunder — the
+/// game waits: take it back, or play on and meet the engine's reply.
+enum PlayStatus { setup, starting, playing, thinking, blunder, over, failed }
 
 class PlayController extends ChangeNotifier {
   PlayStatus _status = PlayStatus.setup;
   BotLevel level = botLevels[2];
+
+  /// Play at a rating instead of a level (rated_play.dart); null: by level.
+  int? rating;
+
+  /// The rated engine of the current game: its running accuracy.
+  RatedPlay? rated;
+
+  /// Friendly game: the engine's reply that punishes the player's blunder,
+  /// and how much the blunder lost (pawns).
+  NormalMove? threat;
+  double blunderLoss = 0;
   Side? chosenSide = Side.white; // null — случайный цвет
   bool friendly = false;
   Side player = Side.white;
@@ -58,6 +73,11 @@ class PlayController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setRating(int? r) {
+    rating = r;
+    notifyListeners();
+  }
+
   void setSide(Side? s) {
     chosenSide = s;
     notifyListeners();
@@ -79,6 +99,8 @@ class PlayController extends ChangeNotifier {
     _view = null;
     eval = null;
     _evalAt = -1;
+    threat = null;
+    rated = rating == null ? null : RatedPlay(rating!);
     result = reason = error = null;
     _set(PlayStatus.starting);
     try {
@@ -102,16 +124,69 @@ class PlayController extends ChangeNotifier {
     if (!myTurn) return;
     m = _normalize(m);
     if (!live.isLegal(m)) return;
+    final before = live;
     _push(m);
     if (_checkEnd()) return;
+    // [авторское] дружеская партия: весомый зевок — партия ждёт; видно, чем
+    // ответит движок (и этот ответ он не пропустит)
+    if (friendly && await _blunderCheck(before)) return;
     await _engineMove();
+  }
+
+  /// Whether the player's last move (from [before]) is a serious blunder:
+  /// it loses two pawns or more, or lets the engine mate. Sets [threat].
+  Future<bool> _blunderCheck(Pos before) async {
+    _set(PlayStatus.thinking);
+    try {
+      final bot = _bot!;
+      double pawns(Line l) {
+        final e = l.eval;
+        if (e.mate != null) return e.mate! > 0 ? 30 : -30;
+        return e.cp! / 100;
+      }
+
+      final was = await bot.analyse(before.fen, depth: 12, multipv: 1);
+      final now = await bot.analyse(live.fen, depth: 12, multipv: 1);
+      if (_disposed || was.isEmpty || now.isEmpty) return false;
+      final v0 = pawns(was.first), v1 = -pawns(now.first);
+      final mated = now.first.eval.mate != null && now.first.eval.mate! > 0 && (was.first.eval.mate ?? 1) > 0;
+      if ((v0 - v1 >= 2.0 && v1 < 3) || (mated && v0 > -25)) {
+        threat = NormalMove.fromUci(now.first.move);
+        blunderLoss = mated ? 99 : v0 - v1;
+        _set(PlayStatus.blunder);
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  /// Friendly game after a blunder: the engine plays its punishing reply.
+  Future<void> playOn() async {
+    if (_status != PlayStatus.blunder) return;
+    final m = threat;
+    threat = null;
+    if (m == null || !live.isLegal(m)) {
+      _set(PlayStatus.playing);
+      return _engineMove();
+    }
+    rated?.choose([Line(move: m.uci, eval: const Eval(cp: 0, wdl: (0, 1000, 0)), pv: [m.uci])]);
+    _push(m);
+    if (!_checkEnd()) {
+      _set(PlayStatus.playing);
+      _evaluate();
+    }
   }
 
   Future<void> _engineMove() async {
     _set(PlayStatus.thinking);
     final watch = Stopwatch()..start();
     try {
-      final uci = await _bot!.bestMove(live.fen, level);
+      // по рейтингу: из лучших ходов — тот, что держит точность движка у
+      // точности выбранного рейтинга
+      final r = rated;
+      final uci = r == null
+          ? await _bot!.bestMove(live.fen, level)
+          : r.choose(await _bot!.analyse(live.fen, depth: 12, multipv: 8)).move;
       // [авторское] ответ не раньше выбранной задержки: ход виден и не
       // мелькает сразу за своим
       final wait = prefs.playReplyMs - watch.elapsedMilliseconds;
@@ -151,11 +226,14 @@ class PlayController extends ChangeNotifier {
     // нельзя вернуть ход до первого хода игрока
     if (moves.length - n < (player == Side.white ? 0 : 1)) return;
     for (var i = 0; i < n; i++) {
+      // ход движка снят — и его точность тоже
+      if (positions[positions.length - 2].turn != player) rated?.undo();
       moves.removeLast();
       sans.removeLast();
       positions.removeLast();
     }
     result = reason = null;
+    threat = null;
     _view = null;
     _status = PlayStatus.playing;
     notifyListeners();

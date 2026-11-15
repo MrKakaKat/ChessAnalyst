@@ -26,6 +26,7 @@ import '../analysis/classify.dart';
 import '../analysis/difficulty.dart';
 import '../analysis/game.dart';
 import '../analysis/human.dart';
+import '../analysis/metrics.dart' show moveAccuracy;
 import '../analysis/ideas.dart';
 import '../analysis/locks.dart';
 import '../analysis/openings.dart';
@@ -1060,6 +1061,25 @@ class AnalysisController extends ChangeNotifier {
   }
 
   bool get hasDifficulty => game.hasDifficulty;
+
+  /// [авторское] Accuracy of each side so far, after move [ply]: it starts at
+  /// 100 and only goes down — each move takes off its loss of accuracy,
+  /// shared over all the side's moves of the game — and reaches the mean
+  /// accuracy of the side's moves at the end. (White, Black.)
+  (double, double) runningAccuracy(int ply) {
+    final records = _analysis.records;
+    final n = {Side.white: 0, Side.black: 0};
+    for (final r in records) {
+      n[r.side] = n[r.side]! + 1;
+    }
+    final lost = {Side.white: 0.0, Side.black: 0.0};
+    for (final r in records) {
+      if (r.ply > ply) break;
+      lost[r.side] = lost[r.side]! + (100 - moveAccuracy(r));
+    }
+    double of(Side s) => n[s]! == 0 ? 100 : 100 - lost[s]! / n[s]!;
+    return (of(Side.white), of(Side.black));
+  }
 
   /// Starts the difficulty analysis of this game (set by the game screen of
   /// an own game; null for the showcase games).

@@ -463,7 +463,7 @@ class _BoardBadgeState extends State<BoardBadge> with SingleTickerProviderStateM
       'best' => const Duration(milliseconds: 420),
       'blunder' => const Duration(milliseconds: 650),
       // инопланетянин: прыжок спокойнее, чем у зевка
-      'alien' => const Duration(milliseconds: 1200),
+      'alien' => const Duration(milliseconds: 1000),
       'resign' || 'timeout' => const Duration(milliseconds: 1400),
       _ => const Duration(milliseconds: 180),
     };

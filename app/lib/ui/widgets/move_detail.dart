@@ -455,6 +455,13 @@ class _Card extends StatelessWidget {
         if (lossKind(r.pawns.e1, r.pawns.ep) case final l?) _kv(context, 'Loss', Text(lossLabels[l]!, style: _valueStyle)),
         _kv(context, 'Irreversibility', Text(irreversibilityLabels[irreversibilityOf(r.pawns.e1)]!, style: _valueStyle)),
       ],
+      // точность сторон к этому ходу: со 100 и только вниз
+      if (!variation)
+        () {
+          final (w, b) = c.runningAccuracy(c.ply);
+          return _kv(context, 'Accuracy',
+              Text('White ${w.toStringAsFixed(1)} · Black ${b.toStringAsFixed(1)}', style: _valueStyle));
+        }(),
       _kv(context, 'Stage', Text(stageLabels[r.stage]!, style: _valueStyle)),
       // активность фигур после хода (поля, связки, минус защитные обязанности)
       if (!variation && c.ply < c.aac.length)

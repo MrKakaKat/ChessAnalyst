@@ -153,6 +153,9 @@ what you missed, then by what you were punished with.
   simple one weighs more). Significance = (D + I + (100 − C)) / 3. The
   accuracy window lists the mistakes of the game by what they missed, with
   the significance and its parts on the right.
+- **Accuracy** — each side's accuracy so far: it starts at 100 and only
+  goes down, each move taking off its loss shared over all the side's moves,
+  and reaches the mean accuracy of the side's moves at the end.
 - **Aim** — where it is more sensible to go from the position by WDL: play
   for the win (at least 30% to win and twice the chance to lose), aim for a
   draw (the other way round), or keep the balance. With it the human move:
@@ -549,7 +552,15 @@ character, the kinds missed, the kinds you were punished by, and the cost.
   it, shown when it is changed). "Analyze own moves" is in the quick
   settings of a game.
 - **Play the engine**: the game settings set the least time before the
-  engine's reply (the pieces move with the usual animation).
+  engine's reply (the pieces move with the usual animation). Strength: a
+  **Level** (one scrolling row) or a **Rating** (400–2800, steps of 50) —
+  then the engine plays at the accuracy of that rating: before each move it
+  looks at its best moves and leaves out those that would drop its running
+  accuracy below the rating's, and plays the one that keeps it closest (the
+  first five moves are near-best, as by theory). Its accuracy and the target
+  are shown under the board. In a **friendly game** a serious blunder (two
+  pawns or more, or a mate let in) stops the game: the red arrow shows the
+  engine's reply, which it will not miss; take the move back or play on.
 - **Icons on the board** (Settings): tap a kind of move to hide its icon on
   the board — for example book or neutral moves. The move list and the move
   card keep it.

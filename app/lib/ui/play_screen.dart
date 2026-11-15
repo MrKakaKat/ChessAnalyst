@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 
 import '../analysis/pos.dart';
 import '../engine/bot.dart';
+import '../engine/rated_play.dart' show accuracyForRating;
 import 'home_screen.dart' show PawnIcon;
 import 'play_controller.dart';
 import 'prefs.dart';
@@ -69,13 +70,19 @@ class _PlayScreenState extends State<PlayScreen> {
     // уведомление (смена статуса после хода движка) ставило ту же позицию
     // заново и обрывало анимацию фигуры
     final pos = c.position;
-    if (pos.fen != _shownFen || c.lastMove != _shownLast || c.myTurn != _shownMyTurn) {
-      final moved = pos.fen != _shownFen;
+    if (pos.fen != _shownFen || c.lastMove != _shownLast) {
       // фигуры едут при ходе и при листании на соседнюю позицию
-      _board.updatePosition(_gameData(), animate: moved && (c.shownIndex - _shown).abs() <= 2);
+      _board.updatePosition(_gameData(), animate: (c.shownIndex - _shown).abs() <= 2);
       _shownFen = pos.fen;
       _shownLast = c.lastMove;
       _shownMyTurn = c.myTurn;
+    } else if (c.myTurn != _shownMyTurn) {
+      // только чья очередь сменилась (та же позиция): после анимации хода,
+      // иначе новая установка той же позиции обрывает движение фигуры
+      _shownMyTurn = c.myTurn;
+      Future<void>.delayed(Duration(milliseconds: prefs.moveAnimationMs + 30), () {
+        if (mounted && c.position.fen == _shownFen) _board.updatePosition(_gameData(), animate: false);
+      });
     }
     syncCheck(_board, inCheck: c.position.isCheck, king: c.position.king(c.position.turn));
     _shown = c.shownIndex;
@@ -130,7 +137,9 @@ class _PlayScreenState extends State<PlayScreen> {
   List<BoardArrow> _arrows() {
     final e = c.shownEval;
     final hint = c.friendly && prefs.playArrows && e != null && e.pv.isNotEmpty && c.myTurn;
+    final t = c.status == PlayStatus.blunder && !c.browsing ? c.threat : null;
     return [
+      if (t != null) BoardArrow(t.from, t.to, const Color(0xD0D7322F)),
       if (hint) BoardArrow(NormalMove.fromUci(e.pv.first).from, NormalMove.fromUci(e.pv.first).to, const Color(0xB015781B)),
       ...c.arrowsShown,
     ];
@@ -214,15 +223,54 @@ class _PlayScreenState extends State<PlayScreen> {
   Widget _setup(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Column(key: const ValueKey('setup'), crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Level', style: Theme.of(context).textTheme.titleMedium),
-      const SizedBox(height: 6),
-      Wrap(spacing: 6, runSpacing: 6, children: [
-        for (final l in botLevels)
-          ChoiceChip(label: Text('${l.number}'), selected: c.level == l, onSelected: (_) => c.setLevel(l)),
+      Row(children: [
+        Expanded(child: Text('Strength', style: Theme.of(context).textTheme.titleMedium)),
+        SegmentedButton<bool>(
+          segments: const [
+            ButtonSegment(value: false, label: Text('Level')),
+            ButtonSegment(value: true, label: Text('Rating')),
+          ],
+          selected: {c.rating != null},
+          showSelectedIcon: false,
+          style: const ButtonStyle(visualDensity: VisualDensity.compact),
+          onSelectionChanged: (v) => c.setRating(v.first ? (c.rating ?? 1500) : null),
+        ),
       ]),
-      const SizedBox(height: 4),
-      Text('Stockfish 19 (light net): Skill Level ${c.level.skill}, depth ${c.level.depth}',
-          style: TextStyle(fontSize: 12, color: scheme.outline)),
+      const SizedBox(height: 6),
+      if (c.rating == null) ...[
+        // уровни — в одну строку, листаются вбок
+        SizedBox(
+          height: 40,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: botLevels.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 6),
+            itemBuilder: (context, i) {
+              final l = botLevels[i];
+              return ChoiceChip(
+                  label: Text('Level ${l.number}'), selected: c.level == l, onSelected: (_) => c.setLevel(l));
+            },
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text('Stockfish 19 (light net): Skill Level ${c.level.skill}, depth ${c.level.depth}',
+            style: TextStyle(fontSize: 12, color: scheme.outline)),
+      ] else ...[
+        // [авторское] рейтинг: движок держит точность этого рейтинга
+        Text('Rating ${c.rating}', style: const TextStyle(fontWeight: FontWeight.w700)),
+        Slider(
+          min: 400,
+          max: 2800,
+          divisions: 48,
+          value: c.rating!.toDouble(),
+          label: '${c.rating}',
+          onChanged: (v) => c.setRating((v / 50).round() * 50),
+        ),
+        Text(
+            'The engine plays at the accuracy of this rating (about ${accuracyForRating(c.rating!).toStringAsFixed(0)}%): '
+            'before each move it leaves out the moves that would drop its accuracy below it.',
+            style: TextStyle(fontSize: 12, color: scheme.outline)),
+      ],
       const SizedBox(height: 14),
       Text('Your colour', style: Theme.of(context).textTheme.titleMedium),
       const SizedBox(height: 6),
@@ -277,6 +325,7 @@ class _PlayScreenState extends State<PlayScreen> {
       PlayStatus.starting => 'Starting the engine…',
       PlayStatus.thinking => 'Engine is thinking…',
       PlayStatus.playing => c.browsing ? 'Viewing move ${c.shownIndex}' : (c.myTurn ? 'Your move' : ''),
+      PlayStatus.blunder => 'A blunder: ${c.blunderLoss >= 99 ? 'it lets the engine mate' : 'it loses ${c.blunderLoss.toStringAsFixed(1)} pawns'}',
       PlayStatus.over => '${c.reason}: ${c.result}',
       PlayStatus.failed => 'The engine did not start: ${c.error}',
       PlayStatus.setup => '',
@@ -289,8 +338,32 @@ class _PlayScreenState extends State<PlayScreen> {
           const SizedBox(width: 8),
         ],
         Expanded(child: Text(status, style: const TextStyle(fontWeight: FontWeight.w700))),
-        Text('Level ${c.level.number}${c.friendly ? ' · Friendly' : ''}', style: TextStyle(color: scheme.outline)),
+        Text('${c.rated != null ? 'Rating ${c.rated!.rating}' : 'Level ${c.level.number}'}${c.friendly ? ' · Friendly' : ''}',
+            style: TextStyle(color: scheme.outline)),
       ]),
+      // по рейтингу: точность движка в этой партии против точности рейтинга
+      if (c.rated case final r?)
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text('Engine accuracy ${r.accuracy.toStringAsFixed(1)}% · target ${r.target.toStringAsFixed(1)}%',
+              style: TextStyle(fontSize: 12, color: scheme.outline)),
+        ),
+      // дружеская партия: зевок — партия стоит; стрелка показывает ответ движка
+      if (c.status == PlayStatus.blunder && c.threat != null)
+        Container(
+          margin: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: scheme.errorContainer, borderRadius: BorderRadius.circular(10)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('The engine would answer ${c.live.san(c.threat!)} (the red arrow) and will not miss it.',
+                style: TextStyle(color: scheme.onErrorContainer)),
+            const SizedBox(height: 8),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              FilledButton.icon(onPressed: c.takeback, icon: const Icon(Icons.undo_rounded), label: const Text('Take it back')),
+              OutlinedButton.icon(onPressed: c.playOn, icon: const Icon(Icons.play_arrow_rounded), label: const Text('Play on')),
+            ]),
+          ]),
+        ),
       if (c.friendly && prefs.playLines && e != null) ...[
         const SizedBox(height: 6),
         Row(children: [

@@ -132,8 +132,18 @@ class StepGlyph extends StatelessWidget {
   Widget build(BuildContext context) => kind == 'alien'
       // вне доски — без кружка, как другие знаки: голова цвета знака на
       // прозрачном фоне
-      ? Image.asset(size > 32 ? 'assets/icons/alien_glyph_96.png' : 'assets/icons/alien_glyph_48.png',
-          width: size, height: size, color: color, colorBlendMode: BlendMode.srcIn, filterQuality: FilterQuality.medium)
+      // чуть меньше других знаков: контур толще, голова не давит на строку
+      ? SizedBox.square(
+          dimension: size,
+          child: Center(
+            child: Image.asset(size > 32 ? 'assets/icons/alien_glyph_96.png' : 'assets/icons/alien_glyph_48.png',
+                width: size * 0.82,
+                height: size * 0.82,
+                color: color,
+                colorBlendMode: BlendMode.srcIn,
+                filterQuality: FilterQuality.medium),
+          ),
+        )
       : CustomPaint(
           size: Size.square(size),
           painter: _GlyphPainter(kind, color, shadow: shadow, hollow: hollow),
