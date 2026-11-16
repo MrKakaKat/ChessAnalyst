@@ -134,9 +134,12 @@ void main() {
     final themes = byTheme.entries.where((e) => e.value.length >= 25).toList()
       ..sort((p, q) => (q.value.reduce((a, b) => a + b) / q.value.length)
           .compareTo(p.value.reduce((a, b) => a + b) / p.value.length));
+    final shift = my - mx;
+    final mae = pairs.map((e) => (e.$1 - e.$2 - shift).abs()).reduce((a, b) => a + b) / n;
     // ignore: avoid_print
     print('SUMMARY n=$n mean lichess ${my.round()} ours ${mx.round()} r=${r.toStringAsFixed(3)} '
-        'fit lichess = ${a.toStringAsFixed(3)}·ours + ${b.round()}');
+        'fit lichess = ${a.toStringAsFixed(3)}·ours + ${b.round()} '
+        'MAE after the mean shift ${mae.round()}');
     for (final e in themes) {
       // ignore: avoid_print
       print('THEME ${e.key} n=${e.value.length} residual ${(e.value.reduce((a, b) => a + b) / e.value.length).round()}');

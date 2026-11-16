@@ -262,6 +262,42 @@ void _drawClock(Canvas canvas, double size, Color color, double hand) {
   canvas.drawLine(c, c + Offset(math.sin(hand), -math.cos(hand)) * (r * 0.62), stroke..strokeWidth = size * 0.09);
 }
 
+/// The resignation flag (the author's drawing, 1080 units): a pole and a
+/// flag in two strips; [progress] 0..1 unfurls it to the right — folded at
+/// 0, as drawn at 1.
+void _drawResign(Canvas canvas, double size, Color color, {double progress = 1}) {
+  final u = progress.clamp(0.0, 1.0);
+  final k = size * 0.95 / 220;
+  canvas.save();
+  canvas.scale(k);
+  canvas.translate(-550, -587);
+  final paint = Paint()..color = color;
+  const r = Radius.circular(20);
+  // древко
+  canvas.drawLine(
+      const Offset(465.75, 489.57),
+      const Offset(467.29, 684.77),
+      Paint()
+        ..color = color
+        ..strokeWidth = 25
+        ..strokeCap = StrokeCap.round);
+  // верхняя полоса: у древка и её разворачивающаяся часть
+  canvas.drawRect(const Rect.fromLTRB(466.5, 477.06, 511.2, 606.07), paint);
+  final b = 31.43 * u;
+  canvas.drawRRect(
+      RRect.fromRectAndCorners(Rect.fromLTRB(479.8 + b, 477.06, 540.9 + b, 606.07), topRight: r, bottomRight: r),
+      paint);
+  // нижняя полоса: две части, дальняя выезжает дальше
+  canvas.drawRRect(
+      RRect.fromRectAndCorners(Rect.fromLTRB(519.6 + b, 503.2, 567.46 + b, 632.2), topLeft: r, bottomLeft: r),
+      paint);
+  final d = 55.34 * u;
+  canvas.drawRRect(
+      RRect.fromRectAndCorners(Rect.fromLTRB(543.5 + d, 503.2, 591.4 + d, 632.2), topRight: r, bottomRight: r),
+      paint);
+  canvas.restore();
+}
+
 /// The draw: ½ (the text glyph sits high in its box: moved down a little).
 void _drawHalf(Canvas canvas, double size, Color color) {
   final tp = TextPainter(
@@ -276,6 +312,7 @@ void drawStepGlyph(Canvas canvas, String kind, double size, Color color,
     {double hand = clockHand, bool hollow = false}) {
   if (kind == 'timeout') return _drawClock(canvas, size, color, hand);
   if (kind == 'draw') return _drawHalf(canvas, size, color);
+  if (kind == 'resign') return _drawResign(canvas, size, color, progress: hand == clockHand ? 1 : hand);
   // полый знак: только контур, чуть толще, чтобы не терялся
   final fill = hollow
       ? (Paint()

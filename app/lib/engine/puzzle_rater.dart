@@ -132,7 +132,30 @@ Future<int> estimateRating(Puzzle p, {bool Function()? cancelled}) async {
       (p.combined ? 150 : 0) +
       // анализ сложности: трудность стартовой позиции
       difficultyBonus(p);
-  return rating.clamp(400, 3000).toInt();
+  return calibrated(rating, p).clamp(400, 3000).toInt();
+}
+
+/// [авторское] Calibration against 1000 Lichess puzzles (tools/lichess):
+/// the order of our engine rating was right (r 0.68), the kinds were not —
+/// mates came out too hard (a mate in one most of all), defences, quiet key
+/// moves and long solutions too easy, and the scale too narrow. The fit on
+/// what the app knows of a puzzle (its engine rating, the solver's moves, a
+/// mate, a mate in one, a defence, a quiet first move) took the error from
+/// 458 to 322 points. Our level stays about 350 below Lichess, whose puzzle
+/// ratings run high.
+int calibrated(int raw, Puzzle p) {
+  final pos = Pos.fromFen(p.fen);
+  final m = NormalMove.fromUci(p.solution.first);
+  final quiet = pos.isLegal(m) && !pos.isCapture(m) && !pos.givesCheck(m) && m.promotion == null;
+  final mate = p.goal == PuzzleGoal.mate;
+  final v = 690 - 350 +
+      0.57 * raw +
+      104 * p.solverMoves -
+      (mate ? 166 : 0) -
+      (mate && p.solverMoves == 1 ? 160 : 0) +
+      (p.defends ? 152 : 0) +
+      (quiet ? 91 : 0);
+  return v.round();
 }
 
 bool _startsWith(List<String> a, List<String> prefix) {

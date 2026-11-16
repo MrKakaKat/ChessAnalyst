@@ -9,9 +9,18 @@ import random
 import sys
 
 N = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
+SEED = int(sys.argv[2]) if len(sys.argv) > 2 else 7
+# задачи прошлых выборок — не повторять
+EXCLUDE = set()
+for path in sys.argv[3:]:
+    try:
+        with open(path) as f:
+            EXCLUDE |= {row[0] for row in csv.reader(f)}
+    except OSError:
+        pass
 LO, HI, BINS = 600, 2600, 20
 PER = N // BINS
-rng = random.Random(7)
+rng = random.Random(SEED)
 reader = csv.reader(sys.stdin)
 header = next(reader)
 col = {name: i for i, name in enumerate(header)}
@@ -22,7 +31,7 @@ for row in reader:
         rating, dev, plays, pop = int(row[col["Rating"]]), int(row[col["RatingDeviation"]]), int(row[col["NbPlays"]]), int(row[col["Popularity"]])
     except (ValueError, KeyError, IndexError):
         continue
-    if dev > 80 or plays < 1000 or pop < 80 or not (LO <= rating < HI):
+    if dev > 80 or plays < 1000 or pop < 80 or not (LO <= rating < HI) or row[col["PuzzleId"]] in EXCLUDE:
         continue
     b = (rating - LO) * BINS // (HI - LO)
     seen[b] += 1

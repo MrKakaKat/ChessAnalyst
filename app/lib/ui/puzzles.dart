@@ -526,7 +526,7 @@ class PuzzleRatings {
 
   /// Version of the rating formula (puzzle_rater.dart): ratings of an older
   /// one are forgotten and the puzzles are rated again.
-  static const version = 6;
+  static const version = 7;
 
   static Future<Map<String, int>> load() async {
     try {
