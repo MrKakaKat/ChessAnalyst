@@ -36,10 +36,11 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:dartchess/dartchess.dart' show NormalMove;
+import 'package:dartchess/dartchess.dart' show NormalMove, Role;
 
 import '../analysis/eval.dart' show Line;
 import '../analysis/features.dart' as features;
+import '../analysis/kinds.dart' show lineHasFork;
 import '../analysis/pos.dart';
 import '../analysis/settings.dart';
 import '../ui/puzzles.dart';
@@ -135,27 +136,35 @@ Future<int> estimateRating(Puzzle p, {bool Function()? cancelled}) async {
   return calibrated(rating, p).clamp(400, 3000).toInt();
 }
 
-/// [авторское] Calibration against 1000 Lichess puzzles (tools/lichess):
-/// the order of our engine rating was right (r 0.68), the kinds were not —
+/// [авторское] Calibration against 2000 Lichess puzzles (tools/lichess):
+/// the order of our engine rating was right (r 0.7), the kinds were not —
 /// mates came out too hard (a mate in one most of all), defences, quiet key
-/// moves and long solutions too easy, and the scale too narrow. The fit on
-/// what the app knows of a puzzle (its engine rating, the solver's moves, a
-/// mate, a mate in one, a defence, a quiet first move) took the error from
-/// 458 to 322 points. Our level stays about 350 below Lichess, whose puzzle
-/// ratings run high.
+/// moves and long solutions too easy, pawn endings too easy and rook endings
+/// too hard, and the scale too narrow. The fit on what the app knows of a
+/// puzzle (its engine rating, the solver's moves, a mate, a mate in one, a
+/// defence, a quiet first move, a fork on the way, a pawn or a rook ending)
+/// took the error from 458 to 323 points; the scale is then widened by a
+/// tenth around the middle (more and the error grows). Our level stays about
+/// 350 below Lichess, whose puzzle ratings run high.
 int calibrated(int raw, Puzzle p) {
   final pos = Pos.fromFen(p.fen);
   final m = NormalMove.fromUci(p.solution.first);
   final quiet = pos.isLegal(m) && !pos.isCapture(m) && !pos.givesCheck(m) && m.promotion == null;
   final mate = p.goal == PuzzleGoal.mate;
-  final v = 690 - 350 +
+  final roles = pos.pieces.map((e) => e.$2.role).toSet();
+  final pawnEnding = roles.difference({Role.king, Role.pawn}).isEmpty;
+  final rookEnding = roles.contains(Role.rook) && roles.difference({Role.king, Role.pawn, Role.rook}).isEmpty;
+  final fit = 343 +
       0.57 * raw +
-      104 * p.solverMoves -
-      (mate ? 166 : 0) -
-      (mate && p.solverMoves == 1 ? 160 : 0) +
-      (p.defends ? 152 : 0) +
-      (quiet ? 91 : 0);
-  return v.round();
+      109 * p.solverMoves -
+      (mate ? 168 : 0) -
+      (mate && p.solverMoves == 1 ? 106 : 0) +
+      (p.defends ? 78 : 0) +
+      (quiet ? 105 : 0) -
+      (lineHasFork(pos, p.solution) ? 34 : 0) +
+      (pawnEnding ? 86 : 0) -
+      (rookEnding ? 148 : 0);
+  return (1251 + 1.1 * (fit - 1251)).round();
 }
 
 bool _startsWith(List<String> a, List<String> prefix) {

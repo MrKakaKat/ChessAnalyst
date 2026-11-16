@@ -432,3 +432,19 @@ bool _overload(Pos board, Pos after, NormalMove move, Side me) {
   }
   return false;
 }
+
+/// [авторское] A move of the solver in [line] (from [start], the solver to
+/// move) forks two valuable pieces (or the king and one): a pattern people
+/// know well, so a puzzle with it plays easier than its engine depth says.
+bool lineHasFork(Pos start, List<String> line) {
+  final me = start.turn;
+  var b = start;
+  for (var i = 0; i < line.length; i++) {
+    final m = NormalMove.fromUci(line[i]);
+    if (!b.isLegal(m)) return false;
+    final next = b.push(m);
+    if (i.isEven && _forks(next, m, me)) return true;
+    b = next;
+  }
+  return false;
+}
