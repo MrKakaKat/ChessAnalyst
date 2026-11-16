@@ -106,8 +106,12 @@ class EngineBot {
     } catch (_) {}
   }
 
+  /// Where the engine comes from; tests and tools put a Stockfish process
+  /// here (the app uses the platform's engine).
+  static Future<UciEngine> Function()? engineFactory;
+
   static Future<EngineBot> start() async {
-    final bot = EngineBot._(await startEngine());
+    final bot = EngineBot._(await (engineFactory ?? startEngine)());
     await bot._ask('uci', 'uciok');
     bot._engine.send('setoption name UCI_ShowWDL value true');
     await bot._ask('isready', 'readyok');

@@ -1,0 +1,53 @@
+name: Lichess calibration
+
+# Our engine rating of puzzles against the Lichess puzzle ratings (CC0
+# database): a stratified sample, rated by app/test/lichess_calibration_test.dart;
+# the sample, the ratings and the summary are committed to the branch.
+# Started by a push that changes tools/lichess/request.txt (its first line:
+# the number of puzzles), or by hand.
+on:
+  push:
+    paths: [tools/lichess/request.txt]
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: "3.47.9"
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Stockfish and zstd
+        run: sudo apt-get update && sudo apt-get install -y stockfish zstd
+      - name: Sample of the Lichess puzzles
+        run: |
+          N=$(head -n1 tools/lichess/request.txt 2>/dev/null || echo 1000)
+          echo "N=$N" >> "$GITHUB_ENV"
+          mkdir -p tools/lichess
+          curl -sSL https://database.lichess.org/lichess_db_puzzle.csv.zst \
+            | zstd -dc | python3 tools/lichess_sample.py "$N" > tools/lichess/sample.csv
+          wc -l tools/lichess/sample.csv
+      - name: Rate them with our rater
+        working-directory: app
+        run: |
+          flutter pub get
+          LICHESS_SAMPLE=../tools/lichess/sample.csv LICHESS_OUT=../tools/lichess/result.csv \
+            STOCKFISH=/usr/games/stockfish flutter test test/lichess_calibration_test.dart --reporter expanded \
+            | tee ../tools/lichess/log.txt
+          grep -E "SUMMARY|THEME" ../tools/lichess/log.txt > ../tools/lichess/summary.txt || true
+      - name: Commit the results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/lichess/sample.csv tools/lichess/result.csv tools/lichess/summary.txt
+          git commit -m "Lichess calibration: $N puzzles rated" || exit 0
+          git push origin HEAD:${{ github.ref_name }}
