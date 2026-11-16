@@ -1,0 +1,1001 @@
+id,lichess,ours,moves,themes
+JeK1x,666,790,2,endgame mate mateIn2 short
+sCGW2,662,700,1,endgame master mate mateIn1 oneMove pillsburysMate
+OZPY8,678,700,1,mate mateIn1 middlegame oneMove pin
+0FN2O,628,790,2,crushing endgame short
+0J3Vn,638,700,1,kingsideAttack mate mateIn1 middlegame oneMove
+n5IRv,603,955,2,crushing fork middlegame short
+NgxN9,696,700,1,endgame master mate mateIn1 oneMove
+XMK82,685,700,1,mate mateIn1 oneMove opening smotheredMate
+KRWGY,629,790,2,backRankMate hangingPiece mate mateIn2 middlegame short
+1VSxW,623,790,2,hangingPiece kingsideAttack mate mateIn2 middlegame short
+1jXcK,617,790,2,endgame mate mateIn2 short
+I3VBW,630,700,1,endgame mate mateIn1 oneMove
+vHsgP,660,700,1,kingsideAttack mate mateIn1 middlegame oneMove
+2psS8,664,700,1,endgame mate mateIn1 oneMove
+NApAX,673,700,1,mate mateIn1 middlegame oneMove
+gPdFp,618,700,1,mate mateIn1 middlegame oneMove
+3lkPE,693,700,1,kingsideAttack mate mateIn1 middlegame oneMove
+tGCeW,603,700,1,kingsideAttack mate mateIn1 middlegame oneMove
+jWYG0,654,700,1,endgame mate mateIn1 oneMove
+5DYlt,675,700,1,mate mateIn1 middlegame oneMove pin
+f6z6h,690,700,1,attackingF2F7 mate mateIn1 oneMove opening
+K6YLp,673,860,2,advantage hangingPiece master middlegame short
+TiyRW,673,700,1,mate mateIn1 middlegame oneMove
+YnDFL,663,935,2,crushing endgame master rookEndgame short
+eh3NH,697,1055,2,advancedPawn crushing endgame master promotion short
+tNPW6,656,790,2,crushing endgame rookEndgame short skewer
+6kDnt,699,700,1,backRankMate hangingPiece mate mateIn1 middlegame oneMove
+SPNIm,663,967,2,advancedPawn crushing endgame promotion short
+8UJgy,638,790,2,anastasiaMate endgame mate mateIn2 short
+cIxQo,624,700,1,master mate mateIn1 middlegame oneMove operaMate
+XFgUL,668,860,2,endgame mate mateIn2 pillsburysMate short
+8rtlX,651,970,3,attraction crushing endgame exposedKing fork long master
+vcakq,684,700,1,kingsideAttack master mate mateIn1 middlegame oneMove
+c8Hbt,647,700,1,endgame master mate mateIn1 oneMove
+zYrGM,640,1520,2,crushing endgame master masterVsMaster short
+XzowY,673,700,1,mate mateIn1 middlegame oneMove
+s1QoW,669,1100,2,crushing endgame short
+ONEca,674,870,2,endgame mate mateIn2 operaMate short
+u5IDv,634,700,1,mate mateIn1 middlegame oneMove
+sbzCh,621,790,2,endgame mate mateIn2 short
+c5ZZ6,640,700,1,backRankMate mate mateIn1 middlegame oneMove
+BjBte,642,700,1,endgame mate mateIn1 oneMove
+GrmFG,644,700,1,master mate mateIn1 middlegame oneMove pillsburysMate
+D3rdA,675,700,1,endgame mate mateIn1 oneMove
+DKj7y,694,790,2,crushing endgame fork short
+mlFtl,687,700,1,endgame mate mateIn1 oneMove
+ZSdAJ,684,840,2,crushing endgame fork short
+PnfbQ,685,700,1,kingsideAttack mate mateIn1 middlegame oneMove
+WxJHv,670,860,2,mate mateIn2 middlegame short
+xMUvw,686,1157,4,advancedPawn crushing endgame master masterVsMaster promotion rookEndgame veryLong
+HIgKw,788,700,1,endgame master mate mateIn1 oneMove
+1FGuv,742,700,1,mate mateIn1 middlegame oneMove queensideAttack
+zrVli,791,878,2,advantage fork opening short
+3c7ln,778,700,1,endgame master mate mateIn1 oneMove
+lFsyF,756,700,1,mate mateIn1 middlegame oneMove
+xmMY6,743,869,2,crushing fork middlegame short
+jrW4U,762,790,2,endgame mate mateIn2 short
+cZvhY,785,790,2,endgame mate mateIn2 rookEndgame short
+oR5e5,799,700,1,mate mateIn1 middlegame oneMove pin
+2S6mD,781,964,1,endgame mate mateIn1 oneMove
+tmn8f,757,870,2,crushing discoveredAttack middlegame short
+09qMn,759,860,2,crushing discoveredAttack middlegame short
+oX1A8,703,790,2,mate mateIn2 middlegame short
+nWqEp,739,700,1,endgame master mate mateIn1 oneMove
+fEEsu,776,860,2,advantage discoveredAttack middlegame short
+7tDJ7,795,700,1,mate mateIn1 middlegame oneMove swallowstailMate
+ZQnp0,741,980,2,crushing fork master middlegame short
+bjhFt,727,700,1,mate mateIn1 oneMove opening swallowstailMate
+tgDl8,770,790,2,hangingPiece kingsideAttack mate mateIn2 middlegame short
+l5GP9,778,790,2,kingsideAttack mate mateIn2 middlegame short
+aqMgZ,781,935,2,crushing fork master middlegame short
+0NCYa,750,700,1,endgame mate mateIn1 oneMove
+jUkm9,777,790,2,crushing endgame fork master short
+BkRRP,730,860,2,advantage fork middlegame short
+eY4pD,779,790,2,advantage deflection endgame master short
+4jWzu,744,700,1,mate mateIn1 middlegame oneMove queensideAttack
+4QOsX,711,970,2,advancedPawn crushing kingsideAttack middlegame short
+GsvDR,773,953,2,advantage fork middlegame short
+cvXcj,785,700,1,mate mateIn1 middlegame oneMove queensideAttack
+KB4Ss,781,790,2,crushing endgame fork short
+c58jQ,791,935,2,crushing endgame fork master masterVsMaster short
+WBe34,772,700,1,endgame mate mateIn1 oneMove
+NsX4e,749,700,1,endgame hookMate master mate mateIn1 oneMove
+LPlWY,778,1344,2,advancedPawn crushing endgame master promotion short
+qMDt1,797,790,2,crushing endgame queenEndgame short skewer
+jrAU6,793,800,2,advantage endgame fork short
+VIC8a,776,700,1,endgame mate mateIn1 oneMove queensideAttack
+fLcxy,754,700,1,kingsideAttack mate mateIn1 oneMove opening
+AMV14,778,700,1,mate mateIn1 middlegame oneMove
+euC8B,701,869,2,crushing endgame fork short
+vAbUD,771,960,2,endgame kingsideAttack mate mateIn2 short
+m6cQE,786,1125,3,backRankMate endgame long mate mateIn3 sacrifice
+w4Ca9,786,860,2,mate mateIn2 middlegame pin sacrifice short
+aAtoQ,786,700,1,kingsideAttack mate mateIn1 middlegame oneMove
+xaZqm,784,815,2,crushing fork middlegame short
+OmN17,783,700,1,attackingF2F7 mate mateIn1 oneMove opening
+Uhs21,797,860,2,crushing endgame master short
+SRXWr,781,860,2,mate mateIn2 middlegame sacrifice short
+l69eG,782,838,2,mate mateIn2 middlegame short
+gf9Wp,747,860,2,backRankMate endgame mate mateIn2 short xRayAttack
+2vIWY,863,1323,2,crushing endgame master rookEndgame short skewer
+GIB05,883,700,1,mate mateIn1 oneMove opening
+Ar8a3,855,700,1,mate mateIn1 middlegame oneMove
+JheO9,808,700,1,endgame mate mateIn1 oneMove queenEndgame
+5ecbE,858,935,2,crushing endgame master pin short
+zdY3o,898,1005,2,advantage capturingDefender middlegame short
+Z4CNf,808,894,2,crushing fork middlegame short
+v3ErT,895,815,2,crushing endgame rookEndgame short skewer
+qHJ4Y,803,790,2,crushing endgame fork queenRookEndgame short
+DuT4y,818,877,2,advancedPawn endgame kingsideAttack mate mateIn2 promotion short
+FgA2F,808,700,1,discoveredCheck doubleCheck master mate mateIn1 middlegame oneMove
+EV5xX,865,790,2,endgame epauletteMate mate mateIn2 short
+wDUqW,898,700,1,hangingPiece kingsideAttack mate mateIn1 middlegame oneMove
+DmDch,809,860,2,advantage hangingPiece middlegame short
+VcOeh,813,860,2,crushing endgame short
+aZzdX,819,700,1,endgame mate mateIn1 oneMove queenRookEndgame
+6iq4u,865,700,1,endgame hangingPiece mate mateIn1 oneMove
+pSVVu,862,790,2,mate mateIn2 middlegame short
+ZPSfZ,898,700,1,epauletteMate mate mateIn1 oneMove opening
+txMSV,871,700,1,mate mateIn1 middlegame oneMove swallowstailMate
+d150B,875,700,1,endgame master mate mateIn1 oneMove
+mM6DG,809,1015,2,advantage endgame master pin short
+EnfVf,827,972,2,advantage kingsideAttack opening pin short
+DGmIe,889,790,2,kingsideAttack mate mateIn2 opening short
+1maAv,896,965,2,advantage endgame fork short
+YOAym,857,700,1,endgame master mate mateIn1 oneMove
+6dxvF,861,1090,2,endgame mate mateIn2 short
+BTnJE,865,860,2,crushing kingsideAttack middlegame pin short
+kTp7N,884,700,1,cornerMate kingsideAttack mate mateIn1 middlegame oneMove
+OcVTt,885,790,2,endgame mate mateIn2 pillsburysMate short
+8is2W,870,790,2,advancedPawn endgame mate mateIn2 promotion queenEndgame short
+P8YSr,811,700,1,endgame mate mateIn1 oneMove swallowstailMate
+AxuWQ,867,700,1,mate mateIn1 middlegame oneMove
+HNufA,865,860,2,mate mateIn2 middlegame sacrifice short
+FIANr,855,980,2,advantage hangingPiece middlegame short
+VDqsd,872,700,1,kingsideAttack master mate mateIn1 middlegame oneMove
+qU3p5,893,907,2,mate mateIn2 middlegame queensideAttack short
+WXBmR,896,700,1,endgame mate mateIn1 oneMove
+wnBIT,830,700,1,dovetailMate endgame mate mateIn1 oneMove
+K43m5,878,880,3,endgame fork long mate mateIn3
+NU5xN,863,1042,3,advancedPawn crushing endgame long pawnEndgame
+B4TE9,864,910,2,crushing endgame hangingPiece short
+0nSDR,818,860,2,advancedPawn endgame mate mateIn2 promotion short
+5D9Zl,868,820,2,arabianMate endgame mate mateIn2 short
+CA0Th,895,700,1,master mate mateIn1 middlegame oneMove queensideAttack
+xFQns,854,910,2,crushing fork middlegame short
+Buv5r,884,890,2,crushing middlegame pin short
+QBY4D,892,995,3,backRankMate endgame long mate mateIn3
+cBlFx,891,860,2,advantage endgame hangingPiece short
+EG4NP,802,700,1,mate mateIn1 oneMove opening
+VPSMU,926,790,2,backRankMate deflection discoveredAttack endgame mate mateIn2 short
+3YTL2,932,975,3,crushing endgame long queenEndgame
+XseR6,957,864,2,crushing endgame master rookEndgame short skewer
+S71jF,928,815,2,advantage endgame fork short
+Gj2Hf,991,1070,3,crushing endgame hangingPiece knightEndgame long
+eIySi,949,1138,2,advantage kingsideAttack master middlegame pin short
+gIRFh,923,700,1,endgame hookMate mate mateIn1 oneMove
+iHbUh,984,700,1,master mate mateIn1 oneMove opening
+qlR5y,952,700,1,mate mateIn1 middlegame oneMove
+c198p,992,1050,2,discoveredCheck doubleCheck endgame hookMate mate mateIn2 short
+jhY6y,974,860,2,mate mateIn2 middlegame operaMate sacrifice short
+A5Sef,963,980,2,advantage discoveredAttack kingsideAttack opening short
+6dWwb,997,790,2,endgame mate mateIn2 short
+oOQL5,957,814,2,crushing master middlegame short
+cBoMo,903,700,1,mate mateIn1 middlegame oneMove smotheredMate
+7wXZ1,944,860,2,crushing discoveredAttack opening short
+gfn1y,938,790,2,mate mateIn2 middlegame short
+jhhrj,954,910,2,defensiveMove endgame mate mateIn2 pawnEndgame short zugzwang
+SErMS,906,890,3,endgame kingsideAttack long mate mateIn3
+CiThV,916,1030,2,crushing endgame short
+v4ib2,973,700,1,mate mateIn1 middlegame oneMove
+w8uCE,959,1446,2,advantage endgame fork short
+9gV6X,952,885,2,advantage middlegame short
+vIyn0,946,790,2,endgame mate mateIn2 short
+RrhNV,914,1120,2,endgame mate mateIn2 queenRookEndgame short
+nQaat,972,700,1,kingsideAttack mate mateIn1 middlegame oneMove
+hVyBz,922,790,2,endgame mate mateIn2 short
+4ujwh,987,790,2,mate mateIn2 middlegame short
+6fSiC,932,790,2,endgame mate mateIn2 short
+odxSN,918,1180,3,crushing endgame fork long
+yXrqp,941,700,1,endgame master mate mateIn1 oneMove
+DPKgu,984,980,2,crushing master middlegame pin short
+th7Hs,978,748,1,endgame mate mateIn1 oneMove
+Bs4Wb,975,790,2,hangingPiece mate mateIn2 opening short
+Tsf4o,973,790,2,crushing endgame short
+UChyN,987,1147,2,advantage middlegame short
+M0a0D,964,790,2,crushing fork middlegame short
+6UgKJ,977,700,1,mate mateIn1 middlegame oneMove
+Mn7qR,983,790,2,kingsideAttack mate mateIn2 middlegame short
+CuZaR,986,950,3,long mate mateIn3 middlegame sacrifice
+Adkyz,965,790,2,mate mateIn2 middlegame short
+6Gkrs,978,790,2,endgame mate mateIn2 short
+odcRl,978,840,2,advantage endgame fork short
+6QUYP,920,790,2,crushing endgame fork short
+p4QLI,949,790,2,crushing endgame fork short
+6RNlv,937,1006,2,crushing endgame fork master short
+VJhPG,931,700,1,kingsideAttack master mate mateIn1 middlegame oneMove
+LLpnB,970,790,2,endgame mate mateIn2 short
+wAsxY,944,700,1,master masterVsMaster mate mateIn1 middlegame oneMove smotheredMate
+BSr91,984,790,2,kingsideAttack mate mateIn2 middlegame short
+Wsvb6,1051,790,2,deflection mate mateIn2 middlegame short
+X0Es9,1032,700,1,master mate mateIn1 middlegame oneMove
+8FhPC,1076,1110,2,mate mateIn2 middlegame sacrifice short
+HSRQ9,1054,790,2,endgame mate mateIn2 rookEndgame short
+5rJaT,1036,1250,2,attraction mate mateIn2 middlegame pillsburysMate queensideAttack sacrifice short
+qZHf4,1036,954,3,endgame long mate mateIn3
+2wJnd,1010,860,2,advantage endgame short
+0lWLh,1078,860,2,crushing discoveredAttack master middlegame short
+rPdkI,1079,955,2,crushing opening short
+0TlFR,1098,790,2,mate mateIn2 middlegame short
+9UyzE,1084,700,1,mate mateIn1 middlegame oneMove
+qxumm,1061,1070,2,advantage discoveredAttack discoveredCheck endgame master short
+912AZ,1072,1435,3,advantage endgame long master
+m8ugk,1015,790,2,advantage fork opening short
+e1RjV,1064,1000,2,advantage discoveredAttack kingsideAttack middlegame short
+OPOhP,1074,1268,2,advantage middlegame short
+tQXwM,1084,700,1,endgame mate mateIn1 oneMove
+eq2Be,1058,955,2,crushing discoveredAttack kingsideAttack middlegame short
+2aQ3R,1012,700,1,mate mateIn1 oneMove opening
+vhai7,1087,1323,2,crushing endgame fork pin short
+8ueOf,1098,1506,3,crushing exposedKing fork long middlegame
+fCI2X,1039,1329,3,advantage attraction endgame long sacrifice skewer
+XmHcg,1098,790,2,advantage hangingPiece middlegame pin short
+e6V7d,1057,955,2,crushing endgame master rookEndgame short xRayAttack
+IMZ4d,1073,876,2,crushing deflection opening short
+EKhIT,1029,1080,3,long mate mateIn3 middlegame
+NaANP,1051,700,1,endgame master masterVsMaster mate mateIn1 oneMove
+l7MBs,1088,700,1,mate mateIn1 middlegame oneMove
+v2O25,1016,910,2,advantage fork middlegame short
+2lCol,1068,952,2,advancedPawn bishopEndgame crushing endgame short
+AuNux,1094,1405,4,advantage fork middlegame sacrifice veryLong
+hza81,1089,935,2,advantage fork master middlegame short
+E3qQY,1082,700,1,blindSwineMate mate mateIn1 middlegame oneMove
+cDzI3,1038,790,2,attackingF2F7 mate mateIn2 opening short
+LG1cv,1037,700,1,arabianMate kingsideAttack mate mateIn1 middlegame oneMove
+Lt4L5,1062,790,2,kingsideAttack mate mateIn2 middlegame short
+K6LMJ,1063,885,2,crushing discoveredAttack endgame short
+GvZE7,1077,910,2,crushing fork middlegame short
+YGmdC,1031,1142,2,advantage middlegame short
+uc5tA,1099,1812,3,crushing exposedKing long middlegame pin
+vPWd4,1056,1054,2,mate mateIn2 middlegame queensideAttack short
+rut3L,1034,888,2,advantage endgame fork short
+FFnRa,1050,820,2,mate mateIn2 middlegame queensideAttack short
+fYzdk,1033,860,2,kingsideAttack mate mateIn2 opening short
+xMeQQ,1045,790,2,endgame hangingPiece mate mateIn2 short
+2tqqi,1003,700,1,mate mateIn1 oneMove opening
+QpglT,1088,1090,2,endgame epauletteMate mate mateIn2 rookEndgame short
+IAvzU,1019,700,1,attackingF2F7 mate mateIn1 middlegame oneMove
+K0pUc,1085,936,2,advantage endgame fork master masterVsMaster short
+8VUcP,1028,989,2,advancedPawn advantage endgame promotion rookEndgame short
+AE7o2,1169,790,2,kingsideAttack mate mateIn2 middlegame short
+Jod6W,1174,860,2,crushing endgame rookEndgame short skewer
+YJiyw,1192,790,2,fork mate mateIn2 middlegame short
+zRHZv,1165,1424,4,advantage fork opening veryLong
+uHTVV,1185,1340,2,advantage deflection master middlegame short
+kTkll,1160,954,3,crushing fork long middlegame
+EJJKQ,1182,1172,3,kingsideAttack long mate mateIn3 middlegame sacrifice
+Z4Rli,1185,790,2,mate mateIn2 middlegame short
+VDBLI,1199,1270,3,advancedPawn crushing defensiveMove endgame long
+csT5h,1182,930,2,kingsideAttack mate mateIn2 middlegame short
+RxE38,1135,1005,2,advantage endgame fork short
+Sx53r,1155,700,1,mate mateIn1 middlegame oneMove
+xNZYl,1123,700,1,endgame mate mateIn1 oneMove
+UcQTW,1186,1143,3,advancedPawn crushing endgame long pawnEndgame
+1P9Wg,1169,919,2,advantage fork opening short
+9y5Cy,1153,700,1,mate mateIn1 middlegame oneMove
+aJhOY,1176,1153,4,crushing endgame fork veryLong
+s5Bb7,1122,1011,2,advantage middlegame short
+RR9Sl,1119,700,1,mate mateIn1 middlegame oneMove
+Izw7w,1122,910,2,crushing endgame queenEndgame short
+CnpKW,1183,700,1,endgame mate mateIn1 oneMove
+DDeLo,1115,869,2,crushing endgame short skewer
+Cd15D,1148,1112,3,advancedPawn crushing endgame long master
+dw2sz,1195,860,2,advantage discoveredAttack middlegame short
+GCkbx,1171,700,1,endgame mate mateIn1 oneMove
+Q7tgD,1115,815,2,advantage discoveredAttack discoveredCheck middlegame short
+Ndpa3,1172,1105,2,advantage endgame short
+JUlD4,1127,960,2,advantage middlegame short trappedPiece
+T1slH,1188,1210,2,advancedPawn endgame mate mateIn2 short
+Uthhv,1129,930,2,discoveredAttack kingsideAttack mate mateIn2 middlegame sacrifice short
+IeOmi,1176,1006,2,advantage fork middlegame short
+dJcbc,1166,1030,2,advantage endgame pin short
+dnko3,1114,1000,3,advantage endgame hangingPiece long master quietMove
+bceh2,1161,700,1,mate mateIn1 middlegame oneMove
+ktaKD,1143,878,2,crushing endgame fork short
+CtnOr,1143,910,2,crushing discoveredAttack endgame fork short
+Vs5nY,1125,880,3,endgame long mate mateIn3
+ukQNQ,1187,790,2,endgame mate mateIn2 short
+45uZi,1156,2069,3,crushing long middlegame
+7Lfz3,1136,860,2,kingsideAttack mate mateIn2 middlegame short
+jODFF,1168,700,1,bodenMate mate mateIn1 middlegame oneMove
+Iebg9,1170,860,2,endgame mate mateIn2 short
+cpVJU,1171,860,2,mate mateIn2 middlegame short
+p0QC6,1138,790,2,fork mate mateIn2 middlegame short
+otLX7,1173,1737,4,crushing endgame pawnEndgame veryLong
+J29XC,1193,1119,3,advantage endgame long
+9ZOq7,1189,928,3,long mate mateIn3 middlegame
+r67CU,1182,1614,2,crushing defensiveMove endgame short
+rNe1j,1186,700,1,mate mateIn1 middlegame oneMove
+hQP1S,1137,790,2,endgame hangingPiece mate mateIn2 short
+WGStV,1259,790,2,endgame hookMate mate mateIn2 short
+ef2wM,1204,860,2,advantage discoveredAttack middlegame short
+Pvpp0,1287,1264,5,advancedPawn crushing endgame pawnEndgame promotion quietMove veryLong
+kcwqk,1223,1310,2,attraction mate mateIn2 middlegame sacrifice short
+CHwRh,1291,700,1,mate mateIn1 middlegame oneMove
+nxr0i,1292,969,3,crushing discoveredAttack exposedKing long middlegame
+MzwzA,1223,885,2,crushing middlegame short
+NvZSu,1263,1228,3,advantage fork long middlegame
+Mfa7G,1272,1160,3,long mate mateIn3 middlegame sacrifice
+0tEtC,1225,1101,3,advantage endgame fork long pin
+gpQAC,1232,1432,3,advantage endgame fork long
+nS5LH,1245,1014,2,crushing endgame master pin short
+m0Bol,1203,1170,3,crushing endgame long
+4B4Pw,1298,840,2,crushing fork master middlegame short
+QS5bV,1255,930,2,discoveredAttack endgame mate mateIn2 short
+7iWze,1269,847,2,crushing endgame short
+mGGa5,1246,1155,2,advantage master middlegame pin short
+1xb2a,1231,1125,3,advantage defensiveMove discoveredAttack endgame long
+TzVYt,1291,988,3,advantage exposedKing fork long middlegame
+kxXHC,1201,1016,3,crushing deflection long middlegame
+fbzC2,1251,790,2,kingsideAttack mate mateIn2 middlegame short
+7S0VA,1206,916,2,crushing discoveredAttack middlegame queensideAttack short
+iD6xr,1235,1038,2,advantage middlegame pin short
+xK8zZ,1270,885,2,crushing deflection endgame short
+U47dn,1238,1320,2,kingsideAttack mate mateIn2 middlegame short
+2lpRE,1294,1215,2,advancedPawn crushing endgame short
+IunF8,1284,1047,2,advantage hangingPiece middlegame short
+0RlEL,1227,906,2,advantage attraction kingsideAttack middlegame short
+cjWnn,1288,820,2,endgame mate mateIn2 short
+o63UN,1283,935,2,crushing endgame master queenEndgame short
+XmuOX,1293,1268,2,crushing endgame pin short
+Mi0Y9,1299,1715,2,crushing defensiveMove hangingPiece master middlegame short
+e1jM5,1235,935,2,crushing fork master middlegame short
+prNHl,1203,1042,3,advantage attraction exposedKing long middlegame
+xPnH3,1278,700,1,endgame mate mateIn1 oneMove
+KICrf,1289,1141,4,advancedPawn crushing endgame exposedKing knightEndgame promotion veryLong
+CURGD,1238,870,2,endgame mate mateIn2 short
+pZh0o,1224,790,2,deflection endgame mate mateIn2 rookEndgame short
+PPmFK,1240,790,2,advantage endgame fork short
+F5hRB,1239,700,1,mate mateIn1 middlegame oneMove
+ZxFec,1253,1129,3,advancedPawn crushing endgame long promotion rookEndgame
+McTsi,1280,790,2,endgame fork master mate mateIn2 short
+bEXYh,1296,700,1,endgame mate mateIn1 oneMove
+zwbpK,1272,860,2,crushing endgame fork short
+i3x2M,1242,860,2,mate mateIn2 middlegame operaMate sacrifice short
+M8S1u,1279,1215,2,attraction kingsideAttack mate mateIn2 middlegame sacrifice short
+Dk0M7,1206,860,2,mate mateIn2 middlegame queensideAttack sacrifice short
+16TtF,1256,790,2,mate mateIn2 middlegame short
+M8x0Q,1278,885,2,crushing discoveredAttack discoveredCheck endgame short
+3kdx9,1220,1130,3,advantage long opening
+TN2B4,1314,1095,3,advancedPawn advantage capturingDefender endgame long
+XcZD6,1301,1190,3,endgame fork long mate mateIn3 sacrifice
+1hdqk,1354,1175,3,crushing defensiveMove endgame long rookEndgame
+1qoAt,1394,990,2,endgame mate mateIn2 short
+TW9Bx,1325,1265,3,advantage long middlegame
+aAbsJ,1323,991,2,crushing master middlegame pin short
+4G5SH,1304,700,1,mate mateIn1 middlegame oneMove
+Vf1OR,1395,885,2,advantage middlegame short
+lEfmv,1347,1434,3,advantage endgame long quietMove
+egeSv,1348,1422,3,crushing endgame long
+rNRGK,1377,916,2,endgame
+KoBNC,1375,1150,2,endgame mate mateIn2 short
+6wAeo,1372,790,2,mate mateIn2 middlegame short
+OONsW,1348,964,3,crushing endgame hangingPiece long
+IgeQX,1314,1438,4,crushing endgame skewer veryLong
+GoQJX,1359,999,2,crushing fork middlegame short
+I4by1,1346,1509,2,crushing middlegame short
+dDdPb,1371,1078,3,advantage endgame hangingPiece long
+oocWn,1386,1084,3,advancedPawn crushing endgame knightEndgame long
+ldKD4,1341,1000,3,crushing endgame fork long
+mJg0v,1358,860,2,collinearMove endgame mate mateIn2 rookEndgame short
+GmDkj,1335,864,2,crushing endgame rookEndgame short
+bgqWn,1340,1035,2,crushing defensiveMove endgame master rookEndgame short
+Uy17y,1303,1003,3,advantage long middlegame pin
+wYSuz,1394,1562,3,advantage attraction deflection discoveredCheck doubleCheck long middlegame pin
+K9Z1q,1380,1410,2,backRankMate mate mateIn2 middlegame sacrifice short
+Er7Lj,1306,978,3,advantage kingsideAttack long middlegame
+yNSff,1366,1008,3,advantage endgame fork long sacrifice
+v8Yjo,1314,990,2,crushing endgame queenEndgame short
+eXFc6,1304,1112,3,attraction crushing deflection endgame fork long
+G1gcA,1386,869,2,crushing hangingPiece middlegame short
+zAK3d,1398,1290,4,attraction kingsideAttack mate mateIn4 middlegame sacrifice veryLong
+OHDz3,1399,935,2,advantage fork opening short
+SN5lX,1330,700,1,endgame mate mateIn1 oneMove
+Y0WE4,1337,1067,3,crushing endgame long
+1xAGb,1328,1521,2,advantage kingsideAttack master middlegame short
+4mSBY,1313,790,2,endgame fork mate mateIn2 short
+HLMOH,1353,1705,4,crushing middlegame veryLong
+8lDzH,1373,1470,2,advancedPawn advantage endgame master short
+QLxrj,1300,1063,2,advantage middlegame short
+4BEmo,1335,944,2,advantage opening short
+PoxDF,1341,1097,3,crushing deflection long middlegame
+KcnOx,1343,790,2,mate mateIn2 middlegame queensideAttack short
+JSeFS,1370,860,2,backRankMate mate mateIn2 middlegame short xRayAttack
+DFVVp,1351,1279,4,advancedPawn crushing endgame pawnEndgame promotion veryLong
+QFGve,1331,820,2,kingsideAttack mate mateIn2 middlegame short
+Tktw0,1330,1038,2,advantage endgame short
+szvDS,1344,1173,3,kingsideAttack long mate mateIn3 middlegame
+93iMV,1337,1190,3,clearance deflection long mate mateIn3 middlegame sacrifice
+raPeV,1302,870,2,kingsideAttack mate mateIn2 middlegame short
+0DDPu,1466,1994,3,attraction crushing endgame fork long master sacrifice
+819FE,1490,1030,2,advantage middlegame pin short
+knQ7Y,1466,1040,2,endgame mate mateIn2 pin short
+Ii1qf,1441,790,2,crushing endgame fork short
+kl3ka,1429,1000,3,crushing long middlegame
+3lO74,1405,1090,2,endgame mate mateIn2 short
+q5UbO,1413,1162,3,advancedPawn crushing defensiveMove endgame long promotion
+WF5rq,1411,1050,3,advantage endgame long
+nnh78,1466,860,2,crushing middlegame pin short
+jAy1x,1462,966,3,endgame exposedKing long mate mateIn3
+kiA8W,1483,1884,3,advantage endgame long pin
+JjvSZ,1444,935,2,advantage discoveredAttack middlegame short
+5kOAf,1495,895,2,advantage middlegame short
+2BePd,1467,975,3,attraction crushing endgame fork long master sacrifice
+G2ctR,1464,790,2,advantage intermezzo middlegame short
+ptUjJ,1424,865,2,advantage fork middlegame short
+77cwj,1454,943,2,crushing endgame master queenRookEndgame short
+TxKL8,1467,1059,2,advantage middlegame short
+0ElLV,1407,1048,3,crushing endgame long
+rAuxN,1435,790,2,endgame fork master masterVsMaster mate mateIn2 short
+8iRFn,1488,939,2,advantage kingsideAttack middlegame short
+u7Z9g,1426,885,2,crushing middlegame short
+kowCZ,1441,1108,2,advantage fork master middlegame short
+Bc0ek,1421,980,2,crushing middlegame short
+XfB5b,1407,1782,3,advantage long middlegame sacrifice
+A9vou,1460,847,2,advantage kingsideAttack master middlegame short
+Q27c7,1421,935,2,crushing intermezzo kingsideAttack master opening short
+mjxA4,1428,1364,3,advantage exposedKing fork long opening pin
+ICA5F,1472,885,2,advantage endgame fork master short
+DSDjj,1438,860,2,advantage endgame fork master short
+I70Bg,1413,930,2,advantage fork master middlegame short
+2IvIz,1482,985,2,advantage endgame short
+l5Itv,1441,1265,3,advantage endgame long
+WT2vK,1459,790,2,mate mateIn2 middlegame pin queensideAttack short
+YPkH3,1478,1074,2,advantage endgame sacrifice short
+SuAQz,1427,944,2,crushing discoveredAttack master middlegame short
+cI9jo,1404,980,2,advantage master middlegame short
+712fc,1410,790,2,mate mateIn2 middlegame short
+Gvp8s,1472,814,2,advantage kingsideAttack middlegame pin short
+ekgqj,1450,1618,3,advantage long middlegame
+Q2ZnP,1472,980,2,advantage capturingDefender middlegame short
+XEVV8,1427,1108,3,advantage long middlegame
+g9fKd,1408,790,2,deflection mate mateIn2 middlegame pin short
+3TpHu,1497,880,2,crushing deflection endgame short
+WuF5l,1448,1060,2,endgame mate mateIn2 rookEndgame short
+8AGmX,1405,1027,3,crushing endgame long skewer
+TWeUC,1406,897,2,advantage discoveredAttack discoveredCheck middlegame short
+DWeb8,1431,1533,3,advancedPawn crushing endgame long promotion sacrifice
+Xo8Rk,1459,1198,3,advantage endgame hangingPiece long
+y1qKa,1486,1180,2,advantage middlegame short trappedPiece
+S9tRq,1509,1733,3,advantage fork long middlegame
+0IpEH,1526,1455,3,advantage endgame long
+a0i2L,1539,1581,3,crushing endgame long quietMove
+pkFvY,1565,870,2,endgame mate mateIn2 short
+B6ml2,1555,1373,3,advantage clearance fork long middlegame
+vaQBV,1582,943,2,attraction crushing endgame short
+BPeKw,1584,819,2,crushing fork master middlegame short
+SjFVe,1576,790,2,endgame mate mateIn2 short
+zYzzE,1550,1215,3,advantage long opening
+OkhW5,1551,790,2,discoveredAttack discoveredCheck endgame mate mateIn2 pillsburysMate short
+XqzLd,1508,1083,2,crushing endgame short
+HeTeK,1591,790,2,blindSwineMate mate mateIn2 middlegame short
+Eb8AE,1503,880,3,long mate mateIn3 middlegame
+Q1mwB,1515,1762,2,advantage master middlegame pin sacrifice short
+Fijfl,1544,820,2,mate mateIn2 middlegame queensideAttack short
+C8uCq,1536,910,2,crushing middlegame short
+I3r6o,1504,1025,2,advantage capturingDefender master middlegame short
+RXDya,1539,2007,3,advantage discoveredAttack kingsideAttack long middlegame sacrifice
+PxxwQ,1505,930,2,advantage middlegame queensideAttack short
+ZFFts,1527,970,2,endgame mate mateIn2 pin short
+9ykC7,1555,790,2,endgame intermezzo mate mateIn2 short
+Aalj4,1541,860,2,crushing middlegame pin short
+gENYR,1591,1227,3,crushing endgame long skewer
+wrAnc,1543,923,2,crushing discoveredAttack master middlegame queensideAttack short
+Ed1x0,1550,1659,3,crushing kingsideAttack long middlegame pin sacrifice
+hm20g,1551,1142,3,crushing defensiveMove endgame long pawnEndgame
+hNqc3,1580,860,2,endgame mate mateIn2 short
+Mj87B,1506,880,3,endgame exposedKing long mate mateIn3
+ISY8Y,1575,900,2,mate mateIn2 middlegame short
+DjpbP,1578,1180,2,fork mate mateIn2 middlegame short
+kCu3s,1531,1147,2,crushing defensiveMove endgame short
+ls6Xp,1537,910,2,crushing endgame master short
+TJ5Rk,1527,1192,3,crushing defensiveMove endgame long pawnEndgame zugzwang
+mPnmB,1526,1124,3,advantage long middlegame
+3uET6,1523,1228,4,crushing discoveredAttack kingsideAttack middlegame veryLong
+aZ7n9,1545,1345,4,crushing endgame pawnEndgame quietMove sacrifice veryLong
+VxWBB,1568,1000,2,crushing middlegame short
+FcMHw,1563,1002,2,advantage deflection kingsideAttack middlegame short
+1jbWx,1575,1029,2,advantage middlegame short
+PaAoj,1528,1957,2,advantage endgame pin sacrifice short
+alN0D,1570,1575,4,crushing deflection discoveredAttack discoveredCheck middlegame pin veryLong
+qy008,1514,1030,2,advantage middlegame pin short
+bQ1lL,1586,1265,2,advantage attraction capturingDefender intermezzo middlegame short
+41tqG,1566,977,2,crushing deflection master middlegame short
+1XdIt,1524,910,2,crushing discoveredAttack middlegame short
+MTWgu,1531,1758,3,crushing endgame long master quietMove
+3WseA,1557,910,2,advantage middlegame short
+ElKes,1510,790,2,mate mateIn2 middlegame short
+OGJi6,1579,1112,2,crushing hangingPiece master middlegame short
+1oQuu,1512,1068,3,advantage deflection endgame long
+YzII0,1630,1130,2,advantage endgame master rookEndgame short
+lC8fI,1626,1670,2,crushing master masterVsMaster middlegame short
+gixJZ,1655,1187,3,advantage long middlegame
+Zv7yh,1658,1470,2,crushing endgame fork short
+4RqQ9,1683,1100,2,crushing endgame short
+gEajE,1604,910,2,advancedPawn crushing intermezzo opening short
+PE5KQ,1643,1973,3,advantage discoveredAttack discoveredCheck fork long middlegame sacrifice
+JH44W,1633,1537,2,crushing endgame intermezzo short
+723Fj,1625,1524,3,crushing long middlegame pin
+J3Dlh,1664,1240,2,advantage hangingPiece intermezzo middlegame short
+x7Zmp,1649,1093,3,crushing long master middlegame
+hvc2g,1618,790,2,discoveredCheck doubleCheck mate mateIn2 middlegame pillsburysMate short
+khQ03,1676,980,2,crushing endgame quietMove short
+pyy5x,1648,1145,2,crushing endgame short trappedPiece
+hcQ12,1690,1035,2,advancedPawn advantage kingsideAttack master middlegame promotion short
+wPKWz,1627,1009,3,crushing endgame long
+5EKuN,1627,1622,3,advantage long middlegame sacrifice
+oJqD2,1690,1635,2,advantage middlegame short
+lq7tP,1675,790,2,mate mateIn2 middlegame pin queensideAttack short
+WyTI7,1640,1218,2,advantage endgame master masterVsMaster short
+Y8DSF,1619,1899,2,crushing endgame sacrifice short
+MFu0E,1621,1002,2,crushing endgame pin short
+3WJb2,1644,817,2,advantage discoveredAttack discoveredCheck middlegame short
+8MHJm,1630,1196,2,crushing middlegame short
+vctTQ,1648,1268,3,attraction crushing fork long middlegame pin sacrifice
+6RQ7y,1606,860,2,mate mateIn2 middlegame operaMate sacrifice short
+nklgq,1652,1067,3,advantage endgame long quietMove
+R4oU4,1669,1225,2,crushing endgame short trappedPiece
+nSQMo,1600,1213,4,crushing deflection discoveredAttack discoveredCheck endgame exposedKing rookEndgame veryLong
+CJ9P0,1654,1095,3,advantage long middlegame
+3dOEW,1698,1280,2,attraction endgame mate mateIn2 sacrifice short
+Z9adz,1665,1805,2,advancedPawn clearance crushing defensiveMove endgame rookEndgame short
+vwZG7,1650,1013,2,advantage intermezzo middlegame short
+shcOf,1630,1090,2,kingsideAttack mate mateIn2 middlegame short
+FHKG7,1620,1686,3,crushing endgame long
+mXA8u,1631,1400,2,crushing endgame short
+biyPk,1613,1033,3,crushing endgame long
+5q6C3,1641,960,3,attraction crushing endgame fork long sacrifice
+dLqW1,1630,939,3,crushing fork long master middlegame
+S4CE1,1649,1350,2,endgame mate mateIn2 sacrifice short
+z8DCv,1623,957,3,backRankMate deflection long master mate mateIn3 middlegame
+FlCQx,1672,1778,3,crushing endgame long quietMove
+CmuvN,1621,1000,3,crushing long middlegame
+9Rs5N,1639,1350,2,attraction mate mateIn2 middlegame pillsburysMate queensideAttack sacrifice short
+DY0fd,1603,930,2,crushing middlegame short
+sY2eb,1612,1849,3,advantage endgame fork long
+PgQ4R,1602,790,2,kingsideAttack mate mateIn2 middlegame pin short
+STs1Y,1602,1305,3,advancedPawn crushing endgame long
+tQi5S,1611,1019,2,crushing middlegame short
+wUnLf,1632,1339,2,crushing middlegame short trappedPiece
+ifAOP,1755,1723,2,crushing middlegame pin short
+F8ljK,1731,860,2,crushing endgame master short skewer
+4YiD1,1783,1605,3,crushing endgame long
+jNC9B,1703,1062,3,crushing long middlegame
+DgpuQ,1795,860,2,kingsideAttack mate mateIn2 middlegame sacrifice short
+oxgSF,1737,919,2,advantage middlegame pin short
+9YT2E,1719,1169,3,crushing endgame long
+cC2pp,1758,1177,3,crushing hangingPiece long middlegame
+188PO,1784,1323,3,advantage discoveredAttack exposedKing kingsideAttack long middlegame sacrifice
+wM431,1711,1250,3,crushing deflection endgame long
+o1goT,1705,1827,3,advantage long master middlegame pin sacrifice
+xjpUr,1710,935,2,advantage endgame hangingPiece short
+CWMGw,1704,1099,2,advantage middlegame short trappedPiece
+8BDiu,1715,1015,2,crushing endgame short
+R28rz,1755,1565,3,advantage deflection kingsideAttack long middlegame
+k2FCE,1785,1177,3,crushing long middlegame quietMove
+twt1I,1773,1030,2,crushing endgame master rookEndgame short
+vIvk4,1774,1031,3,crushing long middlegame
+u7RmU,1773,858,2,crushing master middlegame short
+FgCn2,1740,930,2,endgame epauletteMate mate mateIn2 operaMate short
+6GAFC,1733,1530,2,advantage opening short trappedPiece
+kze5e,1738,2188,3,advantage fork long middlegame
+qQ7Bw,1716,919,2,advantage discoveredAttack middlegame short
+RCkMv,1744,1479,3,advantage attraction kingsideAttack long middlegame sacrifice
+0Abz9,1767,1571,5,attraction kingsideAttack mate mateIn5 middlegame sacrifice veryLong
+PlG3W,1750,988,3,advantage long opening
+36JVO,1762,1325,3,crushing endgame long quietMove
+zsiqG,1792,1776,3,advantage attraction long middlegame pin sacrifice
+GZ9QN,1770,971,3,advantage kingsideAttack long middlegame
+N5pgX,1764,1278,2,advantage endgame fork short
+n2elQ,1790,1016,2,advantage endgame fork short
+TMYOv,1774,840,2,crushing endgame fork short
+UOPGQ,1717,1146,3,advantage endgame long
+dP1FM,1738,1120,2,endgame mate mateIn2 sacrifice short
+r63d1,1725,1296,3,bishopEndgame crushing deflection endgame long
+O2vEP,1726,1050,3,capturingDefender crushing long middlegame trappedPiece
+YnAwJ,1728,1220,2,clearance kingsideAttack mate mateIn2 middlegame sacrifice short
+IZrXK,1791,1816,3,crushing deflection long middlegame pin
+ExOdS,1704,914,2,advantage attraction master middlegame short
+mCQrK,1762,935,2,advantage middlegame quietMove short
+N2WTY,1737,2234,5,advantage attraction fork middlegame sacrifice veryLong
+88VHa,1780,2187,5,crushing endgame rookEndgame veryLong
+jveK4,1743,1234,3,advantage discoveredAttack long middlegame pin quietMove
+1Ka0g,1782,820,2,advantage deflection middlegame short
+7VtVI,1714,980,2,endgame mate mateIn2 short
+XQj8F,1733,1755,3,advantage endgame hangingPiece long
+UGXlv,1735,1696,3,crushing long master middlegame pin
+PcK1N,1791,1542,4,advantage capturingDefender deflection discoveredAttack fork middlegame veryLong
+tIQ0z,1700,910,2,advantage middlegame short
+PhBxa,1749,1095,3,endgame long mate mateIn3 queensideAttack
+9x9w6,1863,1451,3,advancedPawn crushing deflection endgame long promotion
+oCf15,1858,1022,2,advantage middlegame short
+Wovi1,1839,899,2,crushing endgame fork queenRookEndgame short
+lSjNU,1808,1280,3,advantage fork long opening
+3EHre,1849,1139,3,advantage discoveredAttack exposedKing long middlegame
+ckPKP,1827,1314,3,advantage endgame fork long
+cA65N,1895,1373,3,attraction crushing endgame fork long sacrifice
+CrU9G,1835,1651,2,crushing defensiveMove middlegame short
+gZ8N6,1822,1855,5,advancedPawn crushing endgame promotion quietMove veryLong
+mu6yW,1879,1105,3,advantage long middlegame
+DhvMp,1801,815,2,crushing fork middlegame short
+ZpKtR,1817,1100,2,mate mateIn2 middlegame short triangleMate
+HiyDr,1878,1578,3,crushing long middlegame
+Y2a7b,1899,1689,3,advantage capturingDefender long master middlegame queensideAttack skewer
+HFLgY,1851,1050,2,advantage interference opening short
+0GSTC,1814,907,2,crushing deflection kingsideAttack master middlegame pin short
+2mMQQ,1869,910,2,crushing endgame master short
+DTCnM,1831,1570,3,advantage endgame long
+G5wOn,1801,880,3,advantage endgame fork long
+pY98W,1892,1345,3,crushing hangingPiece long middlegame
+273YG,1803,1018,2,advantage master middlegame short
+4VbFa,1861,931,2,advantage endgame short
+8maqP,1864,1240,3,attraction crushing endgame long sacrifice skewer
+U2jnW,1880,790,2,advancedPawn endgame mate mateIn2 promotion short underPromotion
+GUyvZ,1835,910,2,advancedPawn crushing middlegame short
+Fdqrg,1811,1489,3,advantage endgame long
+wAkUO,1801,1038,3,advantage long middlegame
+5kzCL,1886,1162,2,clearance crushing defensiveMove endgame master short
+AEEKV,1850,1325,2,crushing middlegame pin short
+HGRiE,1867,1053,3,advantage discoveredAttack endgame long
+IFlTH,1880,1076,3,crushing discoveredAttack exposedKing long master middlegame
+8L9e5,1855,790,2,endgame mate mateIn2 short
+zt5e0,1814,964,2,crushing master middlegame short
+QJIs4,1846,1330,3,advantage intermezzo long middlegame pin
+oFdjq,1868,1972,3,advantage long master middlegame pin sacrifice
+PJxfI,1814,1220,2,discoveredCheck doubleCheck kingsideAttack mate mateIn2 middlegame short
+WshVt,1831,990,3,attraction crushing endgame fork long
+ckJ1R,1843,860,2,advantage opening short
+6Kz1i,1862,1570,2,crushing endgame short
+KGGZv,1880,1790,3,advantage defensiveMove long opening
+5HGfw,1804,910,2,advantage endgame pin short
+ejPdP,1818,1154,4,endgame mate mateIn4 veryLong
+dQlGo,1881,1727,3,advantage capturingDefender discoveredAttack kingsideAttack long opening
+E5w0C,1815,1319,3,crushing endgame long master
+8ywAZ,1819,1312,3,crushing long middlegame trappedPiece
+DuVlq,1850,1516,3,crushing endgame long pawnEndgame zugzwang
+nvzrl,1864,1265,3,advancedPawn attraction crushing endgame fork long master
+5po0K,1812,1457,2,advantage endgame short
+M71RI,1854,2010,3,crushing discoveredAttack discoveredCheck long opening sacrifice
+lhxyF,1875,1181,3,advantage long middlegame
+80yno,1966,1090,2,bishopEndgame crushing endgame short
+aJl9o,1925,1565,2,advantage middlegame short
+zsCG2,1936,2391,4,advantage deflection endgame veryLong
+jg9oB,1980,1039,2,advantage opening short
+cMfIr,1951,1770,3,crushing long master middlegame
+rYrP2,1943,1729,3,advantage long middlegame
+RGTUs,1948,1021,4,crushing endgame exposedKing fork veryLong
+2ReQA,1928,1785,3,crushing endgame long pawnEndgame quietMove
+BH5uU,1939,1163,3,attraction crushing fork long middlegame pin sacrifice
+Wel1A,1905,1122,3,crushing long middlegame pin
+WZNPP,1918,1371,3,bishopEndgame crushing endgame long skewer
+Mz3Eo,1900,1684,3,advantage endgame long pin quietMove
+Vtf4h,1958,1030,2,endgame master mate mateIn2 queenEndgame short
+LIH0Y,1954,1983,2,crushing endgame short
+RdLl1,1996,1570,2,crushing middlegame short trappedPiece
+zocy8,1910,1060,2,attraction kingsideAttack mate mateIn2 middlegame sacrifice short
+Lu18C,1911,1479,3,crushing kingsideAttack long middlegame
+51zw2,1912,1465,2,crushing middlegame short
+KOcHz,1992,1145,4,attraction crushing endgame sacrifice skewer veryLong
+biKt2,1947,1165,2,advancedPawn crushing endgame promotion short
+K0bVQ,1944,1157,4,advancedPawn crushing endgame promotion veryLong
+ghrGC,1900,1092,3,crushing endgame long master queenEndgame
+Od3ym,1902,1711,3,advancedPawn advantage endgame long master quietMove rookEndgame
+IjYV0,1902,1835,2,bishopEndgame crushing endgame short
+WAUxY,1942,1722,2,advancedPawn crushing endgame master short
+QiP8G,1904,1057,2,advantage middlegame pin short
+1yYeW,1938,1035,2,advantage kingsideAttack middlegame short
+p9m83,1964,1764,3,crushing endgame long quietMove rookEndgame skewer
+XNQ3J,1976,1109,3,crushing long middlegame pin
+apDfW,1930,979,2,crushing discoveredAttack endgame short
+zzc6l,1996,1170,3,advantage fork long opening
+O5T3H,1937,885,2,advantage middlegame short
+huRv4,1969,1613,4,endgame killBoxMate mate mateIn4 veryLong
+CvMV4,1974,1856,5,advantage defensiveMove endgame veryLong
+zEGfY,1952,1154,3,crushing exposedKing kingsideAttack long middlegame
+OfwNN,1934,1143,2,crushing hangingPiece middlegame short
+pvEhm,1915,1481,3,advancedPawn crushing defensiveMove endgame knightEndgame long
+31xKJ,1978,1678,4,advantage kingsideAttack middlegame veryLong
+nBY7R,1934,1401,4,advantage middlegame veryLong
+DtUGn,1923,1076,3,advantage intermezzo long middlegame
+Gl9wA,1914,1372,3,crushing endgame long
+Jla2v,1914,1468,3,advantage long middlegame
+PCuCL,1933,939,2,advantage endgame short
+Ggr6I,1934,1878,5,crushing discoveredAttack discoveredCheck endgame veryLong
+9kaqn,1939,1966,2,advantage middlegame short
+DtOwB,1997,1657,3,crushing defensiveMove endgame long pawnEndgame quietMove zugzwang
+FeciU,1972,1411,2,crushing endgame short
+NwB90,1975,1009,3,advantage collinearMove deflection long middlegame
+WAN8Q,1993,1482,3,advantage discoveredAttack discoveredCheck exposedKing long middlegame
+GTGtN,1983,910,2,crushing endgame short
+zPAY6,2090,1120,2,kingsideAttack mate mateIn2 middlegame sacrifice short
+YDwfm,2048,1347,5,crushing defensiveMove endgame veryLong zugzwang
+GLBoD,2021,1965,4,bishopEndgame crushing defensiveMove endgame veryLong
+AJCCa,2072,1250,2,attraction mate mateIn2 middlegame sacrifice short
+4LKVm,2010,2065,2,crushing middlegame sacrifice short
+g5l4i,2032,1565,2,advantage middlegame short
+O6clq,2030,1582,4,advantage intermezzo middlegame veryLong
+TESlB,2016,1123,3,crushing endgame fork long
+FOist,2061,1400,2,advantage middlegame pin short
+eC5oG,2020,1153,3,advantage long middlegame
+NsXjK,2062,1000,3,attraction crushing endgame long pin
+CBb9n,2018,1098,4,kingsideAttack mate mateIn4 middlegame veryLong
+OF7GR,2022,1529,4,advantage middlegame veryLong
+AA7Aj,2049,1924,5,advancedPawn bishopEndgame crushing endgame promotion quietMove veryLong
+UeaVD,2018,2138,3,crushing endgame long sacrifice
+NcAQW,2033,1285,2,advantage intermezzo middlegame short
+vc9Y7,2067,940,2,mate mateIn2 middlegame short
+C0ASy,2010,885,2,crushing middlegame short
+5scvR,2009,1565,2,crushing middlegame short
+juVqs,2091,1103,2,crushing endgame intermezzo master short
+xxmmj,2081,2147,4,advantage middlegame veryLong
+b1mYf,2028,1590,3,crushing endgame long
+hPf4A,2050,1245,2,crushing endgame master pawnEndgame short
+2ZXkz,2025,1355,3,advancedPawn crushing endgame long master queenEndgame
+NPoty,2031,978,3,advantage attraction long middlegame sacrifice
+zikVM,2009,995,4,advancedPawn endgame mate mateIn4 promotion veryLong
+QQh9h,2067,1170,3,advantage endgame fork long sacrifice
+NstVL,2015,1316,3,crushing defensiveMove long middlegame
+fhOdn,2043,1897,3,attraction crushing endgame long sacrifice
+z1eND,2077,1070,3,crushing intermezzo kingsideAttack long middlegame
+psNLI,2040,959,3,attraction fork long mate mateIn3 middlegame pin
+JXIbd,2022,2020,2,crushing kingsideAttack master middlegame short
+aNGoE,2070,2196,4,crushing discoveredAttack discoveredCheck exposedKing middlegame sacrifice veryLong
+A03Or,2076,1538,2,crushing defensiveMove endgame short
+xSlZg,2048,1543,3,crushing deflection endgame fork long
+4yYQo,2071,1112,3,advantage discoveredAttack discoveredCheck endgame long
+D8rJP,2064,1247,3,advantage long master opening
+OnqlB,2012,1592,3,crushing defensiveMove endgame long
+RKpCk,2025,1177,3,advantage fork long middlegame
+Joxkj,2086,1031,2,crushing fork middlegame short
+mh09Z,2004,1992,3,advantage long middlegame sacrifice trappedPiece
+xpkUM,2087,980,2,advantage middlegame short
+CbA20,2081,1194,3,capturingDefender crushing discoveredAttack long middlegame
+tXSdJ,2099,1585,3,advantage capturingDefender kingsideAttack long middlegame
+BPLOA,2000,1085,3,advantage endgame fork long
+Ug9Tc,2008,815,2,crushing fork middlegame short
+KQr5n,2088,2299,3,crushing long middlegame
+WF74E,2044,1313,3,attraction kingsideAttack long mate mateIn3 middlegame sacrifice
+lzA1v,2096,1003,3,crushing fork long middlegame
+dDg07,2051,1553,3,advantage fork long middlegame
+NfjtF,2198,1969,3,advantage long master opening
+4zPU4,2147,1599,2,advancedPawn crushing endgame master short
+BtqDp,2158,1673,4,advantage endgame fork sacrifice veryLong
+a1erD,2189,1856,4,advantage master middlegame sacrifice skewer veryLong
+YdetG,2197,1266,2,crushing discoveredAttack discoveredCheck endgame short
+Jodfh,2171,1149,2,crushing middlegame short
+mAo5z,2179,1003,3,crushing long middlegame
+Xcyq8,2136,1313,3,crushing long middlegame
+iFaSV,2147,1851,2,crushing defensiveMove middlegame short
+VITIq,2171,1130,2,advantage endgame short
+taC95,2115,2293,4,advancedPawn crushing defensiveMove endgame rookEndgame veryLong
+hSJ28,2137,1030,2,crushing discoveredAttack discoveredCheck master middlegame short
+7UqSa,2140,1067,3,advancedPawn crushing endgame fork long
+b1IYQ,2157,1770,2,bishopEndgame crushing endgame short
+RngX0,2123,1159,3,attraction crushing endgame exposedKing fork long
+1EdAC,2162,982,2,crushing endgame short
+VkrpO,2157,985,2,advantage fork middlegame short
+CXgB8,2191,2236,3,advantage defensiveMove endgame long master
+Id1kv,2128,1472,2,crushing endgame short
+Eq96L,2166,2532,3,crushing deflection long master middlegame
+jNvU4,2182,2199,3,crushing endgame exposedKing long queenEndgame
+9lKzo,2150,1052,2,advancedPawn crushing defensiveMove endgame rookEndgame short
+L56eC,2133,1637,3,crushing endgame long rookEndgame
+TROWQ,2106,1373,3,crushing discoveredAttack long middlegame pin
+ulLxd,2128,1470,3,crushing endgame long rookEndgame
+MyufG,2116,1546,3,arabianMate kingsideAttack long master mate mateIn3 middlegame sacrifice
+8YuCn,2150,1084,3,bishopEndgame crushing endgame long quietMove
+onwjc,2176,1661,3,crushing deflection long master middlegame
+YwezP,2193,1281,3,discoveredAttack discoveredCheck endgame exposedKing long mate mateIn3 operaMate
+K7jUm,2178,2486,3,advantage deflection fork long opening
+08mUZ,2159,1625,2,crushing middlegame short
+p7Nfc,2101,963,2,advantage kingsideAttack middlegame short
+lzEio,2105,1718,2,crushing defensiveMove endgame short
+5WaXQ,2135,2104,4,bishopEndgame crushing endgame veryLong
+7FhUa,2177,1068,4,crushing endgame exposedKing fork veryLong
+jdYwv,2131,1571,3,advantage long middlegame
+89Mc0,2118,1348,3,advantage long middlegame
+h0x0F,2193,1387,3,advantage endgame long quietMove rookEndgame
+iBYNl,2198,1671,3,advantage fork long middlegame sacrifice
+ijv3Q,2121,1544,3,advancedPawn crushing endgame long queenEndgame quietMove
+3XuAm,2155,989,2,crushing middlegame pin short
+aKok0,2189,1542,4,crushing endgame exposedKing pawnEndgame veryLong
+mVE37,2185,1898,5,endgame mate mateIn5 veryLong
+bz4dy,2157,2233,3,advantage clearance defensiveMove long master middlegame
+8fBOc,2188,1086,2,advantage deflection middlegame short
+F5ntj,2120,1381,3,discoveredAttack discoveredCheck kingsideAttack long mate mateIn3 middlegame sacrifice
+hzwT2,2189,1629,3,advantage long opening pin
+UxdVG,2185,2460,4,crushing endgame pawnEndgame veryLong
+ZwYtj,2192,1343,2,crushing defensiveMove endgame pawnEndgame short
+7D5MZ,2157,1625,2,crushing defensiveMove endgame pin short
+rdl3D,2200,1845,2,crushing endgame short
+aCHcB,2260,1282,3,advantage long opening skewer
+lhLYs,2281,1748,4,advancedPawn attraction crushing deflection endgame pin veryLong
+i1w6O,2251,1434,5,advancedPawn crushing defensiveMove endgame quietMove rookEndgame veryLong
+jKwO6,2254,2067,4,advantage fork middlegame veryLong
+IJUf6,2249,2096,4,crushing middlegame pin sacrifice veryLong
+k8CIT,2261,1353,4,crushing middlegame quietMove veryLong
+5c56u,2215,1289,2,advantage middlegame short
+8Lds0,2262,1357,2,advantage master middlegame short
+HQjDs,2238,1447,3,attraction discoveredCheck doubleCheck long mate mateIn3 middlegame queensideAttack sacrifice
+O1MSD,2229,1527,4,advancedPawn crushing endgame knightEndgame quietMove veryLong
+snj2q,2225,1140,2,crushing defensiveMove endgame master short
+QrVUp,2267,790,2,mate mateIn2 middlegame short
+Yh0Jp,2268,1417,3,crushing endgame long pawnEndgame quietMove zugzwang
+F5L7E,2222,1381,4,advantage fork middlegame sacrifice veryLong
+tBYuI,2282,1470,3,advantage attraction fork long middlegame sacrifice
+kf1oO,2216,975,2,advantage middlegame short
+ZyByI,2275,935,2,advantage middlegame short
+Kgw9J,2231,2013,5,crushing defensiveMove middlegame veryLong
+Y3CNQ,2293,2186,4,attraction crushing discoveredAttack fork middlegame sacrifice veryLong
+BpRVo,2222,1209,3,crushing fork long middlegame
+C1xjk,2232,1672,3,advancedPawn crushing defensiveMove endgame long sacrifice
+IbgiY,2251,1440,3,crushing endgame long
+zZ861,2204,2213,3,advantage long middlegame pin sacrifice
+FUZ3z,2299,1397,2,crushing defensiveMove endgame short
+L5AgB,2250,1402,2,crushing defensiveMove endgame pawnEndgame short zugzwang
+nkajh,2277,1467,2,advantage master middlegame short
+yjn3D,2200,1770,3,advantage long middlegame pin quietMove
+uqHMd,2221,1706,4,advantage clearance deflection endgame fork intermezzo sacrifice veryLong
+UVDgk,2203,1381,4,exposedKing killBoxMate mate mateIn4 middlegame pin veryLong
+8zQoI,2254,1181,3,advantage discoveredAttack discoveredCheck long middlegame
+RnOm6,2217,2232,3,advantage long middlegame sacrifice
+Mjrrt,2259,2093,5,crushing endgame exposedKing veryLong
+ttoGx,2298,1646,3,advantage long middlegame
+yTZJ7,2294,1235,3,advantage intermezzo long middlegame
+4gmsv,2202,1083,3,advantage long middlegame
+z8msx,2228,1664,3,advantage endgame long pin
+v0Rn8,2248,1986,2,crushing master middlegame quietMove short
+WzErY,2205,1170,3,advantage long middlegame
+Zd4ya,2294,1189,2,crushing endgame master rookEndgame short
+E5ESN,2266,2082,3,crushing long middlegame
+lCbRw,2208,1931,3,crushing exposedKing long master middlegame pin quietMove
+7gKL8,2223,1915,2,advantage master middlegame short
+D3zLQ,2209,973,2,advantage master middlegame short
+QPlOB,2217,2623,4,crushing defensiveMove middlegame veryLong
+QZb8f,2286,1178,2,advantage middlegame short
+gJv7N,2213,1190,2,bishopEndgame crushing defensiveMove endgame short
+2BgU2,2243,860,2,crushing endgame short
+i4awT,2234,1289,3,crushing long middlegame
+LNqVB,2227,2282,5,advancedPawn crushing endgame pawnEndgame promotion veryLong zugzwang
+WAYUt,2364,1701,4,crushing defensiveMove endgame hangingPiece master quietMove veryLong
+hVb5S,2352,1758,2,crushing endgame short trappedPiece
+25Tlp,2318,2168,3,crushing defensiveMove long middlegame
+fZCOh,2340,1143,3,bishopEndgame crushing endgame exposedKing long
+q3G0V,2396,1018,3,advantage fork long master middlegame
+p2dDz,2329,1025,3,crushing hangingPiece kingsideAttack long middlegame pin
+yjmrT,2329,2549,6,advancedPawn crushing endgame pawnEndgame promotion veryLong
+mKc5q,2364,1661,3,attraction crushing long middlegame sacrifice
+C6FL0,2318,1722,3,crushing deflection endgame exposedKing knightEndgame long
+DRDEM,2334,2040,4,crushing endgame master quietMove veryLong
+Kn0fn,2326,1651,4,crushing endgame pawnEndgame veryLong
+e9qtF,2330,1548,3,advancedPawn advantage long middlegame
+ODqDy,2309,1560,3,crushing defensiveMove endgame long pawnEndgame
+CQMzg,2355,1578,3,crushing endgame long rookEndgame
+aKbKx,2375,2120,3,crushing endgame long queenEndgame
+02cM5,2300,1029,3,crushing kingsideAttack long middlegame
+gZPgJ,2398,1467,3,crushing exposedKing long middlegame
+pgzZe,2349,2703,5,kingsideAttack mate mateIn5 middlegame sacrifice veryLong
+C1fAL,2314,969,3,attraction crushing long middlegame pin sacrifice
+kJcjG,2318,1182,3,advancedPawn crushing endgame long
+uIVjh,2384,1170,2,kingsideAttack master mate mateIn2 middlegame pin sacrifice short
+Wg8Wp,2322,1988,5,advantage attraction kingsideAttack middlegame sacrifice veryLong
+uBnNz,2311,1631,4,advantage attraction fork middlegame sacrifice veryLong
+c5sur,2333,1097,2,clearance crushing middlegame short
+zWMu6,2361,1723,3,advancedPawn crushing endgame long
+Tfg9N,2349,1084,3,advantage deflection endgame long
+APgUp,2394,1009,3,crushing discoveredAttack discoveredCheck endgame long
+tJq3g,2346,1229,2,advantage hangingPiece middlegame pin short
+n84bE,2345,1485,3,exposedKing long mate mateIn3 opening
+OO568,2336,1740,3,crushing endgame long pawnEndgame quietMove zugzwang
+bEi1G,2337,1210,2,crushing endgame pawnEndgame short
+VZ6p5,2329,1173,2,crushing defensiveMove endgame short
+AilmJ,2343,1273,3,crushing defensiveMove endgame long pawnEndgame quietMove zugzwang
+nhm1P,2395,1527,3,advantage long middlegame trappedPiece
+9mHid,2357,1559,2,bishopEndgame crushing endgame master short
+Pkwva,2367,2594,6,crushing endgame pawnEndgame veryLong zugzwang
+Jbs6y,2333,1171,2,advantage endgame short
+UtHfU,2370,1165,4,clearance crushing endgame fork veryLong
+I4dkD,2364,2286,2,crushing master middlegame quietMove short
+sLmVb,2395,2018,3,crushing endgame long master
+QQwDv,2322,1876,3,advantage long middlegame
+fwnw1,2320,1548,3,crushing endgame long
+K9TEA,2383,1921,2,crushing defensiveMove endgame pawnEndgame quietMove short
+XVqIL,2367,1591,3,endgame long mate mateIn3 pin sacrifice
+wXegX,2338,2535,5,advantage clearance exposedKing middlegame veryLong
+PmU1i,2325,1898,2,advantage defensiveMove middlegame short
+szch1,2340,1588,3,crushing defensiveMove endgame long pawnEndgame
+vGMw5,2344,1261,3,advantage kingsideAttack long middlegame
+v0Jji,2333,1162,3,crushing endgame long pin
+vOUZM,2384,2241,3,advantage kingsideAttack long middlegame sacrifice
+4NkuX,2440,1321,3,advantage endgame long
+ugGOR,2452,1260,2,middlegame
+oeOzl,2409,1211,2,crushing middlegame short
+vUuhZ,2422,1589,3,crushing defensiveMove endgame long quietMove
+9l3jK,2460,1695,4,crushing discoveredAttack endgame veryLong
+dsUfW,2422,1913,4,advantage fork intermezzo middlegame sacrifice veryLong
+1EUxn,2411,1154,3,attraction crushing deflection long middlegame sacrifice
+LNwGn,2464,1280,5,advantage endgame fork veryLong
+YqMcU,2408,1791,4,crushing endgame pin veryLong
+wOP70,2408,2626,3,crushing long master middlegame
+HZJlf,2430,1914,3,crushing long middlegame quietMove
+4jks3,2400,2336,4,advantage endgame master pin quietMove veryLong
+hytvL,2494,1915,3,advantage deflection endgame long
+xiwMj,2422,2066,2,advantage bishopEndgame endgame master sacrifice short
+s8xRy,2410,1387,5,advancedPawn crushing endgame pawnEndgame veryLong
+Vemb2,2436,2043,3,advancedPawn crushing endgame long promotion sacrifice
+kjpJr,2415,1759,4,advantage middlegame veryLong
+fWk0I,2462,903,2,advantage hangingPiece middlegame short
+4BXwo,2428,1797,4,advancedPawn advantage endgame promotion veryLong
+g6lF9,2487,1766,2,advantage endgame pin short
+9L8xL,2428,1109,4,crushing deflection middlegame veryLong
+dErfA,2485,1502,3,crushing endgame long
+LFgBK,2481,2128,6,advantage endgame exposedKing skewer veryLong
+wTsUt,2448,1869,4,crushing defensiveMove endgame pawnEndgame veryLong
+IhbNg,2487,1580,2,advantage defensiveMove hangingPiece middlegame short
+49FJK,2406,1822,3,crushing endgame long
+HMqJN,2492,1916,4,clearance crushing fork middlegame pin veryLong
+bi5FA,2438,1364,5,crushing defensiveMove endgame pawnEndgame quietMove veryLong
+JMFvN,2402,1699,4,advantage endgame fork veryLong
+W0IVF,2407,1166,3,advantage long middlegame
+eeSfQ,2472,1994,2,crushing endgame pawnEndgame short
+5zQlN,2450,1866,4,crushing defensiveMove endgame rookEndgame veryLong
+BHfe4,2403,2127,6,advancedPawn crushing deflection endgame exposedKing master promotion veryLong
+0g242,2456,1289,3,advantage deflection endgame long master masterVsMaster
+Hrlq2,2472,2262,4,crushing middlegame trappedPiece veryLong
+fvxo8,2489,2842,4,advantage fork middlegame sacrifice veryLong
+MNhmk,2463,1229,4,advantage middlegame queensideAttack veryLong
+A6xyU,2426,1851,4,advantage middlegame veryLong
+vyprG,2455,1875,3,advancedPawn crushing endgame exposedKing long master rookEndgame
+vxtSc,2409,1058,3,crushing endgame long pawnEndgame zugzwang
+YEzCj,2400,1386,3,advantage endgame fork long
+kHgVw,2421,1963,5,advancedPawn crushing endgame pawnEndgame veryLong
+l6p9R,2454,1142,3,advancedPawn advantage endgame knightEndgame long promotion sacrifice
+ItXnG,2405,1580,3,advantage fork long middlegame
+UTAVS,2421,1547,3,advancedPawn advantage endgame long
+3YFSd,2411,1858,3,crushing endgame long quietMove
+kV1iw,2434,1659,2,advantage middlegame short
+cR9Mk,2434,1259,2,crushing master middlegame short
+LeAG4,2403,1120,2,crushing endgame pawnEndgame short
+WfDmm,2469,1797,4,attraction crushing fork master middlegame sacrifice veryLong
+vPuSR,2513,1740,3,crushing endgame long pawnEndgame
+ajNca,2558,1176,3,crushing long middlegame pin
+6emY4,2561,2283,3,advancedPawn crushing endgame knightEndgame long quietMove
+Y1DnU,2518,1758,4,attraction crushing kingsideAttack middlegame pin sacrifice veryLong
+sfKgA,2526,1571,3,advantage long middlegame quietMove
+S10K0,2508,2286,4,advancedPawn advantage defensiveMove middlegame quietMove sacrifice veryLong
+kXqHL,2500,1510,5,advancedPawn advantage endgame promotion veryLong
+pZloi,2507,1111,3,crushing long middlegame
+XEdSI,2518,1778,3,advantage long middlegame
+m4etj,2542,1817,4,crushing endgame pin veryLong
+R1U7W,2566,1934,4,attraction crushing kingsideAttack middlegame sacrifice veryLong
+vqaaP,2534,1275,4,advantage endgame pin veryLong
+wA2xk,2514,1515,2,crushing endgame master pin short
+gNcMc,2510,2222,4,advantage discoveredAttack middlegame veryLong
+PigcN,2519,1423,4,crushing endgame exposedKing veryLong
+QfrgA,2515,1142,3,advantage defensiveMove hangingPiece long middlegame
+G4mIu,2533,1340,3,advantage long master middlegame
+Fsk4K,2527,1759,3,advancedPawn attraction crushing long middlegame
+3pPle,2561,2470,4,crushing endgame quietMove veryLong
+qbRqu,2501,1010,2,crushing defensiveMove endgame pawnEndgame short zugzwang
+qyOvi,2509,1835,3,advantage long middlegame
+kjJZZ,2535,1415,2,advancedPawn crushing middlegame promotion short
+l7TuU,2535,1553,2,advantage endgame short
+sj8Ez,2571,2065,3,crushing defensiveMove endgame long master masterVsMaster quietMove
+BlXTm,2531,1627,2,crushing master middlegame short
+GN1A2,2534,1808,4,crushing endgame veryLong
+BmfVt,2535,1998,8,crushing endgame intermezzo knightEndgame veryLong
+TzBq9,2562,2497,4,advantage defensiveMove endgame veryLong
+VxmZr,2506,2402,5,crushing endgame veryLong
+we0o9,2521,1887,3,bishopEndgame crushing defensiveMove endgame long quietMove
+BxrgD,2559,1820,2,crushing endgame master short
+rbhfS,2504,2141,3,advantage defensiveMove long middlegame
+DrTgd,2503,1950,4,advancedPawn crushing endgame hangingPiece promotion veryLong
+IPnPf,2502,1735,3,advantage defensiveMove long middlegame
+28BYW,2557,1949,2,crushing endgame short
+6N2G1,2527,2659,3,crushing defensiveMove endgame long pin
+3H0iV,2546,1127,2,advantage defensiveMove fork middlegame short
+72HF0,2538,1455,4,mate mateIn4 middlegame morphysMate sacrifice veryLong
+V411q,2575,1784,3,crushing long middlegame pin quietMove
+Kyq5q,2508,2179,2,advantage endgame short
+TzPqY,2504,1161,2,advantage middlegame short
+NTvuj,2584,2093,5,advancedPawn crushing defensiveMove endgame veryLong
+jysif,2511,1276,4,advantage middlegame pin veryLong
+AkhFQ,2501,1201,3,crushing defensiveMove endgame long
+tHdxX,2522,1756,2,crushing endgame master pawnEndgame short
+MdICj,2580,1268,3,advantage endgame long pin
+beFve,2554,1875,3,crushing fork long middlegame
+UeurJ,2513,1881,3,advancedPawn crushing defensiveMove deflection endgame long
+4j3if,2501,1831,3,crushing endgame hangingPiece long quietMove
+FOZff,2529,1418,2,crushing defensiveMove endgame short
