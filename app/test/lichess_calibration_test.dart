@@ -13,7 +13,7 @@ import 'package:chessanalyst/analysis/settings.dart';
 import 'package:chessanalyst/engine/bot.dart';
 import 'package:chessanalyst/engine/engine.dart';
 import 'package:chessanalyst/engine/puzzle_rater.dart';
-import 'package:chessanalyst/ui/puzzles.dart';
+import 'package:chessanalyst/ui/lichess_puzzles.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Stockfish as a process, for the engine bot.
@@ -39,27 +39,6 @@ class ProcessEngine implements UciEngine {
 
   @override
   Future<void> dispose() async => _p.kill();
-}
-
-/// A Lichess puzzle in our form: the position after the opponent's first
-/// move, the rest of the moves as the solution; the goal from its themes.
-Puzzle fromLichess(String id, String fen, List<String> moves, Set<String> themes, double value) {
-  final start = Pos.fromFen(fen).push(Pos.move(moves.first));
-  final goal = themes.any((t) => t == 'mate' || t.startsWith('mateIn'))
-      ? PuzzleGoal.mate
-      : (themes.contains('defensiveMove') || themes.contains('equality'))
-          ? PuzzleGoal.defend
-          : (themes.contains('crushing') ? PuzzleGoal.win : PuzzleGoal.advantage);
-  return Puzzle(
-    id: 'lichess:$id',
-    fen: start.fen,
-    solution: moves.sublist(1),
-    source: 'Lichess $id',
-    gap: 2,
-    goal: goal,
-    value: value,
-    tags: themes,
-  );
 }
 
 List<String> _csvRow(String line) {

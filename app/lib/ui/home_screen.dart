@@ -627,7 +627,7 @@ class _SectionsDrawer extends StatelessWidget {
             ListTile(
               leading: const DartboardIcon(),
               title: const Text('Puzzles'),
-              subtitle: const Text('From the analysed games'),
+              subtitle: const Text('From the analysed games and Lichess'),
               onTap: () {
                 _go(
                   context,

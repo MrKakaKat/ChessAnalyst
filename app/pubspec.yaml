@@ -29,6 +29,7 @@ flutter:
   assets:
     - assets/games/
     - assets/openings_book.json
+    - assets/lichess_puzzles.csv
     - assets/openings_weights.json
     - assets/docs/analysis_guide.md
     - assets/icons/alien_gambit_96.png

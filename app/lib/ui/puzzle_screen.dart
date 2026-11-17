@@ -30,6 +30,7 @@ import 'board_screen.dart';
 import 'analysis_cache.dart';
 import 'analysis_queue.dart';
 import 'history_store.dart';
+import 'lichess_puzzles.dart';
 import 'prefs.dart';
 import 'puzzle_store.dart';
 import 'stats_screen.dart' show askPlayerNames;
@@ -92,6 +93,13 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
             await PuzzleStore.build(key, await analysisOf(g, widget.book));
         list.addAll(st.puzzles);
       }
+    }
+    // [авторское] задачи Lichess: рейтинг — оценка движка через калибровку
+    // по Lichess (на ~350 ниже их рейтинга), без пересчёта движком
+    if (prefs.lichessPuzzles) {
+      final (lp, lr) = await loadLichessPuzzles();
+      list.addAll(lp);
+      await PuzzleRatings.saveMissing(lr);
     }
     await history.load();
     final own = <StoredGame>[];
@@ -252,6 +260,28 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
     }
   }
 
+  void _lichessInfo() => showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Lichess puzzles'),
+          content: const SingleChildScrollView(
+            child: Text(
+              '3000 puzzles from the open Lichess puzzle database (CC0): a sample spread evenly over 600–2600, '
+              'each solved by thousands of players.\n\n'
+              'Their rating here is ours, not the Lichess one. Our engine rates every puzzle (how deep the key '
+              'moves are, traps, quiet moves, counter-chances), and the formula fitted on these very puzzles '
+              'turns that into a rating: it knows that mates and forks are easier for people than for the '
+              'engine, defences, quiet moves and pawn endings harder.\n\n'
+              'On our scale puzzles come out about 350 below Lichess: Lichess puzzle ratings run high '
+              '(a puzzle is rated against its solvers, and more people try puzzles than games). The error is '
+              'about 310 points per puzzle; the easiest come out a little high and the hardest a little low.\n\n'
+              'The Lichess rating of each puzzle is shown with its source.',
+            ),
+          ),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+        ),
+      );
+
   void _info() {
     final list = _puzzles;
     final counts = {for (final g in PuzzleGoal.values) g: list?.where((p) => p.goal == g).length ?? 0};
@@ -397,6 +427,26 @@ class _PuzzleHomeScreenState extends State<PuzzleHomeScreen> {
           value: prefs.showcasePuzzles,
           onChanged: (v) {
             prefs.update(showcase: v);
+            setState(() => _puzzles = null);
+            _load();
+          },
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Row(children: [
+            const Flexible(child: Text('Lichess puzzles')),
+            IconButton(
+              tooltip: 'How their rating is converted',
+              visualDensity: VisualDensity.compact,
+              icon: Icon(Icons.info_outline_rounded, size: 18, color: scheme.outline),
+              onPressed: _lichessInfo,
+            ),
+          ]),
+          subtitle: const Text('3000 puzzles from the Lichess database, 600–2600 there; rated on our scale, '
+              'about 350 lower'),
+          value: prefs.lichessPuzzles,
+          onChanged: (v) {
+            prefs.update(lichess: v);
             setState(() => _puzzles = null);
             _load();
           },
@@ -684,7 +734,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
 
   /// Rates the puzzle in the background while it is being solved.
   Future<void> _estimate() async {
-    if (!prefs.estimatePuzzleRating || _rating != null || _ratingBusy) return;
+    if (!prefs.estimatePuzzleRating || _rating != null || _ratingBusy || p.id.startsWith('lichess:')) return;
     final puzzle = p;
     _ratingBusy = true;
     try {

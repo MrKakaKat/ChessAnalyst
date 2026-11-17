@@ -551,6 +551,20 @@ class PuzzleRatings {
     } catch (_) {}
   }
 
+  /// Ratings of [ratings] not kept yet (the Lichess puzzles: rated by
+  /// formula, not by the engine).
+  static Future<void> saveMissing(Map<String, int> ratings) async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      final m = await load();
+      if (ratings.keys.every(m.containsKey)) return;
+      for (final e in ratings.entries) {
+        m.putIfAbsent(e.key, () => e.value);
+      }
+      await p.setString(_key, jsonEncode(m));
+    } catch (_) {}
+  }
+
   static Future<void> save(String id, int rating) async {
     try {
       final p = await SharedPreferences.getInstance();

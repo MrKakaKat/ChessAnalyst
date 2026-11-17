@@ -183,6 +183,8 @@ Future<void> ratePuzzles(List<Puzzle> puzzles, {bool again = false, bool Functio
   for (final p in puzzles) {
     if (cancelled?.call() ?? false) return;
     if (!again && known.containsKey(p.id)) continue;
+    // задачи Lichess оцениваются формулой (lichess_puzzles.dart)
+    if (p.id.startsWith('lichess:')) continue;
     try {
       final r = await estimateRating(p, cancelled: cancelled);
       await PuzzleRatings.save(p.id, r);

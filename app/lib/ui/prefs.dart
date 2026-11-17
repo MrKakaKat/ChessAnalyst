@@ -121,6 +121,9 @@ class AppPrefs extends ChangeNotifier {
   /// Puzzles also from the showcase games (masters, engines); off: only from your own games.
   bool showcasePuzzles = false;
 
+  /// Puzzles also from the Lichess puzzle database (packed with the app).
+  bool lichessPuzzles = false;
+
   /// Puzzle attempts with mistakes are recorded by themselves.
   bool autoRecordPuzzles = false;
 
@@ -235,6 +238,7 @@ class AppPrefs extends ChangeNotifier {
       playArrows = p.getBool('playArrows') ?? playArrows;
       autoRecordPuzzles = p.getBool('autoRecordPuzzles') ?? autoRecordPuzzles;
       showcasePuzzles = p.getBool('showcasePuzzles') ?? showcasePuzzles;
+      lichessPuzzles = p.getBool('lichessPuzzles') ?? lichessPuzzles;
       final mc = p.getString('markColor');
       if (mc != null && markColors.containsKey(mc)) markColor = mc;
       final ac = p.getString('arrowColor');
@@ -291,6 +295,7 @@ class AppPrefs extends ChangeNotifier {
       await p.setBool('playArrows', playArrows);
       await p.setBool('autoRecordPuzzles', autoRecordPuzzles);
       await p.setBool('showcasePuzzles', showcasePuzzles);
+      await p.setBool('lichessPuzzles', lichessPuzzles);
     } catch (_) {}
   }
 
@@ -324,6 +329,7 @@ class AppPrefs extends ChangeNotifier {
     bool? white,
     bool? black,
     bool? showcase,
+    bool? lichess,
     bool? autoRecord,
     bool? playArrowsOn,
     bool? playLinesOn,
@@ -352,6 +358,7 @@ class AppPrefs extends ChangeNotifier {
     playArrows = playArrowsOn ?? playArrows;
     autoRecordPuzzles = autoRecord ?? autoRecordPuzzles;
     showcasePuzzles = showcase ?? showcasePuzzles;
+    lichessPuzzles = lichess ?? lichessPuzzles;
     estimatePuzzleRating = puzzleRating ?? estimatePuzzleRating;
     markColor = mark ?? markColor;
     arrowStyle = arrow ?? arrowStyle;
