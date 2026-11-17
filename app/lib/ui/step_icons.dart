@@ -267,7 +267,8 @@ void _drawClock(Canvas canvas, double size, Color color, double hand) {
 /// 0, as drawn at 1.
 void _drawResign(Canvas canvas, double size, Color color, {double progress = 1}) {
   final u = progress.clamp(0.0, 1.0);
-  final k = size * 0.95 / 220;
+  // по высоте — как остальные знаки (0,95 выходило больше их)
+  final k = size * 0.7 / 220;
   canvas.save();
   canvas.scale(k);
   canvas.translate(-550, -587);
@@ -299,13 +300,26 @@ void _drawResign(Canvas canvas, double size, Color color, {double progress = 1})
 }
 
 /// The draw: ½ (the text glyph sits high in its box: moved down a little).
+/// ½ with the slash at 45°: 1 above left, 2 below right.
 void _drawHalf(Canvas canvas, double size, Color color) {
-  final tp = TextPainter(
-    text: TextSpan(
-        text: '½', style: TextStyle(fontSize: size * 0.95, height: 1, fontWeight: FontWeight.w900, color: color)),
-    textDirection: TextDirection.ltr,
-  )..layout();
-  tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2 + size * 0.08));
+  void digit(String d, Offset c) {
+    final tp = TextPainter(
+      text: TextSpan(text: d, style: TextStyle(fontSize: size * 0.5, height: 1, fontWeight: FontWeight.w900, color: color)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, c - Offset(tp.width / 2, tp.height / 2));
+  }
+
+  digit('1', Offset(-size * 0.2, -size * 0.19));
+  digit('2', Offset(size * 0.21, size * 0.2));
+  final d = size * 0.3;
+  canvas.drawLine(
+      Offset(-d, d),
+      Offset(d, -d),
+      Paint()
+        ..color = color
+        ..strokeWidth = size * 0.08
+        ..strokeCap = StrokeCap.round);
 }
 
 void drawStepGlyph(Canvas canvas, String kind, double size, Color color,
