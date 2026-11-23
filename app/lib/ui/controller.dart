@@ -19,6 +19,7 @@ import 'package:flutter/painting.dart' show Color;
 import 'package:flutter/foundation.dart';
 
 import '../analysis/eval.dart';
+import '../analysis/features.dart' as features;
 import '../analysis/aac.dart';
 import '../analysis/character.dart';
 import '../analysis/kinds.dart';
@@ -57,7 +58,13 @@ class VarMove {
     this.moveType,
     this.auto = false,
     this.live = false,
+    this.lineKind,
   });
+
+  /// Icon kind of a move deeper in an engine line: 'brilliant' (a
+  /// sacrifice), 'only_move' (the one good move there, by the difficulty
+  /// scan); null: best.
+  final String? lineKind;
 
   /// Computed on the device now (an own move, or the engine's continuation
   /// past the analysed lines): grey, and judged again when needed. Moves of
@@ -98,7 +105,7 @@ class VarMove {
   /// for an own move outside the lines.
   String? get kind {
     if (record case final r?) return iconKindOf(r.step, r.subtype);
-    return eval != null ? 'best' : null;
+    return eval != null ? (lineKind ?? 'best') : null;
   }
 }
 
@@ -966,7 +973,7 @@ class AnalysisController extends ChangeNotifier {
     final ply = anchor + 1;
     final line = _line(ply, ucis);
     MoveRecord? record;
-    String? type;
+    String? type, lineKind;
     if (line != null && prefix.isEmpty) {
       // первый ход ветки сыгран в разобранной позиции — полный вердикт
       final p = game.plies[ply];
@@ -978,6 +985,21 @@ class AnalysisController extends ChangeNotifier {
       final rest = line.pv.sublist(prefix.length);
       final own = pos.turn == root ? line.eval : line.eval.negate();
       type = moveType(pos, Line(move: m.uci, eval: own, pv: rest), const [], const Settings()).$1;
+      // [авторское] и в глубине линии — жертва (brilliant) и единственный
+      // ход (only, по скану трудности), а не только «лучший»
+      if (pawnsOfEval(own) > -winBoundary) {
+        if (features.leavesMaterialEnPrise(pos, m) && features.isSacrificeLine(pos, rest, const Settings())) {
+          lineKind = 'brilliant';
+        } else {
+          final p = game.plies[ply];
+          final i = p.lines.indexWhere((l) => identical(l, line));
+          final scans = game.scans;
+          final nodes = i >= 0 && scans != null && ply < scans.length ? scans[ply]?.lines[i] : null;
+          if (nodes != null && onlyMoves(p.fenBefore, line, nodes).any((o) => o.index == prefix.length)) {
+            lineKind = 'only_move';
+          }
+        }
+      }
     }
     return VarMove(
       move: m,
@@ -990,6 +1012,7 @@ class AnalysisController extends ChangeNotifier {
       moveType: type,
       auto: auto,
       live: line == null,
+      lineKind: lineKind,
     );
   }
 

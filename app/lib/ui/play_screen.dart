@@ -9,11 +9,14 @@ import 'dart:math' as math;
 import 'package:chessground/chessground.dart';
 import 'package:dartchess/dartchess.dart' hide Board;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 
+import '../analysis/openings.dart';
 import '../analysis/pos.dart';
 import '../engine/bot.dart';
 import '../engine/rated_play.dart' show accuracyForRating;
 import 'home_screen.dart' show PawnIcon;
+import 'import_screen.dart';
 import 'play_controller.dart';
 import 'prefs.dart';
 import 'widgets/arrows.dart';
@@ -21,7 +24,9 @@ import 'widgets/board_background.dart';
 import 'widgets/faded_line.dart';
 
 class PlayScreen extends StatefulWidget {
-  const PlayScreen({super.key});
+  const PlayScreen({super.key, required this.book});
+
+  final OpeningBook book;
 
   @override
   State<PlayScreen> createState() => _PlayScreenState();
@@ -319,6 +324,16 @@ class _PlayScreenState extends State<PlayScreen> {
     return out.join(' ');
   }
 
+  void _copyPgn() {
+    Clipboard.setData(ClipboardData(text: c.pgn));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PGN copied')));
+  }
+
+  /// The finished game to the analysis: at once with the usual settings
+  /// ([now]), or on the import screen to choose them.
+  void _analyze({required bool now}) => Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => ImportScreen(book: widget.book, pgn: c.pgn, startNow: now)));
+
   Widget _game(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final String status = switch (c.status) {
@@ -395,8 +410,34 @@ class _PlayScreenState extends State<PlayScreen> {
             ),
           ),
       ]),
+      // [авторское] партия окончена — сразу предложение её разобрать
+      if (c.status == PlayStatus.over && c.moves.length >= 2)
+        Container(
+          margin: const EdgeInsets.only(top: 12),
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          decoration: BoxDecoration(color: scheme.primaryContainer, borderRadius: BorderRadius.circular(12)),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Analyze this game?', style: TextStyle(fontWeight: FontWeight.w700, color: scheme.onPrimaryContainer)),
+            const SizedBox(height: 2),
+            Text('See your mistakes, the missed chances and the ideas of both sides.',
+                style: TextStyle(fontSize: 13, color: scheme.onPrimaryContainer)),
+            const SizedBox(height: 8),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              FilledButton.icon(
+                  onPressed: () => _analyze(now: true),
+                  icon: const Icon(Icons.insights_rounded),
+                  label: const Text('Analyze')),
+              OutlinedButton.icon(
+                  onPressed: () => _analyze(now: false),
+                  icon: const Icon(Icons.tune_rounded),
+                  label: const Text('Choose depth…')),
+            ]),
+          ]),
+        ),
       const SizedBox(height: 12),
       Wrap(spacing: 8, runSpacing: 8, children: [
+        if (c.moves.isNotEmpty)
+          OutlinedButton.icon(onPressed: _copyPgn, icon: const Icon(Icons.copy_rounded), label: const Text('Copy PGN')),
         if (c.friendly)
           OutlinedButton.icon(
               onPressed: c.canTakeback ? c.takeback : null,

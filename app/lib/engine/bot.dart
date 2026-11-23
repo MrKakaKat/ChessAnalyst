@@ -92,6 +92,43 @@ class EngineBot {
     });
   }
 
+  /// [авторское] The app came back from the background: an engine that was
+  /// frozen there may never answer the search it was in. If a search waits
+  /// and the engine has been silent for [quiet], it is asked to stop; no
+  /// line within [grace] after that — it is dead: the search fails at once
+  /// (the analysis takes a new engine) instead of after minutes. With no
+  /// search waiting, a quick isready shows whether the engine still answers.
+  static Future<void> checkAfterResume(
+      {Duration quiet = const Duration(seconds: 3), Duration grace = const Duration(seconds: 8)}) async {
+    final bot = _current;
+    if (bot == null) return;
+    if (!bot.alive) {
+      shared().catchError((_) => bot);
+      return;
+    }
+    final waiting = bot._waiting;
+    if (waiting != null) {
+      if (DateTime.now().difference(bot._lastLine) < quiet) return;
+      final before = bot._lineCount;
+      try {
+        bot._engine.send('stop');
+      } catch (_) {}
+      await Future<void>.delayed(grace);
+      if (bot._lineCount == before && identical(bot._waiting, waiting) && !waiting.isCompleted) {
+        bot._dead = true;
+        bot._waitFor = null;
+        bot._waiting = null;
+        waiting.completeError(TimeoutException('The engine stopped in the background'));
+      }
+      return;
+    }
+    try {
+      await bot._serial(() => bot._ask('isready', 'readyok')).timeout(grace);
+    } catch (_) {
+      bot._dead = true;
+    }
+  }
+
   /// Drops the shared engine (it stopped answering); the next [shared]
   /// starts a fresh one.
   static Future<void> reset() async {

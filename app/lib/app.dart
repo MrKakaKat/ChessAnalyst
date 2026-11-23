@@ -58,6 +58,8 @@ class ChessIdeasApp extends StatelessWidget {
   }
 }
 
+AppLifecycleListener? _lifecycle;
+
 class _Loader extends StatelessWidget {
   const _Loader();
 
@@ -81,6 +83,9 @@ class _Loader extends StatelessWidget {
     // очередь анализов, прерванная прошлым запуском, продолжается
     analysisQueue.book = book;
     analysisQueue.restore();
+    // [авторское] возврат из фона: движок проверяется (замёрзший заменяется),
+    // упавший анализ продолжается
+    _lifecycle ??= AppLifecycleListener(onResume: analysisQueue.onResume);
     return (decks, book);
   }
 

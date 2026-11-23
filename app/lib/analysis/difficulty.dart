@@ -42,6 +42,8 @@ import 'dart:math' as math;
 import 'package:dartchess/dartchess.dart' show Role;
 
 import 'eval.dart';
+import 'features.dart' as features;
+import 'settings.dart';
 import 'pos.dart';
 
 /// The winning boundary in pawns.
@@ -455,7 +457,9 @@ bool lineHasOnly(String fen, List<Line> lines, int i, PlyScan? scan) {
 /// Diff column), not by pawns: its own classes, good moves and difficulty.
 /// - a good move (keeps the class; when not won, loses at most a pawn):
 ///   the one good move is an only move — obvious (a recapture, an escape),
-///   brilliant in a position at least 80% hard, an only move otherwise; the
+///   brilliant when it is a sacrifice (material left to be taken and
+///   not won back within two replies, as in the classic grade) in a
+///   position at least 80% hard, an only move otherwise; the
 ///   engine's first move is best, another good move is good;
 /// - a move that drops the class (by the engine or the practical
 ///   evaluation: [before] and [after], side that moved) is a blunder, as is
@@ -464,6 +468,16 @@ bool lineHasOnly(String fen, List<Line> lines, int i, PlyScan? scan) {
 ///   mistake (it should have been seen), up to 80% laxity, harder an
 ///   inaccuracy.
 /// Book and forced moves stay.
+bool _sacrifice(String fen, Line played) {
+  try {
+    final pos = Pos.fromFen(fen);
+    final m = Pos.move(played.move);
+    return features.leavesMaterialEnPrise(pos, m) && features.isSacrificeLine(pos, played.pv, const Settings());
+  } catch (_) {
+    return false;
+  }
+}
+
 String diffStep(String step, String fen, List<Line> lines, Line played, double moverDifficulty,
     {double? before, double? after, bool mateInOne = false}) {
   if (step == 'book' || step == 'forced' || lines.isEmpty) return step;
@@ -472,7 +486,10 @@ String diffStep(String step, String fen, List<Line> lines, Line played, double m
   if (_goodLine(best, mine)) {
     if (lines.length >= 2 && goodLines(lines).length == 1) {
       if (_obvious(_along(fen, lines.first.pv, 1), lines.first.pv, 0)) return 'only_light';
-      return moverDifficulty >= 0.8 ? 'brilliant' : 'only_move';
+      // [авторское] brilliant — только жертва: трудность позиции без жертвы
+      // даёт only move (раньше трудный единственный ход без жертвы тоже
+      // становился brilliant)
+      return moverDifficulty >= 0.8 && _sacrifice(fen, played) ? 'brilliant' : 'only_move';
     }
     return played.move == lines.first.move ? 'best' : 'good';
   }

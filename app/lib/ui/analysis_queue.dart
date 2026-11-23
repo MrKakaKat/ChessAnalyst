@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../analysis/game.dart';
 import '../analysis/openings.dart';
 import '../analysis/settings.dart';
+import '../engine/bot.dart';
 import '../engine/game_job.dart';
 import '../engine/puzzle_rater.dart';
 import 'history_screen.dart';
@@ -87,6 +88,22 @@ class AnalysisQueue extends ChangeNotifier {
   }
 
   void _onJob() {
+    // упал из-за движка — через пару секунд снова, с новым движком
+    if (jobs.any((j) => j.state == JobState.failed && !j.pausedByUser && (_retries[j.id] ?? 0) < 3)) {
+      Future<void>.delayed(const Duration(seconds: 2), () {
+        _retryFailed();
+        _pump();
+        notifyListeners();
+      });
+    }
+    // пошёл дальше после повтора — счёт повторов сначала
+    for (final j in jobs) {
+      final at = _retryAt[j.id];
+      if (at != null && j.revision > at) {
+        _retries.remove(j.id);
+        _retryAt.remove(j.id);
+      }
+    }
     final finished = [for (final j in jobs) if (j.done) j];
     for (final j in finished) {
       j.removeListener(_onJob);
@@ -104,6 +121,35 @@ class AnalysisQueue extends ChangeNotifier {
   }
 
   int _holds = 0;
+
+  /// Engine failures of each analysis retried in a row (by id).
+  final _retries = <String, int>{};
+  final _retryAt = <String, int>{};
+
+  /// [авторское] An analysis that failed because the engine stopped (after
+  /// the app was in the background) goes on by itself with a new engine, up
+  /// to three times in a row; before, it stayed failed and nothing ran.
+  void _retryFailed() {
+    for (final j in jobs) {
+      if (j.state != JobState.failed || j.pausedByUser) continue;
+      final n = _retries[j.id] ?? 0;
+      if (n >= 3) continue;
+      _retries[j.id] = n + 1;
+      _retryAt[j.id] = j.revision;
+      j.state = JobState.paused;
+      j.error = null;
+    }
+  }
+
+  /// The app is back from the background: the engine is checked (a frozen
+  /// one is replaced), failed analyses are retried and the queue goes on.
+  Future<void> onResume() async {
+    await EngineBot.checkAfterResume();
+    _retries.clear();
+    _retryFailed();
+    _pump();
+    notifyListeners();
+  }
 
   /// Runs [work] first: the running analysis pauses while it needs the
   /// engine (a move checked in a puzzle, its consequences) and goes on after.

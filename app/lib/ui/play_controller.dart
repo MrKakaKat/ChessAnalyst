@@ -186,7 +186,9 @@ class PlayController extends ChangeNotifier {
       final r = rated;
       final uci = r == null
           ? await _bot!.bestMove(live.fen, level)
-          : r.choose(await _bot!.analyse(live.fen, depth: 12, multipv: 8)).move;
+          : r.choose(await _bot!.analyse(live.fen, depth: 12, multipv: 8),
+                  pos: live, last: moves.isEmpty ? null : moves.last)
+              .move;
       // [авторское] ответ не раньше выбранной задержки: ход виден и не
       // мелькает сразу за своим
       final wait = prefs.playReplyMs - watch.elapsedMilliseconds;
@@ -274,6 +276,33 @@ class PlayController extends ChangeNotifier {
     final a = BoardArrow(from, to, prefs.userArrowColor, sketched: true);
     if (!list.remove(a)) list.add(a);
     notifyListeners();
+  }
+
+  /// The game as PGN: the player's name (or "You") against the engine; no
+  /// ratings in it.
+  String get pgn {
+    final now = DateTime.now();
+    String two(int n) => n.toString().padLeft(2, '0');
+    final me = prefs.playerName.trim().isEmpty ? 'You' : prefs.playerName.trim();
+    const engine = 'Stockfish';
+    final res = result ?? '*';
+    final out = StringBuffer()
+      ..writeln('[Event "Game against the engine"]')
+      ..writeln('[Site "ChessAnalyst"]')
+      ..writeln('[Date "${now.year}.${two(now.month)}.${two(now.day)}"]')
+      ..writeln('[White "${player == Side.white ? me : engine}"]')
+      ..writeln('[Black "${player == Side.black ? me : engine}"]')
+      ..writeln('[Result "$res"]');
+    if (reason != null) out.writeln('[Termination "$reason"]');
+    out.writeln();
+    final body = StringBuffer();
+    for (var i = 0; i < sans.length; i++) {
+      if (i.isEven) body.write('${i ~/ 2 + 1}. ');
+      body.write('${sans[i]} ');
+    }
+    body.write(res);
+    out.writeln(body.toString());
+    return out.toString();
   }
 
   void resign() {

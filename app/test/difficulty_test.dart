@@ -130,9 +130,18 @@ void main() {
   test('Diff grades a move by its own mechanism', () {
     const fen = '6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1';
     final lines = [line('a1a8', cp: 400), line('a1a7', cp: 100), line('h2h3', cp: 50)];
-    // единственный хороший ход: в трудной позиции — brilliant, иначе only move
-    expect(diffStep('best', fen, lines, lines[0], 0.9), 'brilliant');
+    // единственный хороший ход без жертвы — only move и в трудной позиции
+    expect(diffStep('best', fen, lines, lines[0], 0.9), 'only_move');
     expect(diffStep('best', fen, lines, lines[0], 0.3), 'only_move');
+    // жертва ферзя (Qe8+ Rxe8 Rxe8#) — единственный ход: brilliant в трудной
+    const sac = 'r5k1/5ppp/8/8/8/8/4QPPP/4R1K1 w - - 0 1';
+    final sacLines = [
+      line('e2e8', mate: 2, pv: ['e2e8', 'a8e8', 'e1e8']),
+      line('h2h3', cp: 0),
+      line('g2g3', cp: -10),
+    ];
+    expect(diffStep('best', sac, sacLines, sacLines[0], 0.9), 'brilliant');
+    expect(diffStep('best', sac, sacLines, sacLines[0], 0.3), 'only_move');
     // ход уронил класс (выигрыш → не выигрыш) — зевок
     expect(diffStep('mistake', fen, lines, lines[1], 0.3), 'blunder');
     // промах в той же категории — по трудности позиции

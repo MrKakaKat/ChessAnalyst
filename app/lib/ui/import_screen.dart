@@ -18,9 +18,15 @@ import 'notices.dart';
 import 'prefs.dart';
 
 class ImportScreen extends StatefulWidget {
-  const ImportScreen({super.key, required this.book});
+  const ImportScreen({super.key, required this.book, this.pgn, this.startNow = false});
 
   final OpeningBook book;
+
+  /// A game to put in (a finished game against the engine).
+  final String? pgn;
+
+  /// Start the analysis at once with the usual settings.
+  final bool startNow;
 
   @override
   State<ImportScreen> createState() => _ImportScreenState();
@@ -41,6 +47,16 @@ class _ImportScreenState extends State<ImportScreen> {
   bool _difficulty = false;
   String? _error;
   ImportedGame? _preview;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.pgn != null) {
+      _text.text = widget.pgn!;
+      _parse();
+      if (widget.startNow) WidgetsBinding.instance.addPostFrameCallback((_) => _start());
+    }
+  }
 
   @override
   void dispose() {

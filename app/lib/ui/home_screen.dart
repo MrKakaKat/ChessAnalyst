@@ -621,7 +621,7 @@ class _SectionsDrawer extends StatelessWidget {
               title: const Text('Play the engine'),
               subtitle: const Text('Stockfish, eight levels'),
               onTap: () {
-                _go(context, MaterialPageRoute<void>(builder: (_) => const PlayScreen()));
+                _go(context, MaterialPageRoute<void>(builder: (_) => PlayScreen(book: book)));
               },
             ),
             ListTile(
