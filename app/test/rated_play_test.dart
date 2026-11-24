@@ -54,4 +54,19 @@ void main() {
     final played = {for (var i = 0; i < 40; i++) weak.choose(lines, pos: pos).move};
     expect(played, contains('f1a6'));
   });
+
+  test('a strong rated engine takes an obvious advantage', () {
+    // чёрный конь без защиты на d4: Nxd4 — даровое взятие
+    final pos = Pos.fromFen('r1bqkbnr/pppp1ppp/8/8/3nP3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 4');
+    Line w(String m, int win, int cp) => Line(move: m, eval: Eval(cp: cp, wdl: (win, 1000 - win, 0)), pv: [m]);
+    final lines = [w('f3d4', 850, 300), w('b1c3', 600, 20), w('d2d3', 590, 10), w('h2h3', 560, 0)];
+    // в узком месте (один хороший ход) упустить можно, но не даровое взятие
+    final strong = RatedPlay(2000, random: math.Random(5));
+    for (var i = 0; i < 30; i++) {
+      expect(strong.choose(lines, pos: pos).move, 'f3d4');
+    }
+    final weak = RatedPlay(600, random: math.Random(5));
+    final played = {for (var i = 0; i < 40; i++) weak.choose(lines, pos: pos).move};
+    expect(played.difference({'f3d4'}), isNotEmpty);
+  });
 }

@@ -671,7 +671,7 @@ class _SectionsDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.insights_rounded),
+              leading: const Icon(Icons.bar_chart_rounded),
               title: const Text('Statistics'),
               subtitle: const Text('Your games: colours, stages, missed moves'),
               onTap: () {
@@ -692,7 +692,7 @@ class _SectionsDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.menu_book_rounded),
+              leading: const Icon(Icons.school_outlined),
               title: const Text('Analysis guide'),
               subtitle: const Text('What the marks, types and characters mean'),
               onTap: () {

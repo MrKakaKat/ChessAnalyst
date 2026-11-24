@@ -18,6 +18,7 @@ import '../analysis/settings.dart';
 import '../analysis/difficulty.dart' show matePawns, positionDifficulty, puzzleBoundary;
 import '../analysis/difficulty_scan.dart' show scanPosition;
 import '../analysis/eval.dart';
+import '../analysis/features.dart' as features;
 import '../analysis/game.dart';
 import '../analysis/openings.dart';
 import '../analysis/pgn_import.dart' show normalizeCastling;
@@ -610,6 +611,10 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
   /// The solver's last correct move: a best-move badge on its square until
   /// the opponent answers.
   Square? _bestAt;
+
+  /// Kind of the solver's last move: brilliant (a sacrifice), only_move
+  /// (the key move, when the puzzle has no other first move) or best.
+  String _bestKind = 'best';
   Timer? _intro;
 
   /// Positions of this try, oldest first: before the opponent's last move,
@@ -901,11 +906,27 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
     });
   }
 
+  /// [авторское] Positive marks in puzzles too: a move that leaves material
+  /// to be taken and does not win it back within two replies is brilliant;
+  /// the key move of a puzzle with one solution is an only move.
+  String _kindOf(NormalMove m) {
+    try {
+      final rest = _line.sublist(_step);
+      if (features.leavesMaterialEnPrise(_pos, m) && features.isSacrificeLine(_pos, rest, const Settings())) {
+        return 'brilliant';
+      }
+      final otherFirst = p.alternatives.any((a) => a.isNotEmpty && a.first != m.uci);
+      if (_step == 0 && p.gap >= 1 && !otherFirst) return 'only_move';
+    } catch (_) {}
+    return 'best';
+  }
+
   void _advance() {
     final m = NormalMove.fromUci(_line[_step]);
     setState(() {
       // ход решающего — значок best; ответ соперника его снимает
       _bestAt = _pos.turn == p.solver ? m.to : null;
+      if (_bestAt != null) _bestKind = _kindOf(m);
       _last = m;
       _pos = _pos.push(m);
       _step++;
@@ -1030,7 +1051,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
       return Scaffold(appBar: AppBar(title: const Text('Puzzles')), body: const Center(child: Text('No puzzles.')));
     }
     return Scaffold(
-      appBar: AppBar(title: Text('Puzzle ${_index + 1} of ${_puzzles.length}'), actions: [
+      appBar: AppBar(title: const Text('Puzzle'), actions: [
         IconButton(
           tooltip: 'Previous puzzle',
           onPressed: _index > 0 ? () => _start(_index - 1) : null,
@@ -1063,7 +1084,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                 ),
                 if (_state == _State.solved && _last != null && !_peek) _dartOver(_last!.to, size),
                 if (_bestAt != null && _state != _State.solved && !_peek)
-                  _corner(_bestAt!, size, (d) => StepIcon(kind: 'best', size: d)),
+                  _corner(_bestAt!, size, (d) => StepIcon(kind: _bestKind, size: d)),
               ]),
             ),
           ),

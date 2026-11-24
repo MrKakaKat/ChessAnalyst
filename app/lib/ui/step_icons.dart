@@ -268,7 +268,7 @@ void _drawClock(Canvas canvas, double size, Color color, double hand) {
 void _drawResign(Canvas canvas, double size, Color color, {double progress = 1}) {
   final u = progress.clamp(0.0, 1.0);
   // по высоте — как остальные знаки (0,95 выходило больше их)
-  final k = size * 0.7 / 220;
+  final k = size * 0.6 / 220;
   canvas.save();
   canvas.scale(k);
   canvas.translate(-550, -587);

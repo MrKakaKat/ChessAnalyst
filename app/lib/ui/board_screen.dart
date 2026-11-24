@@ -24,7 +24,11 @@ import 'widgets/board_background.dart';
 import 'widgets/faded_line.dart';
 
 class AnalysisBoardScreen extends StatefulWidget {
-  const AnalysisBoardScreen({super.key, this.startFen, this.title, this.temporary = false});
+  const AnalysisBoardScreen({super.key, this.startFen, this.title, this.temporary = false, this.moves = const []});
+
+  /// Moves played from [startFen] into the new session (a finished game
+  /// against the engine); the board opens at the last one.
+  final List<NormalMove> moves;
 
   /// Start from this position in a new session (e.g. a solved puzzle).
   final String? startFen;
@@ -133,6 +137,9 @@ class _AnalysisBoardScreenState extends State<AnalysisBoardScreen> {
     setState(() => c = SessionController(session)
       ..temporary = temporary
       ..addListener(_onChange));
+    for (final m in widget.moves) {
+      c!.play(m);
+    }
     if (!temporary) BoardSessions.save(session);
     _onChange();
   }

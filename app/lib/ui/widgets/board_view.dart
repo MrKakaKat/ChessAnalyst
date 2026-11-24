@@ -519,8 +519,10 @@ class _BoardBadgeState extends State<BoardBadge> with SingleTickerProviderStateM
         // приближаются и быстро качаются — «звонят»
         var hand = clockHand;
         // флаг сдачи разворачивается вправо (рисунок автора)
+        // и вместе с тем колышется, затихая (прежняя анимация)
         if (moving && widget.kind == 'resign') {
           hand = Curves.easeInOutCubic.transform(((t - 0.2) / 0.4).clamp(0.0, 1.0)).clamp(0.001, 1.0);
+          angle = 0.3 * math.sin(t * 4 * math.pi) * (1 - t);
         }
         var zoom = 1.0;
         if (moving && widget.kind == 'timeout') {

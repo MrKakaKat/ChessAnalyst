@@ -15,6 +15,7 @@ import '../analysis/openings.dart';
 import '../analysis/pos.dart';
 import '../engine/bot.dart';
 import '../engine/rated_play.dart' show accuracyForRating;
+import 'board_screen.dart' show AnalysisBoardScreen;
 import 'home_screen.dart' show PawnIcon;
 import 'import_screen.dart';
 import 'play_controller.dart';
@@ -230,18 +231,19 @@ class _PlayScreenState extends State<PlayScreen> {
     return Column(key: const ValueKey('setup'), crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
         Expanded(child: Text('Strength', style: Theme.of(context).textTheme.titleMedium)),
-        SegmentedButton<bool>(
-          segments: const [
-            ButtonSegment(value: false, label: Text('Level')),
-            ButtonSegment(value: true, label: Text('Rating')),
-          ],
-          selected: {c.rating != null},
-          showSelectedIcon: false,
-          style: const ButtonStyle(visualDensity: VisualDensity.compact),
-          onSelectionChanged: (v) => c.setRating(v.first ? (c.rating ?? 1500) : null),
-        ),
       ]),
       const SizedBox(height: 6),
+      // [авторское] уровень или рейтинг — выбор под заголовком, как цвет
+      SegmentedButton<bool>(
+        segments: const [
+          ButtonSegment(value: false, label: Text('By level')),
+          ButtonSegment(value: true, label: Text('By rating')),
+        ],
+        selected: {c.rating != null},
+        showSelectedIcon: false,
+        onSelectionChanged: (v) => c.setRating(v.first ? (c.rating ?? 1500) : null),
+      ),
+      const SizedBox(height: 8),
       if (c.rating == null) ...[
         // уровни — в одну строку, листаются вбок
         SizedBox(
@@ -334,6 +336,13 @@ class _PlayScreenState extends State<PlayScreen> {
   void _analyze({required bool now}) => Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (_) => ImportScreen(book: widget.book, pgn: c.pgn, startNow: now)));
 
+  /// The finished game on the analysis board: free analysis, own moves.
+  void _freeAnalysis() => Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => AnalysisBoardScreen(
+          startFen: Chess.initial.fen,
+          title: 'Game against the engine ${DateTime.now().toLocal().toString().substring(0, 16)}',
+          moves: [...c.moves])));
+
   Widget _game(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final String status = switch (c.status) {
@@ -357,7 +366,7 @@ class _PlayScreenState extends State<PlayScreen> {
             style: TextStyle(color: scheme.outline)),
       ]),
       // по рейтингу: точность движка в этой партии против точности рейтинга
-      if (c.rated case final r?)
+      if (c.rated case final r? when c.friendly)
         Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text('Engine accuracy ${r.accuracy.toStringAsFixed(1)}% · target ${r.target.toStringAsFixed(1)}%',
@@ -431,12 +440,16 @@ class _PlayScreenState extends State<PlayScreen> {
                   onPressed: () => _analyze(now: false),
                   icon: const Icon(Icons.tune_rounded),
                   label: const Text('Choose depth…')),
+              OutlinedButton.icon(
+                  onPressed: _freeAnalysis,
+                  icon: const Icon(Icons.biotech_outlined),
+                  label: const Text('Analysis board')),
             ]),
           ]),
         ),
       const SizedBox(height: 12),
       Wrap(spacing: 8, runSpacing: 8, children: [
-        if (c.moves.isNotEmpty)
+        if (c.status == PlayStatus.over && c.moves.isNotEmpty)
           OutlinedButton.icon(onPressed: _copyPgn, icon: const Icon(Icons.copy_rounded), label: const Text('Copy PGN')),
         if (c.friendly)
           OutlinedButton.icon(

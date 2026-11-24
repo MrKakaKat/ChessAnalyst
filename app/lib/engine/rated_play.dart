@@ -41,10 +41,11 @@ double maxDropForRating(int rating) {
 /// 1000, none from 1800.
 double obviousShareForRating(int rating) => (1 - (rating - 1000) / 800).clamp(0.0, 1.0);
 
-/// Whether playing [l] instead of [best] in [pos] is an obvious error: the
-/// move leaves material to be taken, the reply takes a free or bigger
-/// piece or mates soon, or the best move was such a capture or a mate, or a
-/// recapture on the square of the opponent's last move ([last]).
+/// Whether playing [l] instead of [best] in [pos] is an obvious error: an
+/// obvious blunder (the move leaves material to be taken, the reply takes a
+/// free or bigger piece or mates soon) or an obvious advantage let go (the
+/// best move was such a capture, a mate, a recapture on the square of the
+/// opponent's last move [last], or a capture or promotion that wins much).
 bool obviousError(Pos pos, Line best, Line l, {NormalMove? last}) {
   try {
     final m = NormalMove.fromUci(l.move);
@@ -60,6 +61,11 @@ bool obviousError(Pos pos, Line best, Line l, {NormalMove? last}) {
     if (best.eval.mate != null && best.eval.mate! > 0 && best.eval.mate! <= 2) return true;
     if (features.obviousCapture(pos, b)) return true;
     if (last != null && pos.isCapture(b) && b.to == last.to) return true;
+    // [авторское] очевидное взятие преимущества: лучший ход — взятие или
+    // превращение, которое выигрывает много (15% ожидаемого результата и
+    // больше), — его видно сразу, сильный игрок его не упустит
+    final gain = (expectedOf(best) - expectedOf(l)) * 100;
+    if ((pos.isCapture(b) || b.promotion != null) && gain >= 15) return true;
   } catch (_) {}
   return false;
 }
